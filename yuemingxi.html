@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理系统原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        menuBg: '#304156',
+                        menuDark: '#1f2d3d',
+                        menuHover: '#263445',
+                        primary: '#409eff',
+                        danger: '#f56c6c',
+                        textMain: '#606266',
+                        textLight: '#909399',
+                        borderLight: '#e4e7ed'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 自定义滚动条样式，模仿现代后台 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #c0c4cc; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        
+        /* 隐藏输入框原生的日期选择图标 */
+        input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex bg-[#f0f2f5] font-sans text-sm text-textMain">
+
+    <aside class="w-[210px] bg-menuBg h-full flex flex-col text-white transition-all duration-300 flex-shrink-0 shadow-lg z-20">
+        <div class="h-14 flex items-center justify-center bg-[#2b3643] text-lg font-bold tracking-wider cursor-pointer">
+            test渠道
+        </div>
+        
+        <div class="flex-1 overflow-y-auto">
+            <ul class="w-full">
+                <li class="h-14 flex items-center px-5 hover:bg-menuHover cursor-pointer text-gray-300">首页</li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>会员管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>财务管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>游戏管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>代理系统</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                
+                <li class="w-full">
+                    <div class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-200">
+                        <span>报表查询</span><i class="fas fa-angle-up text-xs"></i>
+                    </div>
+                    <ul class="bg-menuDark w-full py-1">
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">游戏记录</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">游戏报表</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">提现报表</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">充值报表</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">资金明细</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">彩票订单</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">红包发送记录</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">红包领取记录</li>
+                        <li class="h-12 flex items-center pl-10 bg-menuHover text-primary cursor-pointer">余额明细</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">游戏平台上下分</li>
+                        <li class="h-12 flex items-center pl-10 hover:bg-menuHover cursor-pointer text-gray-400">商户月账单</li>
+                    </ul>
+                </li>
+                
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>聊天群组</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>主播管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>数据统计</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>导出管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>活动管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>日志查询</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>验证码查询</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>短信模板管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>渠道管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>广告位管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+                <li class="h-14 flex items-center justify-between px-5 hover:bg-menuHover cursor-pointer text-gray-300">
+                    <span>系统管理</span><i class="fas fa-angle-down text-xs"></i>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-white">
+        
+        <header class="h-12 bg-white border-b border-borderLight flex items-center justify-between px-4 shadow-sm z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <i class="fas fa-bars text-lg text-textMain cursor-pointer hover:text-gray-800"></i>
+                <span class="text-sm">余额：<span class="text-danger">9999.97</span></span>
+            </div>
+            
+            <div class="flex items-center gap-4 text-sm">
+                <button class="bg-primary hover:bg-blue-500 text-white px-4 py-1.5 rounded-[4px] shadow-sm transition-colors">
+                    人工存款
+                </button>
+                <button class="bg-primary hover:bg-blue-500 text-white px-4 py-1.5 rounded-[4px] shadow-sm relative transition-colors">
+                    <i class="fas fa-bell mr-1"></i>会员出款
+                    <span class="absolute -top-2 -right-2 bg-danger text-white text-[10px] px-1.5 py-0.5 rounded-full border border-white">13</span>
+                </button>
+                <span class="text-danger ml-4">到期时间: 2030-12-27</span>
+                <div class="flex items-center gap-2 cursor-pointer ml-2 hover:opacity-80">
+                    <div class="w-7 h-7 bg-gray-300 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-user text-xs"></i>
+                    </div>
+                    <span>admin</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="h-9 bg-white border-b border-borderLight flex items-center px-4 gap-2 text-xs shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.02)] z-0">
+            <div class="px-3 py-1 border border-borderLight rounded-[3px] text-textMain hover:text-primary cursor-pointer bg-white">首页</div>
+            <div class="px-3 py-1 border border-borderLight rounded-[3px] text-primary cursor-pointer bg-blue-50/30 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+                余额明细 <i class="fas fa-times hover:bg-gray-200 rounded-full w-3.5 h-3.5 flex items-center justify-center"></i>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-auto p-4 bg-white flex flex-col">
+
+            <div class="grid grid-cols-4 grid-rows-2 gap-4 mb-5 shrink-0">
+                
+                <div class="bg-[#fff0f0] rounded-lg p-5 shadow-sm border border-[#ffdbdb] row-span-2 flex flex-col justify-center">
+                    <div class="flex items-center text-danger font-bold text-base mb-4">
+                        <div class="w-8 h-8 rounded-md bg-danger text-white flex items-center justify-center mr-2"><i class="fas fa-wallet text-sm"></i></div>
+                        商户余额
+                    </div>
+                    <div class="text-sm text-gray-500 mb-1">可用及可提现总额</div>
+                    <div class="text-3xl font-bold text-danger mt-1">￥9999.97</div>
+                </div>
+
+                <div class="bg-[#f4f2fd] rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center text-[#9b85ff] font-bold text-sm mb-3">
+                        <div class="w-6 h-6 rounded-md bg-[#9b85ff] text-white flex items-center justify-center mr-2"><i class="fas fa-gamepad text-xs"></i></div>
+                        游戏API抽成 
+                        <div class="relative inline-flex items-center group cursor-help ml-1">
+                            <i class="far fa-question-circle text-gray-400"></i>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[220px] bg-[#304156] text-white text-xs font-normal rounded px-2.5 py-1.5 z-50 shadow-lg text-left whitespace-normal">
+                                月度平台游戏分成金额
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-[#304156]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
+                    <div class="text-sm font-bold text-gray-800">本月 ￥780761.79</div>
+                </div>
+
+                <div class="bg-[#fff6ec] rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center text-[#ff9e58] font-bold text-sm mb-3">
+                        <div class="w-6 h-6 rounded-md bg-[#ff9e58] text-white flex items-center justify-center mr-2"><i class="fas fa-video text-xs"></i></div>
+                        观影费用 
+                        <div class="relative inline-flex items-center group cursor-help ml-1">
+                            <i class="far fa-question-circle text-gray-400"></i>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[220px] bg-[#304156] text-white text-xs font-normal rounded px-2.5 py-1.5 z-50 shadow-lg text-left whitespace-normal">
+                                普通线路观影费用+VIP线路观影费用
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-[#304156]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
+                    <div class="text-sm font-bold text-gray-800">本月 ￥271129.44</div>
+                </div>
+
+                <div class="bg-[#f0f7ff] rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center text-[#55aaff] font-bold text-sm mb-3">
+                        <div class="w-6 h-6 rounded-md bg-[#55aaff] text-white flex items-center justify-center mr-2"><i class="fas fa-ticket-alt text-xs"></i></div>
+                        彩票分红 
+                        <div class="relative inline-flex items-center group cursor-help ml-1">
+                            <i class="far fa-question-circle text-gray-400"></i>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[220px] bg-[#304156] text-white text-xs font-normal rounded px-2.5 py-1.5 z-50 shadow-lg text-left whitespace-normal">
+                                月度彩票平台分成金额
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-[#304156]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
+                    <div class="text-sm font-bold text-gray-800">本月 ￥200000</div>
+                </div>
+
+                <div class="bg-[#ecfbf7] rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center text-[#4bc09f] font-bold text-sm mb-3">
+                        <div class="w-6 h-6 rounded-md bg-[#4bc09f] text-white flex items-center justify-center mr-2"><i class="fas fa-user-secret text-xs"></i></div>
+                        裸聊费用 
+                        <div class="relative inline-flex items-center group cursor-help ml-1">
+                            <i class="far fa-question-circle text-gray-400"></i>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[220px] bg-[#304156] text-white text-xs font-normal rounded px-2.5 py-1.5 z-50 shadow-lg text-left whitespace-normal">
+                                月度裸聊平台分成金额
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-[#304156]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
+                    <div class="text-sm font-bold text-gray-800">本月 ￥0</div>
+                </div>
+
+                <div class="bg-[#f2f4f7] rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center text-[#8e9bae] font-bold text-sm mb-3">
+                        <div class="w-6 h-6 rounded-md bg-[#8e9bae] text-white flex items-center justify-center mr-2"><i class="fas fa-envelope text-xs"></i></div>
+                        直播间红包 
+                        <div class="relative inline-flex items-center group cursor-help ml-1">
+                            <i class="far fa-question-circle text-gray-400"></i>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-[300px] bg-[#304156] text-white text-xs font-normal rounded px-2.5 py-1.5 z-50 shadow-lg text-left whitespace-normal">
+                                商户发送红包金额-商户领取红包金额-商户红包退还金额
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-[#304156]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
+                    <div class="text-sm font-bold text-gray-800">本月 ￥0</div>
+                </div>
+
+                <div class="bg-[#f5f5fc] rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center text-[#7478d1] font-bold text-sm mb-3">
+                        <div class="w-6 h-6 rounded-md bg-[#7478d1] text-white flex items-center justify-center mr-2"><i class="fas fa-gift text-xs"></i></div>
+                        直播间打赏 
+                        <div class="relative inline-flex items-center group cursor-help ml-1">
+                            <i class="far fa-question-circle text-gray-400"></i>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block w-max max-w-[220px] bg-[#304156] text-white text-xs font-normal rounded px-2.5 py-1.5 z-50 shadow-lg text-left whitespace-normal">
+                                月度直播间打赏平台分成金额
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-b-[#304156]"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
+                    <div class="text-sm font-bold text-gray-800">本月 ￥20000</div>
+                </div>
+
+            </div>
+            
+            <div class="flex items-center gap-3 mb-4 flex-wrap">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium">类型</span>
+                    <div class="relative w-32">
+                        <select class="w-full h-8 pl-3 pr-8 border border-[#dcdfe6] rounded-[4px] text-textLight appearance-none outline-none focus:border-primary cursor-pointer bg-white">
+                            <option>全部类型</option>
+                            <option>入款</option>
+                            <option>出款</option>
+                        </select>
+                        <i class="fas fa-angle-down absolute right-3 top-2.5 text-gray-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 ml-2">
+                    <span class="text-sm font-medium">资金类型</span>
+                    <div class="relative w-32">
+                        <select class="w-full h-8 pl-3 pr-8 border border-[#dcdfe6] rounded-[4px] text-textLight appearance-none outline-none focus:border-primary cursor-pointer bg-white">
+                            <option>全部资金类型</option>
+                            <option>平台上分</option>
+                            <option>平台下分</option>
+                            <option>裸聊扣款</option>
+                            <option>主播打赏</option>
+                            <option>红包扣费</option>
+                            <option>领取红包</option>
+                            <option>红包退款</option>
+                            <option>聊天室游戏抽成</option>
+                        </select>
+                        <i class="fas fa-angle-down absolute right-3 top-2.5 text-gray-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 ml-2 relative">
+                    <span class="text-sm font-medium">起止时间</span>
+                    <div onclick="document.getElementById('date-picker-mock').classList.toggle('hidden')" class="flex items-center border border-[#dcdfe6] rounded-[4px] h-8 px-2 focus-within:border-primary bg-white hover:border-[#c0c4cc] transition-colors cursor-pointer select-none">
+                        <i class="far fa-clock text-gray-400 mr-2"></i>
+                        <span class="w-[140px] text-center text-textMain">2026-05-01 00:00:00</span>
+                        <span class="mx-2 text-gray-400">-</span>
+                        <span class="w-[140px] text-center text-textMain">2026-05-30 23:59:59</span>
+                    </div>
+
+                    <div id="date-picker-mock" class="hidden absolute top-10 left-[60px] bg-white border border-[#e4e7ed] shadow-[0_2px_12px_0_rgba(0,0,0,0.1)] rounded-[4px] w-[600px] z-50 text-sm">
+                        <div class="flex items-center justify-between p-3 border-b border-[#e4e7ed]">
+                            <div class="flex gap-2">
+                                <input type="text" value="2026-05-01" class="border border-[#dcdfe6] rounded px-2 py-1 w-28 text-center outline-none">
+                                <input type="text" value="00:00:00" class="border border-[#dcdfe6] rounded px-2 py-1 w-24 text-center outline-none">
+                            </div>
+                            <i class="fas fa-angle-right text-gray-300"></i>
+                            <div class="flex gap-2">
+                                <input type="text" value="2026-05-30" class="border border-[#dcdfe6] rounded px-2 py-1 w-28 text-center outline-none">
+                                <input type="text" value="23:59:59" class="border border-[#dcdfe6] rounded px-2 py-1 w-24 text-center outline-none">
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <div class="w-20 border-r border-[#e4e7ed] py-2 bg-[#fafafa]">
+                                <div class="px-3 py-1.5 hover:text-primary cursor-pointer">今天</div>
+                                <div class="px-3 py-1.5 hover:text-primary cursor-pointer">昨天</div>
+                                <div class="px-3 py-1.5 hover:text-primary cursor-pointer">本周</div>
+                                <div class="px-3 py-1.5 hover:text-primary cursor-pointer">上周</div>
+                                <div class="px-3 py-1.5 hover:text-primary cursor-pointer text-primary">本月</div>
+                                <div class="px-3 py-1.5 hover:text-primary cursor-pointer">上月</div>
+                            </div>
+                            <div class="flex-1 flex p-2">
+                                <div class="flex-1 px-2 border-r border-[#e4e7ed]">
+                                    <div class="flex justify-between items-center py-2 text-gray-600">
+                                        <div><i class="fas fa-angle-double-left cursor-pointer hover:text-primary mr-1"></i><i class="fas fa-angle-left cursor-pointer hover:text-primary"></i></div>
+                                        <div class="font-medium">2026 年 5 月</div>
+                                        <div><i class="fas fa-angle-right cursor-pointer hover:text-primary mr-1 opacity-0"></i><i class="fas fa-angle-double-right cursor-pointer hover:text-primary opacity-0"></i></div>
+                                    </div>
+                                    <div class="grid grid-cols-7 text-center text-xs gap-y-2 mt-2">
+                                        <div class="text-gray-400">一</div><div class="text-gray-400">二</div><div class="text-gray-400">三</div><div class="text-gray-400">四</div><div class="text-gray-400">五</div><div class="text-gray-400">六</div><div class="text-gray-400">日</div>
+                                        <div class="text-gray-300">27</div><div class="text-gray-300">28</div><div class="text-gray-300">29</div><div class="text-gray-300">30</div>
+                                        <div class="bg-primary text-white rounded-full w-6 h-6 leading-6 mx-auto">1</div>
+                                        <div class="bg-[#f2f6fc] w-full">2</div><div class="bg-[#f2f6fc] w-full">3</div>
+                                        <div class="bg-[#f2f6fc] w-full">4</div><div class="bg-[#f2f6fc] w-full">5</div><div class="bg-[#f2f6fc] w-full">6</div><div class="bg-[#f2f6fc] w-full">7</div><div class="bg-[#f2f6fc] w-full">8</div><div class="bg-[#f2f6fc] w-full">9</div><div class="bg-[#f2f6fc] w-full">10</div>
+                                        <div class="col-span-7 bg-[#f2f6fc] h-6 flex items-center justify-center text-gray-400">...</div>
+                                        <div class="bg-[#f2f6fc] w-full">25</div><div class="bg-[#f2f6fc] w-full">26</div><div class="bg-[#f2f6fc] w-full">27</div><div class="bg-[#f2f6fc] w-full">28</div><div class="bg-[#f2f6fc] w-full">29</div>
+                                        <div class="bg-primary text-white rounded-full w-6 h-6 leading-6 mx-auto relative z-10">30</div>
+                                        <div class="text-gray-600">31</div>
+                                    </div>
+                                </div>
+                                <div class="flex-1 px-2">
+                                    <div class="flex justify-between items-center py-2 text-gray-600">
+                                        <div><i class="fas fa-angle-left cursor-pointer hover:text-primary opacity-0"></i></div>
+                                        <div class="font-medium">2026 年 6 月</div>
+                                        <div><i class="fas fa-angle-right cursor-pointer hover:text-primary mr-1"></i><i class="fas fa-angle-double-right cursor-pointer hover:text-primary"></i></div>
+                                    </div>
+                                     <div class="grid grid-cols-7 text-center text-xs gap-y-2 mt-2 text-gray-600">
+                                        <div class="text-gray-400">一</div><div class="text-gray-400">二</div><div class="text-gray-400">三</div><div class="text-gray-400">四</div><div class="text-gray-400">五</div><div class="text-gray-400">六</div><div class="text-gray-400">日</div>
+                                        <div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div>
+                                        <div class="col-span-7 h-6 flex items-center justify-center text-gray-400">...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-t border-[#e4e7ed] p-2 flex justify-end gap-2 bg-white">
+                            <button onclick="document.getElementById('date-picker-mock').classList.add('hidden')" class="px-4 py-1 text-xs border border-[#dcdfe6] rounded hover:text-primary hover:border-primary">清空</button>
+                            <button onclick="document.getElementById('date-picker-mock').classList.add('hidden')" class="px-4 py-1 text-xs border border-primary bg-primary text-white rounded hover:bg-[#66b1ff]">确定</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 ml-4">
+                    <button class="bg-primary hover:bg-[#66b1ff] text-white px-5 h-8 rounded-[4px] transition-colors shadow-sm text-sm">查询</button>
+                    <button class="bg-primary hover:bg-[#66b1ff] text-white px-5 h-8 rounded-[4px] transition-colors shadow-sm text-sm">导出余额明细</button>
+                </div>
+                
+                <div class="flex-1 flex justify-end gap-2">
+                    <button class="bg-primary hover:bg-[#66b1ff] text-white px-5 h-8 rounded-[4px] transition-colors shadow-sm text-sm">重置</button>
+                    <button class="bg-primary hover:bg-[#66b1ff] text-white w-8 h-8 rounded-[4px] flex items-center justify-center transition-colors shadow-sm text-sm">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-sm text-textMain mb-3 font-medium">
+                累计上分: <span class="font-normal text-gray-700">139571.00元</span> &nbsp;&nbsp; 累计下分: <span class="font-normal text-gray-700">220431.13元</span>
+            </div>
+
+            <div class="w-full border border-borderLight rounded-sm flex-1 flex flex-col overflow-hidden">
+                <div class="overflow-y-auto flex-1 relative">
+                    <table class="w-full text-center table-fixed whitespace-nowrap">
+                        <thead class="bg-[#f8f8f9] text-textLight sticky top-0 z-10">
+                            <tr class="border-b border-borderLight">
+                                <th class="h-10 font-medium w-[8%]">类型</th>
+                                <th class="h-10 font-medium w-[12%]">资金类型</th>
+                                <th class="h-10 font-medium w-[15%]">变动前余额</th>
+                                <th class="h-10 font-medium w-[15%]">变动金额</th>
+                                <th class="h-10 font-medium w-[15%]">变动后余额</th>
+                                <th class="h-10 font-medium w-[15%]">备注</th>
+                                <th class="h-10 font-medium w-[20%]">创建时间</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-textMain">
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>-0.03</td>
+                                <td>10000.00</td>
+                                <td>9999.97</td>
+                                <td></td>
+                                <td>2026-05-30 02:24:28</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">出款</td>
+                                <td>平台下分</td>
+                                <td>133559.97</td>
+                                <td class="text-danger">-133560.00</td>
+                                <td>-0.03</td>
+                                <td></td>
+                                <td>2026-05-30 02:23:38</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">出款</td>
+                                <td></td>
+                                <td>134132.51</td>
+                                <td class="text-danger">-572.54</td>
+                                <td>133559.97</td>
+                                <td>服务费扣费 2026-04</td>
+                                <td>2026-05-30 01:33:46</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">出款</td>
+                                <td>平台下分</td>
+                                <td>134232.51</td>
+                                <td class="text-danger">-100.00</td>
+                                <td>134132.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:47:17</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>134132.51</td>
+                                <td>100.00</td>
+                                <td>134232.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:42:07</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>134032.51</td>
+                                <td>100.00</td>
+                                <td>134132.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:41:49</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>133932.51</td>
+                                <td>100.00</td>
+                                <td>134032.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:39:46</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>133832.51</td>
+                                <td>100.00</td>
+                                <td>133932.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:39:26</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>133732.51</td>
+                                <td>100.00</td>
+                                <td>133832.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:39:01</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>133632.51</td>
+                                <td>100.00</td>
+                                <td>133732.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:38:29</td>
+                            </tr>
+                             <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>133532.51</td>
+                                <td>100.00</td>
+                                <td>133632.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:37:29</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>133432.51</td>
+                                <td>100.00</td>
+                                <td>133532.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:36:53</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>133332.51</td>
+                                <td>100.00</td>
+                                <td>133432.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:36:14</td>
+                            </tr>
+                            <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">入款</td>
+                                <td>平台上分</td>
+                                <td>123332.51</td>
+                                <td>10000.00</td>
+                                <td>133332.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:33:50</td>
+                            </tr>
+                             <tr class="border-b border-borderLight hover:bg-[#f5f7fa] transition-colors">
+                                <td class="h-11">出款</td>
+                                <td>平台下分</td>
+                                <td>133332.51</td>
+                                <td class="text-danger">-10000.00</td>
+                                <td>123332.51</td>
+                                <td></td>
+                                <td>2026-05-29 16:33:01</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="h-12 flex justify-end items-center text-sm text-textMain shrink-0 mt-2 gap-3">
+                <span>共 186 条</span>
+                
+                <div class="relative w-24">
+                    <select class="w-full h-7 pl-2 pr-6 border border-[#dcdfe6] rounded-[4px] appearance-none outline-none focus:border-primary cursor-pointer bg-white">
+                        <option>50条/页</option>
+                    </select>
+                    <i class="fas fa-angle-down absolute right-2 top-2 text-gray-400 pointer-events-none text-xs"></i>
+                </div>
+
+                <div class="flex items-center gap-1 font-medium">
+                    <button class="w-7 h-7 flex items-center justify-center hover:text-primary disabled:text-gray-300 disabled:cursor-not-allowed text-gray-400"><i class="fas fa-chevron-left text-xs"></i></button>
+                    <button class="w-7 h-7 flex items-center justify-center text-primary bg-[#f4f4f5] rounded">1</button>
+                    <button class="w-7 h-7 flex items-center justify-center hover:text-primary">2</button>
+                    <button class="w-7 h-7 flex items-center justify-center hover:text-primary">3</button>
+                    <button class="w-7 h-7 flex items-center justify-center hover:text-primary">4</button>
+                    <button class="w-7 h-7 flex items-center justify-center hover:text-primary"><i class="fas fa-chevron-right text-xs"></i></button>
+                </div>
+
+                <div class="flex items-center gap-1 ml-2">
+                    前往 
+                    <input type="text" value="1" class="w-10 h-7 border border-[#dcdfe6] rounded-[4px] text-center outline-none focus:border-primary">
+                    页
+                </div>
+            </div>
+
+        
+            
+        
+        
+        </div>
+    </main>
+
+</body>
+</html>
