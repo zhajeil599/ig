@@ -182,8 +182,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
-                    <div class="text-sm font-bold text-gray-800">本月 ￥2500</div>
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="text-xs text-gray-500">上月 ￥0</div>
+                        <span onclick="document.getElementById('game-api-modal-last').classList.remove('hidden')" class="text-xs text-primary cursor-pointer hover:underline">明细</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm font-bold text-gray-800">本月 ￥2500</div>
+                        <span onclick="document.getElementById('game-api-modal-this').classList.remove('hidden')" class="text-xs text-primary cursor-pointer hover:underline">明细</span>
+                    </div>
                 </div>
 
                 <div class="bg-[#fff6ec] rounded-lg p-4 shadow-sm">
@@ -198,8 +204,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-xs text-gray-500 mb-1">上月 ￥0</div>
-                    <div class="text-sm font-bold text-gray-800">本月 ￥2500</div>
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="text-xs text-gray-500">上月 ￥0</div>
+                        <span onclick="document.getElementById('view-fee-modal-last').classList.remove('hidden')" class="text-xs text-primary cursor-pointer hover:underline">明细</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm font-bold text-gray-800">本月 ￥2500</div>
+                        <span onclick="document.getElementById('view-fee-modal-this').classList.remove('hidden')" class="text-xs text-primary cursor-pointer hover:underline">明细</span>
+                    </div>
                 </div>
 
                 <div class="bg-[#f0f7ff] rounded-lg p-4 shadow-sm">
@@ -574,6 +586,122 @@
         
         </div>
     </main>
+
+<div id="game-api-modal-last" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-[4px] shadow-lg w-[700px] flex flex-col overflow-hidden">
+            <div class="h-12 flex items-center justify-between px-5 border-b border-[#e4e7ed] bg-white">
+                <span class="font-medium text-[15px] text-gray-800">上月游戏API抽成明细</span>
+                <i onclick="document.getElementById('game-api-modal-last').classList.add('hidden')" class="fas fa-times text-gray-400 hover:text-gray-600 cursor-pointer"></i>
+            </div>
+            <div class="p-5 max-h-[400px] overflow-auto">
+                <table class="w-full text-center text-sm border border-[#e4e7ed]">
+                    <thead class="bg-[#f8f8f9] text-gray-600">
+                        <tr>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">统计时间</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">游戏利润</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">游戏平台分成金额</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600">
+                        <tr class="hover:bg-[#f5f7fa]">
+                            <td class="py-3">2026-05</td>
+                            <td class="py-3">0.00</td>
+                            <td class="py-3 text-danger font-medium">0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-api-modal-this" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-[4px] shadow-lg w-[700px] flex flex-col overflow-hidden">
+            <div class="h-12 flex items-center justify-between px-5 border-b border-[#e4e7ed] bg-white">
+                <span class="font-medium text-[15px] text-gray-800">本月游戏API抽成明细</span>
+                <i onclick="document.getElementById('game-api-modal-this').classList.add('hidden')" class="fas fa-times text-gray-400 hover:text-gray-600 cursor-pointer"></i>
+            </div>
+            <div class="p-5 max-h-[400px] overflow-auto">
+                <table class="w-full text-center text-sm border border-[#e4e7ed]">
+                    <thead class="bg-[#f8f8f9] text-gray-600">
+                        <tr>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">统计时间</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">游戏利润</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">游戏平台分成金额</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600">
+                        <tr class="hover:bg-[#f5f7fa]">
+                            <td class="py-3">2026-06</td>
+                            <td class="py-3">334336.72</td>
+                            <td class="py-3 text-danger font-medium">2500.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-fee-modal-last" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-[4px] shadow-lg w-[850px] flex flex-col overflow-hidden">
+            <div class="h-12 flex items-center justify-between px-5 border-b border-[#e4e7ed] bg-white">
+                <span class="font-medium text-[15px] text-gray-800">上月观影费用明细</span>
+                <i onclick="document.getElementById('view-fee-modal-last').classList.add('hidden')" class="fas fa-times text-gray-400 hover:text-gray-600 cursor-pointer"></i>
+            </div>
+            <div class="p-5 max-h-[400px] overflow-auto">
+                <table class="w-full text-center text-sm border border-[#e4e7ed]">
+                    <thead class="bg-[#f8f8f9] text-gray-600">
+                        <tr>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">统计时间</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">普通线路观影日活</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">普通线路观影费用</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">VIP线路观影日活</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">VIP线路观影费用</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600">
+                        <tr class="hover:bg-[#f5f7fa]">
+                            <td class="py-3">2026-05</td>
+                            <td class="py-3">0</td>
+                            <td class="py-3 text-[#ff9e58] font-medium">0.00</td>
+                            <td class="py-3">0</td>
+                            <td class="py-3 text-[#ff9e58] font-medium">0.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-fee-modal-this" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-[4px] shadow-lg w-[850px] flex flex-col overflow-hidden">
+            <div class="h-12 flex items-center justify-between px-5 border-b border-[#e4e7ed] bg-white">
+                <span class="font-medium text-[15px] text-gray-800">本月观影费用明细</span>
+                <i onclick="document.getElementById('view-fee-modal-this').classList.add('hidden')" class="fas fa-times text-gray-400 hover:text-gray-600 cursor-pointer"></i>
+            </div>
+            <div class="p-5 max-h-[400px] overflow-auto">
+                <table class="w-full text-center text-sm border border-[#e4e7ed]">
+                    <thead class="bg-[#f8f8f9] text-gray-600">
+                        <tr>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">统计时间</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">普通线路观影日活</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">普通线路观影费用</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">VIP线路观影日活</th>
+                            <th class="py-3 font-medium border-b border-[#e4e7ed]">VIP线路观影费用</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600">
+                        <tr class="hover:bg-[#f5f7fa]">
+                            <td class="py-3">2026-06</td>
+                            <td class="py-3">452</td>
+                            <td class="py-3 text-[#ff9e58] font-medium">1000.00</td>
+                            <td class="py-3">236</td>
+                            <td class="py-3 text-[#ff9e58] font-medium">1500.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
 <div id="alert-settings-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
         <div class="bg-white rounded-[4px] shadow-lg w-[520px] flex flex-col overflow-hidden">
