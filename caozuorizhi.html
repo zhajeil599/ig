@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代理后台 - 操作日志</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            corePlugins: { preflight: false },
+            theme: {
+                extend: {
+                    colors: {
+                        menuBg: '#324057',     /* 左侧菜单底色 */
+                        menuDark: '#1f2d3d',   /* 左侧菜单展开子项底色 */
+                        menuHover: '#48576a',  /* 菜单悬浮色 */
+                        primary: '#409eff',    /* 主题蓝 */
+                        danger: '#f56c6c',     /* 警示红 */
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ================= 保留您原有的全局和右侧工作区样式 ================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif; }
+        body { display: flex; height: 100vh; overflow: hidden; background-color: #f0f2f5; color: #333; font-size: 14px; }
+        
+        /* 按钮与小组件 */
+        .btn { display: inline-block; line-height: 1; white-space: nowrap; cursor: pointer; background: #fff; border: 1px solid #dcdfe6; color: #606266; text-align: center; box-sizing: border-box; outline: none; margin: 0; transition: .1s; font-weight: 500; padding: 9px 15px; font-size: 12px; border-radius: 30px; }
+        .btn-primary { color: #fff; background-color: #409eff; border-color: #409eff; }
+        .btn-primary:hover { background-color: #66b1ff; border-color: #66b1ff; }
+        .btn-round { border-radius: 20px; padding: 8px 18px; }
+        .btn-square { border-radius: 4px; padding: 8px 15px; }
+        
+        /* 主要工作区 */
+        .work-area { flex: 1; padding: 15px; background-color: #f0f2f5; overflow-y: auto; }
+        .panel { background-color: #fff; border-radius: 4px; border: 1px solid #ebeef5; padding: 15px; }
+
+        /* 搜索表单 */
+        .search-form { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 15px; }
+        .form-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #606266; }
+        .form-control { background-color: #fff; border-radius: 4px; border: 1px solid #dcdfe6; color: #606266; font-size: 13px; height: 32px; line-height: 32px; outline: none; padding: 0 10px; width: 140px; }
+        .form-control:focus { border-color: #409eff; }
+        .form-select { appearance: none; background: url("data:image/svg+xml;utf8,<svg fill='%23c0c4cc' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") no-repeat right 5px center; }
+        .date-picker { display: flex; align-items: center; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 10px; height: 32px; background-color: #fff; width: 310px; }
+        .date-picker input { border: none; outline: none; width: 125px; font-size: 13px; color: #606266; text-align: center; background: transparent;}
+        .date-separator { padding: 0 5px; color: #909399; }
+        .search-btn-group { margin-left: auto; }
+
+        /* 表格操作栏及表格 */
+        .table-toolbar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; }
+        .table-wrapper { width: 100%; overflow-x: auto; border: 1px solid #ebeef5; border-bottom: none; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #ebeef5; border-right: 1px solid #ebeef5; color: #606266; font-size: 13px; }
+        th:last-child, td:last-child { border-right: none; }
+        th { background-color: #fafafa; color: #909399; font-weight: 500; }
+        td.text-wrap { max-width: 280px; text-align: left; white-space: normal; word-break: break-all; line-height: 1.5; font-size: 12px; }
+
+        /* 分页器 */
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; padding-top: 15px; color: #606266; font-size: 13px; }
+        .pagination-scroll-bar { background: #dcdfe6; height: 10px; width: 100%; border-radius: 5px; margin-bottom: 10px; position: relative; }
+        .pagination-scroll-thumb { background: #909399; height: 100%; width: 80%; border-radius: 5px; }
+        .pagination { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+        .page-btn { background-color: #f4f4f5; color: #606266; min-width: 30px; border-radius: 2px; border: none; height: 28px; line-height: 28px; cursor: pointer; padding: 0 4px; }
+        .page-btn.active { background-color: #409eff; color: #fff; }
+        .page-input { width: 40px; height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; outline: none; }
+        .page-select { height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; outline: none; padding: 0 5px; }
+    </style>
+</head>
+<body>
+
+    <aside class="w-[200px] bg-menuBg h-full flex flex-col text-white flex-shrink-0 z-20">
+        <div class="h-[60px] flex items-center justify-center bg-[#2b3643] text-[18px] font-medium tracking-wider cursor-pointer shrink-0">
+            代理后台
+        </div>
+        
+        <div class="flex-1 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;">
+            <ul class="w-full text-[14px]">
+                <li class="h-[50px] flex items-center px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">首页</li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>会员管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>财务管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>游戏管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>代理系统</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>报表查询</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>主播管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>数据统计</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>导出管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>活动管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                
+                <li class="w-full">
+                    <div class="h-[50px] flex items-center justify-between px-[20px] bg-menuHover text-primary cursor-pointer border-b border-white/5">
+                        <span>日志查询</span><i class="fas fa-angle-up text-[12px]"></i>
+                    </div>
+                    <ul class="bg-menuDark w-full">
+                        <li class="h-[45px] flex items-center pl-[40px] bg-[#2f3e4e] text-primary cursor-pointer text-[13px]">操作日志</li>
+                    </ul>
+                </li>
+                
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>验证码查询</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>短信模板管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>渠道管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>广告位管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+                <li class="h-[50px] flex items-center justify-between px-[20px] hover:bg-menuHover cursor-pointer border-b border-white/5">
+                    <span>系统管理</span><i class="fas fa-angle-down text-[12px]"></i>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <div class="flex-1 display-flex flex-col min-w-0 bg-white" style="display: flex; flex-direction: column;">
+        
+        <header class="h-[60px] bg-white border-b border-[#e4e7ed] flex items-center justify-between px-[20px] shrink-0">
+            <div class="flex items-center gap-[20px]">
+                <i class="fas fa-bars text-[20px] text-[#606266] cursor-pointer hover:text-primary transition-colors"></i>
+                <span class="text-[14px]">余额: <span class="text-danger font-bold">123456.78</span></span>
+            </div>
+            
+            <div class="flex items-center gap-[15px]">
+                <button class="btn btn-primary btn-round">人工存款</button>
+                <div class="relative">
+                    <button class="btn btn-primary btn-round" style="padding-right: 25px;"><i class="fas fa-bell mr-1"></i>会员出款</button>
+                    <span class="absolute -top-[6px] -right-[6px] bg-danger text-white text-[10px] px-[5px] py-[1px] rounded-full border border-white line-height-[1] z-10">9</span>
+                </div>
+                <div class="text-danger ml-[10px] text-[14px]">到期时间: 2033-03-30</div>
+                <div class="flex items-center gap-[8px] cursor-pointer ml-[5px] hover:opacity-80">
+                    <div class="w-[32px] h-[32px] bg-primary rounded-full flex items-center justify-center text-white overflow-hidden">
+                        <i class="fas fa-user text-[14px]"></i>
+                    </div>
+                    <span class="text-[14px]">admin</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="h-[40px] bg-[#f5f7fa] border-b border-[#e4e7ed] flex items-end px-[15px] gap-2 shrink-0 pt-2">
+            <div class="h-[32px] px-[15px] bg-[#fff] border border-[#e4e7ed] border-b-transparent rounded-t-[4px] text-[#909399] flex items-center cursor-pointer text-[13px] hover:text-primary">
+                首页
+            </div>
+            <div class="h-[33px] px-[15px] bg-white border border-[#e4e7ed] border-b-transparent rounded-t-[4px] text-primary flex items-center gap-[8px] cursor-pointer text-[13px] relative top-[1px]">
+                <span class="w-[6px] h-[6px] rounded-full bg-primary inline-block"></span>
+                操作日志 
+                <i class="fas fa-times text-[#c0c4cc] hover:bg-[#909399] hover:text-white rounded-full w-[14px] h-[14px] flex items-center justify-center text-[10px]"></i>
+            </div>
+        </div>
+
+        <div class="work-area">
+            <div class="panel">
+                
+                <div class="search-form">
+                    <div class="form-item">
+                        <span>操作类型</span>
+                        <select class="form-control form-select">
+                            <option value="">请选择</option>
+                            <option value="add">新增</option>
+                            <option value="edit">编辑</option>
+                            <option value="delete">删除</option>
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <span>操作模块</span>
+                        <input type="text" class="form-control" placeholder="请输入">
+                    </div>
+                    <div class="form-item">
+                        <span>操作详情</span>
+                        <input type="text" class="form-control" placeholder="请输入">
+                    </div>
+                    <div class="form-item">
+                        <span>操作人</span>
+                        <input type="text" class="form-control" placeholder="请输入">
+                    </div>
+                    <div class="form-item">
+                        <span>操作时间</span>
+                        <div class="date-picker">
+                            <span style="color:#c0c4cc; margin-right:5px;">📅</span>
+                            <input type="date" placeholder="开始日期">
+                            <span class="date-separator">至</span>
+                            <input type="date" placeholder="结束日期">
+                        </div>
+                    </div>
+                    <div class="search-btn-group">
+                        <button class="btn btn-primary btn-square">查询</button>
+                    </div>
+                </div>
+
+                <div class="table-toolbar">
+                    <button class="btn btn-primary btn-square" style="background-color:#66b1ff; border-color:#66b1ff;">重置</button>
+                    <button class="btn btn-primary btn-square">刷新</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="60">ID</th>
+                                <th width="80">操作类型</th>
+                                <th width="140">操作模块</th>
+                                <th width="100">操作详情</th>
+                                <th width="150">操作对象</th>
+                                <th>变更前数据</th>
+                                <th>变更后数据</th>
+                                <th width="180">请求地址</th>
+                                <th width="100">操作IP</th>
+                                <th width="100">操作地点</th>
+                                <th width="80">操作人</th>
+                                <th width="140">操作时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            
+                            <tr><td>23036</td><td>编辑</td><td>会员管理>会员列表</td><td>批量禁用</td><td>用户ID:[123456,456789,467857]</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/Users/update_remarks</td><td>103.114.201.86</td><td>泰国</td><td>admin</td><td>46183.9903009259</td></tr>
+                            <tr><td>23036</td><td>编辑</td><td>会员管理>会员列表</td><td>批量禁用</td><td>用户ID:[123456,456789,467857]</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.86</td><td>泰国</td><td>admin</td><td>46183.9903009259</td></tr>
+                            <tr><td>23035</td><td>编辑</td><td>会员管理>会员列表</td><td>批量解锁IM账号</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.87</td><td>泰国</td><td>admin</td><td>46182.9903009259</td></tr>
+                            <tr><td>23034</td><td>编辑</td><td>会员管理>会员列表</td><td>解锁IM</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.88</td><td>泰国</td><td>admin</td><td>46181.9903009259</td></tr>
+                            <tr><td>23033</td><td>编辑</td><td>会员管理>会员列表</td><td>改密码</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.89</td><td>泰国</td><td>admin</td><td>46180.9903009259</td></tr>
+                            <tr><td>23032</td><td>编辑</td><td>会员管理>会员列表</td><td>改手机</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.90</td><td>泰国</td><td>admin</td><td>46179.9903009259</td></tr>
+                            <tr><td>23031</td><td>编辑</td><td>会员管理>会员列表</td><td>更新用户</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.91</td><td>泰国</td><td>admin</td><td>46178.9903009259</td></tr>
+                            <tr><td>23030</td><td>编辑</td><td>会员管理>会员列表</td><td>编辑备注</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.92</td><td>泰国</td><td>admin</td><td>46177.9903009259</td></tr>
+                            <tr><td>23029</td><td>编辑</td><td>会员管理>会员列表</td><td>游戏场馆转出</td><td>场馆名称:PG</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.93</td><td>泰国</td><td>admin</td><td>46176.9903009259</td></tr>
+                            <tr><td>23028</td><td>新增</td><td>会员管理>层级管理</td><td>新增</td><td>层级名称:总充值500-2000可见</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.94</td><td>泰国</td><td>admin</td><td>46175.9903009259</td></tr>
+                            <tr><td>23027</td><td>编辑</td><td>会员管理>层级管理</td><td>自动分层开关</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.95</td><td>泰国</td><td>admin</td><td>46174.9903009259</td></tr>
+                            <tr><td>23026</td><td>编辑</td><td>会员管理>层级管理</td><td>修改</td><td>层级名称:总充值500-2000可见</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.96</td><td>泰国</td><td>admin</td><td>46173.9903009259</td></tr>
+                            <tr><td>23025</td><td>删除</td><td>会员管理>层级管理</td><td>删除</td><td>层级名称:总充值500-2000可见</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.97</td><td>泰国</td><td>admin</td><td>46172.9903009259</td></tr>
+                            <tr><td>23024</td><td>编辑</td><td>会员管理>层级管理</td><td>禁用</td><td>层级名称:总充值500-2000可见</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.98</td><td>泰国</td><td>admin</td><td>46171.9903009259</td></tr>
+                            <tr><td>23023</td><td>编辑</td><td>会员管理>层级管理</td><td>启用</td><td>层级名称:总充值500-2000可见</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.99</td><td>泰国</td><td>admin</td><td>46170.9903009259</td></tr>
+                            <tr><td>23022</td><td>新增</td><td>会员管理>VIP会员卡>VIP会员卡配置</td><td>新增</td><td>名称:日卡</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.100</td><td>泰国</td><td>admin</td><td>46169.9903009259</td></tr>
+                            <tr><td>23021</td><td>编辑</td><td>会员管理>VIP会员卡>VIP会员卡配置</td><td>编辑</td><td>名称:日卡</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.101</td><td>泰国</td><td>admin</td><td>46168.9903009259</td></tr>
+                            <tr><td>23020</td><td>删除</td><td>会员管理>VIP会员卡>VIP会员卡配置</td><td>删除</td><td>名称:日卡</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.102</td><td>泰国</td><td>admin</td><td>46167.9903009259</td></tr>
+                            <tr><td>23019</td><td>编辑</td><td>会员管理>VIP会员卡>VIP会员卡记录</td><td>赠送会员卡</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.103</td><td>泰国</td><td>admin</td><td>46166.9903009259</td></tr>
+                            <tr><td>23018</td><td>新增</td><td>会员管理>VIP彩金>VIP彩金配置</td><td>新增</td><td>等级:111</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.104</td><td>泰国</td><td>admin</td><td>46165.9903009259</td></tr>
+                            <tr><td>23017</td><td>编辑</td><td>会员管理>VIP彩金>VIP彩金配置</td><td>修改</td><td>等级:111</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.105</td><td>泰国</td><td>admin</td><td>46164.9903009259</td></tr>
+                            <tr><td>23016</td><td>删除</td><td>会员管理>VIP彩金>VIP彩金配置</td><td>删除</td><td>等级:111</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.106</td><td>泰国</td><td>admin</td><td>46163.9903009259</td></tr>
+                            <tr><td>23015</td><td>编辑</td><td>会员管理>VIP彩金>VIP彩金配置</td><td>文案配置</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.107</td><td>泰国</td><td>admin</td><td>46162.9903009259</td></tr>
+                            <tr><td>23014</td><td>新增</td><td>财务管理>人工存提</td><td>人工存款</td><td>用户ID:123456</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.108</td><td>泰国</td><td>admin</td><td>46161.9903009259</td></tr>
+                            <tr><td>23013</td><td>新增</td><td>财务管理>人工存提</td><td>人工提款</td><td>用户ID:123456</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.109</td><td>泰国</td><td>admin</td><td>46160.9903009259</td></tr>
+                            <tr><td>23012</td><td>新增</td><td>财务管理>人工存提</td><td>人工打码量</td><td>用户ID:123456</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.110</td><td>泰国</td><td>admin</td><td>46159.9903009259</td></tr>
+                            <tr><td>23011</td><td>新增</td><td>财务管理>支付管理>第三方代付</td><td>新增</td><td>自定义名称:西瓜代付007</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.111</td><td>泰国</td><td>admin</td><td>46158.9903009259</td></tr>
+                            <tr><td>23010</td><td>编辑</td><td>财务管理>支付管理>第三方代付</td><td>修改</td><td>自定义名称:西瓜代付007</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.112</td><td>泰国</td><td>admin</td><td>46157.9903009259</td></tr>
+                            <tr><td>23009</td><td>编辑</td><td>财务管理>支付管理>第三方代付</td><td>禁用</td><td>自定义名称:西瓜代付007</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.113</td><td>泰国</td><td>admin</td><td>46156.9903009259</td></tr>
+                            <tr><td>23008</td><td>编辑</td><td>财务管理>支付管理>第三方代付</td><td>启用</td><td>自定义名称:西瓜代付007</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.114</td><td>泰国</td><td>admin</td><td>46155.9903009259</td></tr>
+                            <tr><td>23007</td><td>删除</td><td>财务管理>支付管理>第三方代付</td><td>删除</td><td>自定义名称:西瓜代付007</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.115</td><td>泰国</td><td>admin</td><td>46154.9903009259</td></tr>
+                            <tr><td>23006</td><td>新增</td><td>财务管理>支付管理>钱包类型</td><td>新增</td><td>名称:Okpay</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.116</td><td>泰国</td><td>admin</td><td>46153.9903009259</td></tr>
+                            <tr><td>23005</td><td>编辑</td><td>财务管理>支付管理>钱包类型</td><td>修改</td><td>名称:Okpay</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.117</td><td>泰国</td><td>admin</td><td>46152.9903009259</td></tr>
+                            <tr><td>23004</td><td>删除</td><td>财务管理>支付管理>钱包类型</td><td>删除</td><td>名称:Okpay</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.118</td><td>泰国</td><td>admin</td><td>46151.9903009259</td></tr>
+                            <tr><td>23003</td><td>新增</td><td>财务管理>支付管理>支付栏目</td><td>新增</td><td>客户端显示名称:云鼎支付</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.119</td><td>泰国</td><td>admin</td><td>46150.9903009259</td></tr>
+                            <tr><td>23002</td><td>编辑</td><td>财务管理>支付管理>支付栏目</td><td>修改</td><td>客户端显示名称:云鼎支付</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.120</td><td>泰国</td><td>admin</td><td>46149.9903009259</td></tr>
+                            <tr><td>23001</td><td>删除</td><td>财务管理>支付管理>支付栏目</td><td>删除</td><td>客户端显示名称:云鼎支付</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.121</td><td>泰国</td><td>admin</td><td>46148.9903009259</td></tr>
+                            <tr><td>23000</td><td>编辑</td><td>财务管理>支付管理>支付栏目</td><td>开启</td><td>客户端显示名称:云鼎支付</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.122</td><td>泰国</td><td>admin</td><td>46147.9903009259</td></tr>
+                            <tr><td>22999</td><td>编辑</td><td>财务管理>支付管理>支付栏目</td><td>关闭</td><td>客户端显示名称:云鼎支付</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.123</td><td>泰国</td><td>admin</td><td>46146.9903009259</td></tr>
+                            <tr><td>22998</td><td>新增</td><td>财务管理>支付管理>支付商户配置</td><td>新增</td><td>配置名称:云鼎支付</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.124</td><td>泰国</td><td>admin</td><td>46145.9903009259</td></tr>
+                            <tr><td>22997</td><td>编辑</td><td>财务管理>支付管理>支付商户配置</td><td>修改</td><td>配置名称:云鼎支付</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.125</td><td>泰国</td><td>admin</td><td>46144.9903009259</td></tr>
+                            <tr><td>22996</td><td>删除</td><td>财务管理>支付管理>支付商户配置</td><td>删除</td><td>配置名称:云鼎支付</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.126</td><td>泰国</td><td>admin</td><td>46143.9903009259</td></tr>
+                            <tr><td>22995</td><td>新增</td><td>财务管理>支付管理>支付渠道管理</td><td>新增</td><td>渠道名称:新京东支付</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.127</td><td>泰国</td><td>admin</td><td>46142.9903009259</td></tr>
+                            <tr><td>22994</td><td>编辑</td><td>财务管理>支付管理>支付渠道管理</td><td>修改</td><td>渠道名称:新京东支付</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.128</td><td>泰国</td><td>admin</td><td>46141.9903009259</td></tr>
+                            <tr><td>22993</td><td>删除</td><td>财务管理>支付管理>支付渠道管理</td><td>删除</td><td>渠道名称:新京东支付</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.129</td><td>泰国</td><td>admin</td><td>46140.9903009259</td></tr>
+                            <tr><td>22992</td><td>编辑</td><td>财务管理>支付管理>支付渠道管理</td><td>开启</td><td>渠道名称:新京东支付</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.130</td><td>泰国</td><td>admin</td><td>46139.9903009259</td></tr>
+                            <tr><td>22991</td><td>编辑</td><td>财务管理>支付管理>支付渠道管理</td><td>关闭</td><td>渠道名称:新京东支付</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.131</td><td>泰国</td><td>admin</td><td>46138.9903009259</td></tr>
+                            <tr><td>22990</td><td>新增</td><td>财务管理>出入款模板</td><td>新增</td><td>名称:套利模版</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.132</td><td>泰国</td><td>admin</td><td>46137.9903009259</td></tr>
+                            <tr><td>22989</td><td>删除</td><td>财务管理>出入款模板</td><td>删除</td><td>名称:套利模版</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.133</td><td>泰国</td><td>admin</td><td>46136.9903009259</td></tr>
+                            <tr><td>22988</td><td>编辑</td><td>财务管理>提现管理>提现列表</td><td>锁单</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.134</td><td>泰国</td><td>admin</td><td>46135.9903009259</td></tr>
+                            <tr><td>22987</td><td>编辑</td><td>财务管理>提现管理>提现列表</td><td>解锁单</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.135</td><td>泰国</td><td>admin</td><td>46134.9903009259</td></tr>
+                            <tr><td>22986</td><td>编辑</td><td>财务管理>提现管理>提现列表</td><td>管理员解锁单</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.136</td><td>泰国</td><td>admin</td><td>46133.9903009259</td></tr>
+                            <tr><td>22985</td><td>编辑</td><td>财务管理>提现管理>提现列表</td><td>修改提现备注</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.137</td><td>泰国</td><td>admin</td><td>46132.9903009259</td></tr>
+                            <tr><td>22984</td><td>编辑</td><td>财务管理>提现管理>提现列表</td><td>审核</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.138</td><td>泰国</td><td>admin</td><td>46131.9903009259</td></tr>
+                            <tr><td>22983</td><td>编辑</td><td>财务管理>提现管理>提现列表</td><td>拒绝</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.139</td><td>泰国</td><td>admin</td><td>46130.9903009259</td></tr>
+                            <tr><td>22982</td><td>编辑</td><td>财务管理>提现管理>免提直充</td><td>锁单</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.140</td><td>泰国</td><td>admin</td><td>46129.9903009259</td></tr>
+                            <tr><td>22981</td><td>编辑</td><td>财务管理>提现管理>免提直充</td><td>解锁单</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.141</td><td>泰国</td><td>admin</td><td>46128.9903009259</td></tr>
+                            <tr><td>22980</td><td>编辑</td><td>财务管理>提现管理>免提直充</td><td>管理员解锁单</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.142</td><td>泰国</td><td>admin</td><td>46127.9903009259</td></tr>
+                            <tr><td>22979</td><td>编辑</td><td>财务管理>提现管理>免提直充</td><td>修改提现备注</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.143</td><td>泰国</td><td>admin</td><td>46126.9903009259</td></tr>
+                            <tr><td>22978</td><td>编辑</td><td>财务管理>提现管理>免提直充</td><td>审核</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.144</td><td>泰国</td><td>admin</td><td>46125.9903009259</td></tr>
+                            <tr><td>22977</td><td>编辑</td><td>财务管理>提现管理>免提直充</td><td>拒绝</td><td>订单号:U20260610232508007131</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.145</td><td>泰国</td><td>admin</td><td>46124.9903009259</td></tr>
+                            <tr><td>22976</td><td>编辑</td><td>财务管理>提现管理>即时稽核查询</td><td>修改应打码量</td><td>订单号:20260610211627716018433</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.146</td><td>泰国</td><td>admin</td><td>46123.9903009259</td></tr>
+                            <tr><td>22975</td><td>编辑</td><td>财务管理>提现管理>即时稽核查询</td><td>清空应打码量</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.147</td><td>泰国</td><td>admin</td><td>46122.9903009259</td></tr>
+                            <tr><td>22974</td><td>新增</td><td>财务管理>内嵌钱包管理>钱包支付商户配置</td><td>新增</td><td>配置名称:VIPpay</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.148</td><td>泰国</td><td>admin</td><td>46121.9903009259</td></tr>
+                            <tr><td>22973</td><td>编辑</td><td>财务管理>内嵌钱包管理>钱包支付商户配置</td><td>修改</td><td>配置名称:VIPpay</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.149</td><td>泰国</td><td>admin</td><td>46120.9903009259</td></tr>
+                            <tr><td>22972</td><td>编辑</td><td>游戏管理>平台列表</td><td>修改进入游戏携带金额</td><td>名称:瓦力</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.150</td><td>泰国</td><td>admin</td><td>46119.9903009259</td></tr>
+                            <tr><td>22971</td><td>新增</td><td>游戏管理>游戏列表</td><td>新增</td><td>名称:PA龙虎</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.151</td><td>泰国</td><td>admin</td><td>46118.9903009259</td></tr>
+                            <tr><td>22970</td><td>编辑</td><td>游戏管理>游戏列表</td><td>编辑</td><td>名称:PA龙虎</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.152</td><td>泰国</td><td>admin</td><td>46117.9903009259</td></tr>
+                            <tr><td>22969</td><td>删除</td><td>游戏管理>游戏列表</td><td>删除</td><td>名称:PA龙虎</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.153</td><td>泰国</td><td>admin</td><td>46116.9903009259</td></tr>
+                            <tr><td>22968</td><td>新增</td><td>游戏管理>栏目列表</td><td>新增</td><td>名称:真人</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.154</td><td>泰国</td><td>admin</td><td>46115.9903009259</td></tr>
+                            <tr><td>22967</td><td>编辑</td><td>游戏管理>栏目列表</td><td>编辑</td><td>名称:真人</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.155</td><td>泰国</td><td>admin</td><td>46114.9903009259</td></tr>
+                            <tr><td>22966</td><td>删除</td><td>游戏管理>栏目列表</td><td>删除</td><td>名称:真人</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.156</td><td>泰国</td><td>admin</td><td>46113.9903009259</td></tr>
+                            <tr><td>22965</td><td>新增</td><td>代理系统>代理费率配置</td><td>新增</td><td>方案名称:彩票返佣方案</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.157</td><td>泰国</td><td>admin</td><td>46112.9903009259</td></tr>
+                            <tr><td>22964</td><td>编辑</td><td>代理系统>代理费率配置</td><td>修改</td><td>方案名称:彩票返佣方案</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.158</td><td>泰国</td><td>admin</td><td>46111.9903009259</td></tr>
+                            <tr><td>22963</td><td>删除</td><td>代理系统>代理费率配置</td><td>删除</td><td>方案名称:彩票返佣方案</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.159</td><td>泰国</td><td>admin</td><td>46110.9903009259</td></tr>
+                            <tr><td>22962</td><td>新增</td><td>代理系统>代理佣金设置</td><td>新增</td><td>顶级ID:123456</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.160</td><td>泰国</td><td>admin</td><td>46109.9903009259</td></tr>
+                            <tr><td>22961</td><td>编辑</td><td>代理系统>代理佣金设置</td><td>修改</td><td>顶级ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.161</td><td>泰国</td><td>admin</td><td>46108.9903009259</td></tr>
+                            <tr><td>22960</td><td>删除</td><td>代理系统>代理佣金设置</td><td>删除</td><td>顶级ID:123456</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.162</td><td>泰国</td><td>admin</td><td>46107.9903009259</td></tr>
+                            <tr><td>22959</td><td>新增</td><td>聊天群组>群组列表</td><td>新增</td><td>群ID:897394151</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.163</td><td>泰国</td><td>admin</td><td>46106.9903009259</td></tr>
+                            <tr><td>22958</td><td>编辑</td><td>聊天群组>群组列表</td><td>修改</td><td>群ID:897394152</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.164</td><td>泰国</td><td>admin</td><td>46105.9903009259</td></tr>
+                            <tr><td>22957</td><td>删除</td><td>聊天群组>群组列表</td><td>删除</td><td>群ID:897394153</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.165</td><td>泰国</td><td>admin</td><td>46104.9903009259</td></tr>
+                            <tr><td>22956</td><td>编辑</td><td>聊天群组>群组列表</td><td>修改群主ID</td><td>群ID:897394154</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.166</td><td>泰国</td><td>admin</td><td>46103.9903009259</td></tr>
+                            <tr><td>22955</td><td>编辑</td><td>聊天群组>群组列表</td><td>添加成员</td><td>群ID:897394155</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.167</td><td>泰国</td><td>admin</td><td>46102.9903009259</td></tr>
+                            <tr><td>22954</td><td>编辑</td><td>聊天群组>群组列表>查看成员</td><td>删除成员</td><td>群ID:897394155,用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.168</td><td>泰国</td><td>admin</td><td>46101.9903009259</td></tr>
+                            <tr><td>22953</td><td>编辑</td><td>聊天群组>群组列表</td><td>批量移除成员</td><td>群ID:897394155</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.169</td><td>泰国</td><td>admin</td><td>46100.9903009259</td></tr>
+                            <tr><td>22952</td><td>编辑</td><td>聊天群组>群组列表>禁言列表</td><td>取消禁言</td><td>群ID:897394155,用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.170</td><td>泰国</td><td>admin</td><td>46099.9903009259</td></tr>
+                            <tr><td>22951</td><td>编辑</td><td>主播管理>聊天记录</td><td>IM拉黑解除</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.171</td><td>泰国</td><td>admin</td><td>46098.9903009259</td></tr>
+                            <tr><td>22950</td><td>编辑</td><td>主播管理>聊天记录</td><td>免登录发起聊天</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.172</td><td>泰国</td><td>admin</td><td>46097.9903009259</td></tr>
+                            <tr><td>22949</td><td>新增</td><td>活动管理>普通活动列表</td><td>新增</td><td>活动ID:1774</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.173</td><td>泰国</td><td>admin</td><td>46096.9903009259</td></tr>
+                            <tr><td>22948</td><td>编辑</td><td>活动管理>普通活动列表</td><td>修改</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.174</td><td>泰国</td><td>admin</td><td>46095.9903009259</td></tr>
+                            <tr><td>22947</td><td>删除</td><td>活动管理>普通活动列表</td><td>删除</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.175</td><td>泰国</td><td>admin</td><td>46094.9903009259</td></tr>
+                            <tr><td>22946</td><td>编辑</td><td>活动管理>红包雨>红包雨活动管理</td><td>编辑</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.176</td><td>泰国</td><td>admin</td><td>46093.9903009259</td></tr>
+                            <tr><td>22945</td><td>新增</td><td>活动管理>活动分类管理</td><td>新增</td><td>分类名称:电子</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.177</td><td>泰国</td><td>admin</td><td>46092.9903009259</td></tr>
+                            <tr><td>22944</td><td>编辑</td><td>活动管理>活动分类管理</td><td>编辑</td><td>分类名称:电子</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.178</td><td>泰国</td><td>admin</td><td>46091.9903009259</td></tr>
+                            <tr><td>22943</td><td>删除</td><td>活动管理>活动分类管理</td><td>删除</td><td>分类名称:电子</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.179</td><td>泰国</td><td>admin</td><td>46090.9903009259</td></tr>
+                            <tr><td>22942</td><td>编辑</td><td>活动管理>活动分类管理</td><td>开启</td><td>分类名称:电子</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.180</td><td>泰国</td><td>admin</td><td>46089.9903009259</td></tr>
+                            <tr><td>22941</td><td>编辑</td><td>活动管理>活动分类管理</td><td>关闭</td><td>分类名称:电子</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.181</td><td>泰国</td><td>admin</td><td>46088.9903009259</td></tr>
+                            <tr><td>22940</td><td>新增</td><td>活动管理>活动列表>投注活动</td><td>新增活动</td><td>活动ID:1774</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.182</td><td>泰国</td><td>admin</td><td>46087.9903009259</td></tr>
+                            <tr><td>22939</td><td>编辑</td><td>活动管理>活动列表>投注活动</td><td>修改</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.183</td><td>泰国</td><td>admin</td><td>46086.9903009259</td></tr>
+                            <tr><td>22938</td><td>删除</td><td>活动管理>活动列表>投注活动</td><td>删除</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.184</td><td>泰国</td><td>admin</td><td>46085.9903009259</td></tr>
+                            <tr><td>22937</td><td>新增</td><td>活动管理>活动列表>盈亏活动</td><td>新增活动</td><td>活动ID:1774</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.185</td><td>泰国</td><td>admin</td><td>46084.9903009259</td></tr>
+                            <tr><td>22936</td><td>编辑</td><td>活动管理>活动列表>盈亏活动</td><td>修改</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.186</td><td>泰国</td><td>admin</td><td>46083.9903009259</td></tr>
+                            <tr><td>22935</td><td>删除</td><td>活动管理>活动列表>盈亏活动</td><td>删除</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.187</td><td>泰国</td><td>admin</td><td>46082.9903009259</td></tr>
+                            <tr><td>22934</td><td>新增</td><td>活动管理>活动列表>充值活动</td><td>新增活动</td><td>活动ID:1774</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.188</td><td>泰国</td><td>admin</td><td>46081.9903009259</td></tr>
+                            <tr><td>22933</td><td>编辑</td><td>活动管理>活动列表>充值活动</td><td>修改</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.189</td><td>泰国</td><td>admin</td><td>46080.9903009259</td></tr>
+                            <tr><td>22932</td><td>删除</td><td>活动管理>活动列表>充值活动</td><td>删除</td><td>活动ID:1774</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.190</td><td>泰国</td><td>admin</td><td>46079.9903009259</td></tr>
+                            <tr><td>22931</td><td>编辑</td><td>活动管理>每日返奖登记列表</td><td>审核</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.191</td><td>泰国</td><td>admin</td><td>46078.9903009259</td></tr>
+                            <tr><td>22930</td><td>编辑</td><td>活动管理>每日返奖登记列表</td><td>撤销</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.192</td><td>泰国</td><td>admin</td><td>46077.9903009259</td></tr>
+                            <tr><td>22929</td><td>编辑</td><td>活动管理>每日返奖登记列表</td><td>首次登记</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.193</td><td>泰国</td><td>admin</td><td>46076.9903009259</td></tr>
+                            <tr><td>22928</td><td>新增</td><td>短信模板管理>短信模板列表</td><td>新增</td><td>名称:脉通信</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.194</td><td>泰国</td><td>admin</td><td>46075.9903009259</td></tr>
+                            <tr><td>22927</td><td>编辑</td><td>短信模板管理>短信模板列表</td><td>修改</td><td>名称:脉通信</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.195</td><td>泰国</td><td>admin</td><td>46074.9903009259</td></tr>
+                            <tr><td>22926</td><td>删除</td><td>短信模板管理>短信模板列表</td><td>删除</td><td>名称:脉通信</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.196</td><td>泰国</td><td>admin</td><td>46073.9903009259</td></tr>
+                            <tr><td>22925</td><td>编辑</td><td>短信模板管理>短信模板列表</td><td>启用</td><td>名称:脉通信</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.197</td><td>泰国</td><td>admin</td><td>46072.9903009259</td></tr>
+                            <tr><td>22924</td><td>编辑</td><td>短信模板管理>短信模板列表</td><td>禁用</td><td>名称:脉通信</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.198</td><td>泰国</td><td>admin</td><td>46071.9903009259</td></tr>
+                            <tr><td>22923</td><td>新增</td><td>渠道管理>渠道列表</td><td>新增</td><td>渠道名称:DX001</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.199</td><td>泰国</td><td>admin</td><td>46070.9903009259</td></tr>
+                            <tr><td>22922</td><td>编辑</td><td>渠道管理>渠道列表</td><td>修改</td><td>渠道名称:DX001</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.200</td><td>泰国</td><td>admin</td><td>46069.9903009259</td></tr>
+                            <tr><td>22921</td><td>删除</td><td>渠道管理>渠道列表</td><td>删除</td><td>渠道名称:DX001</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.201</td><td>泰国</td><td>admin</td><td>46068.9903009259</td></tr>
+                            <tr><td>22920</td><td>编辑</td><td>渠道管理>渠道列表</td><td>批量删除</td><td>渠道名称:[DX001,DX002,DX003]</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.202</td><td>泰国</td><td>admin</td><td>46067.9903009259</td></tr>
+                            <tr><td>22919</td><td>编辑</td><td>渠道管理>渠道列表</td><td>批量新增</td><td>渠道名称:[DX001,DX002,DX003]</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.203</td><td>泰国</td><td>admin</td><td>46066.9903009259</td></tr>
+                            <tr><td>22918</td><td>编辑</td><td>渠道管理>渠道列表</td><td>渠道换绑</td><td>用户ID:123456</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.204</td><td>泰国</td><td>admin</td><td>46065.9903009259</td></tr>
+                            <tr><td>22917</td><td>新增</td><td>广告位管理>广告列表</td><td>新增</td><td>广告ID:123</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.205</td><td>泰国</td><td>admin</td><td>46064.9903009259</td></tr>
+                            <tr><td>22916</td><td>编辑</td><td>广告位管理>广告列表</td><td>修改</td><td>广告ID:123</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.206</td><td>泰国</td><td>admin</td><td>46063.9903009259</td></tr>
+                            <tr><td>22915</td><td>删除</td><td>广告位管理>广告列表</td><td>删除</td><td>广告ID:123</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.207</td><td>泰国</td><td>admin</td><td>46062.9903009259</td></tr>
+                            <tr><td>22914</td><td>新增</td><td>系统管理>角色管理</td><td>新增</td><td>角色名称:运营</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.208</td><td>泰国</td><td>admin</td><td>46061.9903009259</td></tr>
+                            <tr><td>22913</td><td>编辑</td><td>系统管理>角色管理</td><td>修改</td><td>角色名称:运营</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.209</td><td>泰国</td><td>admin</td><td>46060.9903009259</td></tr>
+                            <tr><td>22912</td><td>删除</td><td>系统管理>角色管理</td><td>删除</td><td>角色名称:运营</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.210</td><td>泰国</td><td>admin</td><td>46059.9903009259</td></tr>
+                            <tr><td>22911</td><td>编辑</td><td>系统管理>角色管理</td><td>分配权限</td><td>角色名称:运营</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.211</td><td>泰国</td><td>admin</td><td>46058.9903009259</td></tr>
+                            <tr><td>22910</td><td>新增</td><td>系统管理>管理员</td><td>新增</td><td>账号:admin888</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.212</td><td>泰国</td><td>admin</td><td>46057.9903009259</td></tr>
+                            <tr><td>22909</td><td>编辑</td><td>系统管理>管理员</td><td>修改</td><td>账号:admin888</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.213</td><td>泰国</td><td>admin</td><td>46056.9903009259</td></tr>
+                            <tr><td>22908</td><td>删除</td><td>系统管理>管理员</td><td>删除</td><td>账号:admin888</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.214</td><td>泰国</td><td>admin</td><td>46055.9903009259</td></tr>
+                            <tr><td>22907</td><td>编辑</td><td>系统管理>管理员</td><td>重置谷歌秘钥</td><td>账号:admin888</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.215</td><td>泰国</td><td>admin</td><td>46054.9903009259</td></tr>
+                            <tr><td>22906</td><td>新增</td><td>系统管理>客服管理</td><td>新增</td><td>客服名称:在线客服</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.216</td><td>泰国</td><td>admin</td><td>46053.9903009259</td></tr>
+                            <tr><td>22905</td><td>编辑</td><td>系统管理>客服管理</td><td>修改</td><td>客服名称:在线客服</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.217</td><td>泰国</td><td>admin</td><td>46052.9903009259</td></tr>
+                            <tr><td>22904</td><td>删除</td><td>系统管理>客服管理</td><td>删除</td><td>客服名称:在线客服</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.218</td><td>泰国</td><td>admin</td><td>46051.9903009259</td></tr>
+                            <tr><td>22903</td><td>新增</td><td>系统管理>公告管理</td><td>新增</td><td>标题:世界杯</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.219</td><td>泰国</td><td>admin</td><td>46050.9903009259</td></tr>
+                            <tr><td>22902</td><td>编辑</td><td>系统管理>公告管理</td><td>修改</td><td>标题:世界杯</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.220</td><td>泰国</td><td>admin</td><td>46049.9903009259</td></tr>
+                            <tr><td>22901</td><td>删除</td><td>系统管理>公告管理</td><td>删除</td><td>标题:世界杯</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.221</td><td>泰国</td><td>admin</td><td>46048.9903009259</td></tr>
+                            <tr><td>22900</td><td>编辑</td><td>系统管理>公告管理</td><td>开启</td><td>标题:世界杯</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.222</td><td>泰国</td><td>admin</td><td>46047.9903009259</td></tr>
+                            <tr><td>22899</td><td>编辑</td><td>系统管理>公告管理</td><td>关闭</td><td>标题:世界杯</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.223</td><td>泰国</td><td>admin</td><td>46046.9903009259</td></tr>
+                            <tr><td>22898</td><td>新增</td><td>系统管理>站内性>系统公告</td><td>新增</td><td>标题:世界杯启动公告</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.224</td><td>泰国</td><td>admin</td><td>46045.9903009259</td></tr>
+                            <tr><td>22897</td><td>新增</td><td>系统管理>站内性>站内信模板</td><td>新增</td><td>标题:世界杯充值模板</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.225</td><td>泰国</td><td>admin</td><td>46044.9903009259</td></tr>
+                            <tr><td>22896</td><td>编辑</td><td>系统管理>站内性>站内信模板</td><td>修改</td><td>标题:世界杯充值模板</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.226</td><td>泰国</td><td>admin</td><td>46043.9903009259</td></tr>
+                            <tr><td>22895</td><td>删除</td><td>系统管理>站内性>站内信模板</td><td>删除</td><td>标题:世界杯充值模板</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.227</td><td>泰国</td><td>admin</td><td>46042.9903009259</td></tr>
+                            <tr><td>22894</td><td>新增</td><td>系统管理>站内性>群发消息</td><td>新增</td><td>标题:世界杯启动公告</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.228</td><td>泰国</td><td>admin</td><td>46041.9903009259</td></tr>
+                            <tr><td>22893</td><td>新增</td><td>系统管理>站内性>站内信列表</td><td>新增</td><td>标题:世界杯启动公告</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.229</td><td>泰国</td><td>admin</td><td>46040.9903009259</td></tr>
+                            <tr><td>22892</td><td>编辑</td><td>系统管理>渠道配置</td><td>页面布局</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.230</td><td>泰国</td><td>admin</td><td>46039.9903009259</td></tr>
+                            <tr><td>22891</td><td>编辑</td><td>系统管理>渠道配置</td><td>内置客服</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.231</td><td>泰国</td><td>admin</td><td>46038.9903009259</td></tr>
+                            <tr><td>22890</td><td>编辑</td><td>系统管理>渠道配置</td><td>通用配置</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.232</td><td>泰国</td><td>admin</td><td>46037.9903009259</td></tr>
+                            <tr><td>22889</td><td>编辑</td><td>系统管理>渠道配置</td><td>财务管理</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.233</td><td>泰国</td><td>admin</td><td>46036.9903009259</td></tr>
+                            <tr><td>22888</td><td>编辑</td><td>系统管理>渠道配置</td><td>TG群组配置</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.234</td><td>泰国</td><td>admin</td><td>46035.9903009259</td></tr>
+                            <tr><td>22887</td><td>编辑</td><td>系统管理>渠道配置</td><td>VIP会员卡</td><td>平台配置</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.235</td><td>泰国</td><td>admin</td><td>46034.9903009259</td></tr>
+                            <tr><td>22886</td><td>新增</td><td>系统管理>任务中心配置</td><td>新增</td><td>标题:第一天</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.236</td><td>泰国</td><td>admin</td><td>46033.9903009259</td></tr>
+                            <tr><td>22885</td><td>编辑</td><td>系统管理>任务中心配置</td><td>修改</td><td>标题:第一天</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.237</td><td>泰国</td><td>admin</td><td>46032.9903009259</td></tr>
+                            <tr><td>22884</td><td>删除</td><td>系统管理>任务中心配置</td><td>删除</td><td>标题:第一天</td><td class="text-wrap">以键值对形式，把该模块全部删除前的字段值记录下来。</td><td class="text-wrap">-</td><td>index/aaa/bbb</td><td>103.114.201.238</td><td>泰国</td><td>admin</td><td>46031.9903009259</td></tr>
+                            <tr><td>22883</td><td>新增</td><td>系统管理>白名单管理</td><td>新增</td><td>用户名:admin888</td><td class="text-wrap">-</td><td class="text-wrap">键值对形式，把该模块全部新增后的字段值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.239</td><td>泰国</td><td>admin</td><td>46030.9903009259</td></tr>
+                            <tr><td>22882</td><td>编辑</td><td>系统管理>白名单管理</td><td>修改</td><td>用户名:admin888</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.240</td><td>泰国</td><td>admin</td><td>46029.9903009259</td></tr>
+                            <tr><td>22881</td><td>编辑</td><td>系统管理>白名单管理</td><td>启用</td><td>用户名:admin888</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.241</td><td>泰国</td><td>admin</td><td>46028.9903009259</td></tr>
+                            <tr><td>22880</td><td>编辑</td><td>系统管理>白名单管理</td><td>禁用</td><td>用户名:admin888</td><td class="text-wrap">以键值对形式，把修改过的字段原值记录下来。</td><td class="text-wrap">以键值对形式，把修改过的字段后值记录下来。</td><td>index/aaa/bbb</td><td>103.114.201.242</td><td>泰国</td><td>admin</td><td>46027.9903009259</td></tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                
+
+                <div class="pagination-container">
+                    <div></div> <div class="pagination">
+                        <span>第1-10条/共计10条</span>
+                        <button class="page-btn" disabled>&lt;</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn" disabled>&gt;</button>
+                        <select class="page-select">
+                            <option>10条/页</option>
+                        </select>
+                        <span>跳至 <input type="text" class="page-input" value=""> 页</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
