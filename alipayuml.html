@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>支付宝提现流程图</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #111827;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 28px;
+    }
+
+    .flow-root {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .row {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    .branches {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      width: 100%;
+      align-items: start;
+    }
+
+    .branch {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      padding: 20px 18px 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      min-height: 400px;
+    }
+
+    .branch-title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
+
+    .branch.left .branch-title {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .branch.right .branch-title {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border: 2px solid #d1d5db;
+      border-radius: 14px;
+      padding: 14px 16px;
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    }
+
+    .box.primary {
+      background: #dbeafe;
+      border-color: #93c5fd;
+      color: #1e3a8a;
+      font-weight: 700;
+    }
+
+    .box.decision {
+      background: #fef3c7;
+      border-color: #fbbf24;
+      color: #92400e;
+      font-weight: 700;
+    }
+
+    .box.left-accent {
+      background: #eff6ff;
+      border-color: #60a5fa;
+    }
+
+    .box.right-accent {
+      background: #ecfdf5;
+      border-color: #34d399;
+    }
+
+    .box.result {
+      background: #ede9fe;
+      border-color: #a78bfa;
+      color: #5b21b6;
+      font-weight: 700;
+    }
+
+    .arrow {
+      font-size: 26px;
+      color: #9ca3af;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .join-area {
+      margin-top: 18px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .join-label {
+      font-size: 14px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px 18px;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 960px) {
+      .branches {
+        grid-template-columns: 1fr;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .box {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="title">支付宝提现流程图</div>
+    <div class="subtitle">区分：未开通支付托管 / 已开通支付托管</div>
+
+    <div class="flow-root">
+      <div class="box primary">用户发起提现</div>
+      <div class="arrow">↓</div>
+
+      <div class="box primary">选择支付宝提现</div>
+      <div class="arrow">↓</div>
+
+      <div class="box decision">商户是否开通支付托管？</div>
+      <div class="arrow">↓</div>
+
+      <div class="branches">
+        <div class="branch left">
+          <div class="branch-title">未开通支付托管</div>
+          <div class="step-list">
+            <div class="box left-accent">
+              商户在代理后台 → 财务管理 → 支付管理 → 第三方代付
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="box left-accent">添加代付渠道</div>
+            <div class="arrow">↓</div>
+
+            <div class="box left-accent">代付类型选择支付宝</div>
+            <div class="arrow">↓</div>
+
+            <div class="box">
+              用户发起提现后，商户在代理后台 → 财务管理 → 提现管理 → 提现列表
+              查看提现订单
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="box">点击审核通过</div>
+            <div class="arrow">↓</div>
+
+            <div class="box">选择代付操作</div>
+            <div class="arrow">↓</div>
+
+            <div class="box left-accent">
+              代付渠道手动选择类型为支付宝的渠道
+            </div>
+          </div>
+        </div>
+
+        <div class="branch right">
+          <div class="branch-title">已开通支付托管</div>
+          <div class="step-list">
+            <div class="box right-accent">
+              运营在总后台 → 支付托管 → 三方代付配置
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="box right-accent">添加代付渠道</div>
+            <div class="arrow">↓</div>
+
+            <div class="box right-accent">代付类型选择支付宝</div>
+            <div class="arrow">↓</div>
+
+            <div class="box">
+              用户发起提现后，商户在代理后台 → 财务管理 → 提现管理 → 提现列表
+              查看提现订单
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="box">点击审核通过</div>
+            <div class="arrow">↓</div>
+
+            <div class="box">选择代付操作</div>
+            <div class="arrow">↓</div>
+
+            <div class="box right-accent">
+              代付渠道自动匹配类型为支付宝的渠道
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="join-area">
+        <div class="join-label">两种流程最终汇合</div>
+        <div class="arrow">↓</div>
+        <div class="box result">后端调用三方接口鉴权支付</div>
+        <div class="arrow">↓</div>
+        <div class="box result">返回支付结果</div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <strong>说明：</strong><br />
+      1. 未开通支付托管时，支付宝代付渠道由商户在代理后台自行配置，并在审核通过后手动选择。<br />
+      2. 已开通支付托管时，支付宝代付渠道由运营在总后台配置，审核通过后系统自动匹配对应渠道。<br />
+      3. 两种模式最终都由后端调用三方接口完成鉴权支付，并返回支付结果。
+    </div>
+  </div>
+</body>
+</html>
