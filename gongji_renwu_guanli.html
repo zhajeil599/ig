@@ -389,6 +389,7 @@
                             <th>请求间隔</th>
                             <th>请求次数</th>
                             <th>执行时间</th>
+                            <th>定时执行时间</th>
                             <th>操作人</th>
                             <th>操作时间</th>
                             <th>操作</th>
@@ -406,6 +407,7 @@
                             <td>每秒</td>
                             <td>99999</td>
                             <td>60分钟</td>
+                            <td>2026-07-17 12:00:00</td>
                             <td>admin</td>
                             <td>2026-12-12 12:12:12</td>
                             <td>
@@ -424,6 +426,7 @@
                             <td>每分</td>
                             <td>100</td>
                             <td>1500分钟</td>
+                            <td>2026-08-01 09:30:00</td>
                             <td>admin</td>
                             <td>2026-12-12 12:12:12</td>
                             <td>
@@ -442,6 +445,7 @@
                             <td>每秒</td>
                             <td>500</td>
                             <td>24小时</td>
+                            <td>2026-09-15 18:00:00</td>
                             <td>admin</td>
                             <td>2026-12-12 12:12:12</td>
                             <td>
@@ -550,6 +554,13 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-item">
+                        <label class="form-label required" style="width: 100px;">定时执行时间:</label>
+                        <div class="form-input-container">
+                            <!-- type="datetime-local" 配合 step="1" 可以选到秒 -->
+                            <input type="datetime-local" step="1" class="form-input" id="formXxxxTime">
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -590,6 +601,8 @@
             currentRow = null;
         }
 
+        
+
         function openModal(mode, btn = null) {
             currentMode = mode;
             const modal = document.getElementById('taskModal');
@@ -619,13 +632,16 @@
                 
                 // 拆分执行时间的数值和单位
                 const execTimeStr = cells[9].innerText;
-                const timeValue = execTimeStr.replace(/[^0-9]/ig, ''); // 提取数字
-                const timeUnit = execTimeStr.replace(/[0-9]/ig, '');   // 提取中文单位
+                const timeValue = execTimeStr.replace(/[^0-9]/ig, ''); 
+                const timeUnit = execTimeStr.replace(/[0-9]/ig, '');   
                 document.getElementById('formExecTimeValue').value = timeValue;
-                // 如果表格里的单位是选项之一则选中，否则默认分钟
                 if (['小时', '分钟', '秒'].includes(timeUnit)) {
                     document.getElementById('formExecTimeUnit').value = timeUnit;
                 }
+                
+                // 回显定时执行时间，需要将空格替换为T才能被原生控件识别
+                const xxxxTimeStr = cells[10].innerText;
+                document.getElementById('formXxxxTime').value = xxxxTimeStr ? xxxxTimeStr.replace(' ', 'T') : '';
             }
             
             modal.style.display = 'flex';
@@ -644,17 +660,21 @@
             const interval = document.getElementById('formInterval').value;
             const count = document.getElementById('formCount').value;
             
-            // 拼接输入的执行时间数值和下拉单位
+            // 拼接执行时间
             const timeValue = document.getElementById('formExecTimeValue').value;
             const timeUnit = document.getElementById('formExecTimeUnit').value;
             const execTime = timeValue + timeUnit;
+            
+            // 提取并格式化定时执行时间展示
+            const xxxxTimeRaw = document.getElementById('formXxxxTime').value;
+            const xxxxTime = xxxxTimeRaw ? xxxxTimeRaw.replace('T', ' ') : '';
             
             const operator = 'admin'; // 模拟当前操作人
             const date = new Date();
             const operateTime = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}:${String(date.getSeconds()).padStart(2,'0')}`;
 
-            if (!url || !timeValue || !count) {
-                alert('请填写请求地址、请求次数和执行时间数值！');
+            if (!url || !timeValue || !count || !xxxxTimeRaw) {
+                alert('请填写请求地址、请求次数、执行时间数值以及定时执行时间！');
                 return;
             }
 
@@ -669,6 +689,7 @@
                 <td>${interval}</td>
                 <td>${count}</td>
                 <td>${execTime}</td>
+                <td>${xxxxTime}</td>
                 <td>${operator}</td>
                 <td>${operateTime}</td>
                 <td>
@@ -680,7 +701,7 @@
             if (currentMode === 'add') {
                 const newRow = document.createElement('tr');
                 newRow.innerHTML = trContent;
-                tableBody.insertBefore(newRow, tableBody.firstChild); // 插入最前面
+                tableBody.insertBefore(newRow, tableBody.firstChild);
                 updateTotalCount(1);
             } else if (currentMode === 'edit' && currentRow) {
                 currentRow.innerHTML = trContent;
