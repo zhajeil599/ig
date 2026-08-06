@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统管理 - 商户跟随配置</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f0f2f5;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 256px;
+            background-color: #001529;
+            color: rgba(255, 255, 255, 0.65);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu { list-style: none; padding: 0; margin: 0; }
+        
+        .menu-item-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.65);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        /* 父菜单选中/悬浮状态：亮蓝色 */
+        .menu-item-link:hover,
+        .menu-item-link.active {
+            color: #fff;
+            background-color: #1890ff; 
+        }
+
+        .menu-item-text { flex-grow: 1; }
+        
+        /* 箭头动画 */
+        .menu-item-arrow { transition: transform 0.3s; font-size: 12px; }
+        .collapsed > a > .menu-item-arrow { transform: rotate(-90deg); }
+
+        /* 子菜单底色加深 */
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #000c17; 
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        li:not(.collapsed) > .submenu {
+            max-height: 800px; /* 足够容纳展开的内容 */
+        }
+
+        .submenu-item-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px 10px 48px;
+            color: rgba(255, 255, 255, 0.65);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        /* 子菜单选中/悬浮状态：亮蓝色 */
+        .submenu-item-link:hover,
+        .submenu-item-link.active {
+            color: #fff;
+            background-color: #1890ff;
+        }
+
+        /* 主体内容样式 */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 顶部栏样式 */
+        .header {
+            background-color: #fff;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            color: #595959;
+        }
+
+        .header-tabs {
+            display: flex;
+            margin-top: 10px;
+            border-bottom: 1px solid #e8e8e8;
+            background-color: #fafafa;
+            padding-left: 24px;
+        }
+
+        .header-tab {
+            padding: 12px 20px;
+            color: #595959;
+            cursor: pointer;
+            border-right: 1px solid #e8e8e8;
+            transition: background-color 0.3s;
+        }
+
+        .header-tab.active {
+            background-color: #fff;
+            color: #1890ff;
+            border-top: 2px solid #1890ff;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 8px;
+        }
+
+        /* 页面内容区域样式 */
+        .page-content {
+            padding: 24px;
+            background-color: #fff;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        /* 保留一些常用的基础类，供后续填写内容使用 */
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border: none;
+            background-color: #1890ff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .icon-small {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header" style="text-align: center;">总后台</div>
+        <ul class="menu">
+            <li class="menu-item"><a href="#" class="menu-item-link"><span class="menu-item-text">首页</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">用户管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">奖池管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">财务管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">游戏管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">聊天室管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">主播管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">视频管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            
+            <!-- 【修改点】展开的“渠道商管理”菜单 -->
+            <li class="menu-item">
+                <a href="#" class="menu-item-link active">
+                    <span class="menu-item-text">渠道商管理</span>
+                    <span class="menu-item-arrow">&#9662;</span>
+                </a>
+                <ul class="submenu">
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">渠道商列表</a></li>
+                    <!-- 新增并选中的页面 -->
+                    <li class="submenu-item"><a href="#" class="submenu-item-link active">商户跟随配置</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">余额管理</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">渠道商后台菜单管理</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">渠道商服务费模板</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">渠道商月账单</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">渠道统计</a></li>
+                </ul>
+            </li>
+
+            <!-- 【修改点】收起的“支付托管”菜单 -->
+            <li class="menu-item collapsed">
+                <a href="#" class="menu-item-link">
+                    <span class="menu-item-text">支付托管</span>
+                    <span class="menu-item-arrow">&#9662;</span>
+                </a>
+                <ul class="submenu">
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">层级管理</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">支付栏目</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">出入款模板</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">支付类型管理</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">支付商户配置</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">支付渠道管理</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">钱包支付商户配置</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">支付错误日志</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">三方代付配置</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">钱包配置</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">托管支付订单</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">托管代付订单</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">支付服务费统计</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">代付服务费统计</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">支付成功率统计</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">托管充值报表</a></li>
+                    <li class="submenu-item"><a href="#" class="submenu-item-link">托管提现报表</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">更新管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">日志查询</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">短信模板平台</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed"><a href="#" class="menu-item-link"><span class="menu-item-text">风控管理</span><span class="menu-item-arrow">&#9662;</span></a></li>
+            <li class="menu-item collapsed">
+                <a href="#" class="menu-item-link">
+                    <span class="menu-item-text">系统管理</span>
+                    <span class="menu-item-arrow">&#9662;</span>
+                </a>
+                <ul class="submenu"></ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="main-content">
+        <!-- 顶部栏 -->
+        <div class="header">
+            <div class="header-left">
+                <span class="header-menu-toggle" style="cursor: pointer; font-size: 18px;">&#9776;</span>
+            </div>
+            <div class="header-right">
+                <div class="header-user">
+                    <div class="user-avatar" style="background-color: #d48806; background-image: radial-gradient(circle, #faad14, #d48806);"></div>
+                    <span class="user-name">ben</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 面包屑和选项卡 -->
+        <div class="header-tabs">
+            <div class="header-tab active">首页</div>
+            <!-- 【修改点】更新了面包屑的名称 -->
+            <div class="header-tab">商户跟随配置 &times;</div>
+        </div>
+
+        <!-- 页面内容区域 -->
+        <!-- 页面内容区域 -->
+        <div class="page-content">
+            <!-- 1. 顶部操作区 -->
+            <div class="content-header">
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <input type="text" class="form-input" placeholder="主商户ID/名称" style="width: 180px; padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    <input type="text" class="form-input" placeholder="子商户ID/名称" style="width: 180px; padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    <select class="form-select" style="width: 150px; padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                        <option value="">全部状态</option>
+                        <option value="1">未跟随</option>
+                        <option value="2">跟随操作中</option>
+                        <option value="3">跟随中</option>
+                    </select>
+                    <!-- 【修改点】查询按钮颜色改为系统蓝色 -->
+                    <button class="btn-primary" style="padding: 6px 16px;">查询</button>
+                    <button class="btn-primary" id="btnSetupFollow" style="padding: 6px 16px; margin-left: 10px;">新增跟随配置</button>
+                </div>
+            </div>
+
+            <!-- 2. 数据表格 -->
+            <div class="table-container" style="border: 1px solid #e8e8e8; border-radius: 4px; overflow: hidden; background: #fff;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #fafafa; border-bottom: 1px solid #e8e8e8;">
+                            <th style="padding: 16px; text-align: left; color: #595959; font-weight: 500;">主商户 (ID/名称)</th>
+                            <th style="padding: 16px; text-align: left; color: #595959; font-weight: 500;">子商户 (ID/名称)</th>
+                            <th style="padding: 16px; text-align: left; color: #595959; font-weight: 500;">跟随状态</th>
+                            <th style="padding: 16px; text-align: left; color: #595959; font-weight: 500;">操作人/时间</th>
+                            <th style="padding: 16px; text-align: left; color: #595959; font-weight: 500;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 状态：跟随中 -->
+                        <tr style="border-bottom: 1px solid #e8e8e8;">
+                            <td style="padding: 16px; color: #595959;">1001 / 凤凰娱乐</td>
+                            <td style="padding: 16px; color: #595959;">2045 / 凤凰二台</td>
+                            <td style="padding: 16px;">
+                                <span style="color: #52c41a; background: #f6ffed; border: 1px solid #b7eb8f; padding: 4px 8px; border-radius: 4px; font-size: 12px;">跟随中</span>
+                            </td>
+                            <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-20 14:30</td>
+                            <td style="padding: 16px;"><button class="btn-primary btn-close-follow" style="background-color: #ff4d4f; padding: 4px 10px; font-size: 13px;">关闭跟随</button></td>
+                        </tr>
+                        <!-- 状态：跟随操作中 -->
+                        <tr style="border-bottom: 1px solid #e8e8e8;">
+                            <td style="padding: 16px; color: #595959;">1001 / 凤凰娱乐</td>
+                            <td style="padding: 16px; color: #595959;">2088 / 凤凰三台</td>
+                            <td style="padding: 16px;">
+                                <span style="color: #faad14; background: #fffbe6; border: 1px solid #ffe58f; padding: 4px 8px; border-radius: 4px; font-size: 12px;">跟随操作中</span>
+                            </td>
+                            <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-21 09:15</td>
+                            <td style="padding: 16px;"><button class="btn-primary" style="background-color: #d9d9d9; color: #8c8c8c; cursor: not-allowed; padding: 4px 10px; font-size: 13px;" disabled>处理中</button></td>
+                        </tr>
+                        <!-- 状态：未跟随 -->
+                        <tr style="border-bottom: 1px solid #e8e8e8;">
+                            <td style="padding: 16px; color: #595959;">1050 / 钻石国际</td>
+                            <td style="padding: 16px; color: #595959;">3012 / 钻石亚太</td>
+                            <td style="padding: 16px;">
+                                <span style="color: #8c8c8c; background: #f5f5f5; border: 1px solid #d9d9d9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">未跟随</span>
+                            </td>
+                            <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-18 11:00</td>
+                            <!-- 【修改点】改名为开启跟随 -->
+                            <td style="padding: 16px;"><button class="btn-primary btn-open-follow" style="padding: 4px 10px; font-size: 13px;">开启跟随</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页栏 -->
+            <div style="display: flex; align-items: center; justify-content: flex-end; margin-top: 24px; color: #8c8c8c; font-size: 14px;">
+                <span style="margin-right: 16px;">共 3 条</span>
+                <select style="padding: 4px; border: 1px solid #d9d9d9; border-radius: 4px; margin-right: 16px;"><option>50条/页</option></select>
+                <div style="padding: 4px 10px; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer; margin-right: 8px;"><</div>
+                <div style="padding: 4px 10px; border: 1px solid #1890ff; color: #1890ff; border-radius: 4px; cursor: pointer; margin-right: 8px;">1</div>
+                <div style="padding: 4px 10px; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer; margin-right: 16px;">></div>
+            </div>
+
+            <!-- 3. 产品需求说明框 -->
+            <div style="background-color: #fffbe6; border: 2px dashed #faad14; padding: 20px; margin-top: 40px; border-radius: 6px; position: relative;">
+                <div style="position: absolute; top: -12px; left: 16px; background: #faad14; color: #fff; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                    📝 产品逻辑说明（开发必看）
+                </div>
+                <ul style="margin: 0; padding-left: 20px; color: #595959; font-size: 14px; line-height: 1.8;">
+                    <li><strong>绑定规则：</strong>子商户只能跟随 1 个主商户。主商户可以绑定多个子商户。</li>
+                    <li><strong>防嵌套规则：</strong>已经拥有子商户的“主商户”，不允许再去跟随其他任何商户（禁止多层级嵌套）。</li>
+                    <li><strong>配置生效时机：</strong>
+                        <ul>
+                            <li>设置跟随后，先进入<span style="color: #faad14;">「跟随操作中」</span>。此期间，支付、提现、用户层级等配置仍使用<b>子商户原配置</b>。</li>
+                            <li>底层数据变更完成后，状态自动改为<span style="color: #52c41a;">「跟随中」</span>。此后所有相关配置均强制使用<b>主商户配置</b>。</li>
+                        </ul>
+                    </li>
+                    <li><strong>解绑逻辑：</strong>支持关闭跟随，关闭后状态恢复为「未跟随」，各自独立。</li>
+                    <li><strong>后台及数据权限：</strong>子商户跟随主商户后，子商户仍可以单独登录自身后台。但主商户后台后续需要支持查看/处理子商户相关业务数据（如：出入款审核订单）。</li>
+                </ul>
+            </div>
+
+            <!-- 4. 新增跟随配置弹窗 -->
+            <div id="followModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div style="background-color: #fff; width: 500px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; flex-direction: column;">
+                    <div style="padding: 16px 24px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #595959; font-size: 16px; font-weight: 500;">新增跟随配置</span>
+                        <span id="closeFollowModal" style="cursor: pointer; color: #8c8c8c; font-size: 20px;">&times;</span>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div style="margin-bottom: 20px; display: flex; align-items: center;">
+                            <label style="width: 100px; text-align: right; margin-right: 16px; color: #595959;"><span style="color: #ff4d4f; margin-right: 4px;">*</span>主商户:</label>
+                            <select style="flex-grow: 1; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; color: #595959;">
+                                <option value="">请选择主商户 (输入ID或名称搜索)</option>
+                                <option value="1">1001 / 凤凰娱乐</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 20px; display: flex; align-items: center;">
+                            <label style="width: 100px; text-align: right; margin-right: 16px; color: #595959;"><span style="color: #ff4d4f; margin-right: 4px;">*</span>子商户:</label>
+                            <select style="flex-grow: 1; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; color: #595959;">
+                                <option value="">请选择子商户 (输入ID或名称搜索)</option>
+                                <option value="1">2045 / 凤凰二台</option>
+                            </select>
+                        </div>
+                        <div style="margin-left: 116px; font-size: 12px; color: #faad14; background: #fffbe6; padding: 8px; border-radius: 4px; border: 1px solid #ffe58f;">
+                            <i style="margin-right: 4px;">⚠</i>注：一个子商户只能跟随一个主商户；拥有子商户的主商户不可再跟随他人。
+                        </div>
+                    </div>
+                    <div style="padding: 16px 24px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 8px;">
+                        <button id="cancelFollowModal" style="padding: 8px 16px; border: 1px solid #d9d9d9; background: #fff; color: #595959; border-radius: 4px; cursor: pointer;">取消</button>
+                        <!-- 【修改点】增加ID以便绑定确认即关闭的逻辑 -->
+                        <button id="submitFollowModal" style="padding: 8px 16px; border: none; background-color: #1890ff; color: #fff; border-radius: 4px; cursor: pointer;">确定</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. 【新增】二次确认弹窗 -->
+            <div id="confirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1001; align-items: center; justify-content: center;">
+                <div style="background-color: #fff; width: 400px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; flex-direction: column;">
+                    <div style="padding: 16px 24px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #595959; font-size: 16px; font-weight: 500;">操作确认</span>
+                        <span id="closeConfirmModal" style="cursor: pointer; color: #8c8c8c; font-size: 20px;">&times;</span>
+                    </div>
+                    <div style="padding: 30px 24px; text-align: center; color: #595959; font-size: 16px;" id="confirmModalText">
+                        确定要执行此操作吗？
+                    </div>
+                    <div style="padding: 16px 24px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 8px;">
+                        <button id="cancelConfirmModal" style="padding: 8px 16px; border: 1px solid #d9d9d9; background: #fff; color: #595959; border-radius: 4px; cursor: pointer;">取消</button>
+                        <button id="submitConfirmModal" style="padding: 8px 16px; border: none; background-color: #1890ff; color: #fff; border-radius: 4px; cursor: pointer;">确定</button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // 控制新增配置弹窗
+                const btnSetupFollow = document.getElementById('btnSetupFollow');
+                const followModal = document.getElementById('followModal');
+                const closeFollowModal = document.getElementById('closeFollowModal');
+                const cancelFollowModal = document.getElementById('cancelFollowModal');
+                const submitFollowModal = document.getElementById('submitFollowModal');
+
+                btnSetupFollow.addEventListener('click', () => followModal.style.display = 'flex');
+                closeFollowModal.addEventListener('click', () => followModal.style.display = 'none');
+                cancelFollowModal.addEventListener('click', () => followModal.style.display = 'none');
+                // 【修改点】点击确认关闭弹窗
+                submitFollowModal.addEventListener('click', () => followModal.style.display = 'none'); 
+
+
+                // 【新增】控制二次确认弹窗
+                const confirmModal = document.getElementById('confirmModal');
+                const confirmModalText = document.getElementById('confirmModalText');
+                const closeConfirmModal = document.getElementById('closeConfirmModal');
+                const cancelConfirmModal = document.getElementById('cancelConfirmModal');
+                const submitConfirmModal = document.getElementById('submitConfirmModal');
+
+                // 绑定开启跟随按钮
+                const openBtns = document.querySelectorAll('.btn-open-follow');
+                openBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        confirmModalText.innerHTML = "确定要为该商户 <b>开启跟随</b> 吗？";
+                        confirmModal.style.display = 'flex';
+                    });
+                });
+
+                // 绑定关闭跟随按钮
+                const closeBtns = document.querySelectorAll('.btn-close-follow');
+                closeBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        confirmModalText.innerHTML = "确定要为该商户 <span style='color: #ff4d4f; font-weight: bold;'>关闭跟随</span> 吗？";
+                        confirmModal.style.display = 'flex';
+                    });
+                });
+
+                // 确认弹窗关闭逻辑
+                closeConfirmModal.addEventListener('click', () => confirmModal.style.display = 'none');
+                cancelConfirmModal.addEventListener('click', () => confirmModal.style.display = 'none');
+                // 【修改点】点击确认关闭弹窗
+                submitConfirmModal.addEventListener('click', () => confirmModal.style.display = 'none'); 
+            </script>
+        </div>
+
+    <script>
+        // 侧边栏子菜单切换逻辑
+        const menuItems = document.querySelectorAll('.menu-item.collapsed, .menu-item:not(.collapsed)');
+        menuItems.forEach(item => {
+            const link = item.querySelector('.menu-item-link');
+            if(link) {
+                link.addEventListener('click', (e) => {
+                    if (item.querySelector('.submenu')) {
+                        e.preventDefault(); 
+                        item.classList.toggle('collapsed');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
