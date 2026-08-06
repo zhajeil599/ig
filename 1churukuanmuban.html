@@ -442,14 +442,33 @@
             background-color: #fafafa;
         }
 
+        /* 【修改点1】优化表格内输入框与百分号的比例 */
         .modal-table input {
             border: none;
-            width: 80px;
+            width: 100%;
+            flex-grow: 1;
             text-align: center;
+            outline: none;
+            padding: 8px 0;
         }
 
         .modal-table-icon {
+            color: #595959;
+            width: 30px;
+            text-align: center;
+        }
+
+        /* 【修改点2】动态控制启用/禁用单选框的颜色 */
+        .dynamic-radio {
+            display: flex; 
+            align-items: center; 
+            gap: 4px;
             color: #bfbfbf;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .dynamic-radio:has(input:checked) {
+            color: #1890ff;
         }
 
         .modal-footer {
@@ -486,6 +505,43 @@
         .icon-small {
             font-size: 12px;
         }
+    
+    /* 【新增】提现方式配置表格样式 */
+        .withdraw-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+        .withdraw-table th, .withdraw-table td {
+            padding: 8px;
+            border: 1px solid #e8e8e8;
+            text-align: center;
+            color: #595959;
+            font-size: 14px;
+        }
+        .withdraw-table th {
+            background-color: #fafafa;
+            font-weight: 500;
+        }
+        .withdraw-table .form-select, .withdraw-table .form-input {
+            padding: 4px 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .withdraw-table .status-radios {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .withdraw-table .status-radios label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            white-space: nowrap;
+            margin: 0;
+        }
+    
     </style>
 </head>
 <body>
@@ -648,7 +704,7 @@
                 <select class="page-select">
                     <option>50条/页</option>
                 </select>
-                <div class="pagination-item"><</div>
+                <div class="pagination-item"></div>
                 <div class="pagination-item active">1</div>
                 <div class="pagination-item">></div>
                 <span class="pagination-info">前往</span>
@@ -656,6 +712,23 @@
                 <span class="pagination-info">页</span>
                 <button class="btn-submit" style="padding: 4px 10px; margin-left: 8px;">确认</button>
             </div>
+
+            <!-- 【新增】产品经理专属需求说明框 (移至页面底部) -->
+            <div style="background-color: #fffbe6; border: 2px dashed #faad14; padding: 16px 20px; margin-top: 40px; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: relative;">
+                <div style="position: absolute; top: -12px; left: 16px; background: #faad14; color: #fff; padding: 2px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; letter-spacing: 1px;">
+                    📝 产品需求说明（开发必看）
+                </div>
+                <p style="margin: 8px 0 4px 0; color: #595959; font-size: 14px; line-height: 1.6;">
+                    <strong>1. 需求说明：</strong>原提现手续费、限额配置，统一放入提现配置模块。按照支持的提现方式：银行卡、支付宝、钱包、USDT、免提直充。每种提现方式分别配置：开关、手续费、手续费类型、提现限额。移除商户后台-系统管理-渠道配置中的开关状态配置。
+                </p>
+                <p style="margin: 0; color: #595959; font-size: 14px; line-height: 1.6;">
+                    <strong>2. 历史数据处理：</strong>所有出入款模板配置中，银行卡、支付宝、钱包、USDT、免提直充的开关状态默认为开启，移除商户后台-系统管理-渠道配置中的开关状态配置。
+                </p>
+                <p style="margin: 0; color: #595959; font-size: 14px; line-height: 1.6;">
+                    <strong>3. 默认值规则：</strong>新增加的钱包、USDT、免提直充的手续费及提款限额数据不能为空，按照与银行卡的手续费及提款限额相同初始化数据。支付宝的手续费及提款限额保持不变。
+                </p>
+            </div>
+
         </div>
     </div>
 
@@ -717,48 +790,65 @@
                         </tbody>
                     </table>
 
+                    <!-- 【修改点】全新的提现配置表格 (添加弹窗) -->
                     <div class="form-item">
-                        <label class="form-label">银行卡手续费类型:</label>
+                        <label class="form-label">提现配置:</label>
                         <div class="form-input-container">
-                            <select class="form-select">
-                                <option>固定金额</option>
-                                <option>百分比</option>
-                            </select>
+                            <table class="withdraw-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 12%">提现方式</th>
+                                        <th style="width: 18%">状态</th>
+                                        <th style="width: 20%">手续费类型</th>
+                                        <th style="width: 15%">手续费</th>
+                                        <th style="width: 35%">单次取款限额 (下限-上限)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <script>
+                                        const methods = ['银行卡', '支付宝', '钱包', 'USDT', '免提直充'];
+                                        methods.forEach((method, index) => {
+                                            document.write(`
+                                                <tr>
+                                                    <td>${method}</td>
+                                                    <td>
+                                                        <div class="status-radios">
+                                                            <label class="dynamic-radio"><input type="radio" name="add_status_${index}" checked> 启用</label>
+                                                            <label class="dynamic-radio"><input type="radio" name="add_status_${index}"> 禁用</label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <select class="form-select">
+                                                            <option>固定金额</option>
+                                                            <option>百分比</option>
+                                                        </select>
+                                                    </td>
+                                                    <td><input type="text" class="form-input" placeholder="费率/金额"></td>
+                                                    <td>
+                                                        <div class="form-range" style="justify-content: center;">
+                                                            <input type="text" class="form-input range-input" style="width: 70px;" placeholder="下限">
+                                                            <span>-</span>
+                                                            <input type="text" class="form-input range-input" style="width: 70px;" placeholder="上限">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            `);
+                                        });
+                                    </script>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
                     <div class="form-item">
-                        <label class="form-label">银行卡手续费:</label>
-                        <div class="form-input-container">
-                            <input type="text" class="form-input" placeholder="请输入银行卡手续费">
-                        </div>
-                    </div>
-
-                    <!-- 【新增】支付宝手续费类型 -->
-                    <div class="form-item">
-                        <label class="form-label">支付宝手续费类型:</label>
-                        <div class="form-input-container">
-                            <select class="form-select">
-                                <option>固定金额</option>
-                                <option>百分比</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- 【新增】支付宝手续费 -->
-                    <div class="form-item">
-                        <label class="form-label">支付宝手续费:</label>
-                        <div class="form-input-container">
-                            <input type="text" class="form-input" placeholder="请输入支付宝手续费">
-                        </div>
-                    </div>
-
-                    <div class="form-item">
-                        <label class="form-label">会员单次取款限额:</label>
-                        <div class="form-input-container form-range">
-                            <input type="text" class="form-input range-input" placeholder="请输入取款限额-下限">
-                            <span>-</span>
-                            <input type="text" class="form-input range-input" placeholder="请输入取款限额-上限">
+                        <label class="form-label">状态:</label>
+                        <div class="form-input-container" style="display: flex; gap: 20px;">
+                            <label class="dynamic-radio">
+                                <input type="radio" name="add_status_main" checked> 启用
+                            </label>
+                            <label class="dynamic-radio">
+                                <input type="radio" name="add_status_main"> 禁用
+                            </label>
                         </div>
                     </div>
 
@@ -768,6 +858,9 @@
                             <textarea placeholder="请输入备注"></textarea>
                         </div>
                     </div>
+
+
+                </form>
                 </form>
             </div>
             <div class="modal-footer">
@@ -835,52 +928,70 @@
                         </tbody>
                     </table>
 
+                    <!-- 【修改点】全新的提现配置表格 (修改弹窗) -->
                     <div class="form-item">
-                        <label class="form-label">银行卡手续费类型:</label>
+                        <label class="form-label">提现配置:</label>
                         <div class="form-input-container">
-                            <select class="form-select">
-                                <option>固定金额</option>
-                                <option selected>百分比</option>
-                            </select>
+                            <table class="withdraw-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 12%">提现方式</th>
+                                        <th style="width: 18%">状态</th>
+                                        <th style="width: 20%">手续费类型</th>
+                                        <th style="width: 15%">手续费</th>
+                                        <th style="width: 35%">单次取款限额 (下限-上限)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <script>
+                                        const editMethods = ['银行卡', '支付宝', '钱包', 'USDT', '免提直充'];
+                                        editMethods.forEach((method, index) => {
+                                            const isChecked = method === '支付宝' ? '' : 'checked';
+                                            const isUnchecked = method === '支付宝' ? 'checked' : '';
+                                            document.write(`
+                                                <tr>
+                                                    <td>${method}</td>
+                                                    <td>
+                                                        <div class="status-radios">
+                                                            <label class="dynamic-radio"><input type="radio" name="edit_status_${index}" ${isChecked}> 启用</label>
+                                                            <label class="dynamic-radio"><input type="radio" name="edit_status_${index}" ${isUnchecked}> 禁用</label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <select class="form-select">
+                                                            <option>固定金额</option>
+                                                            <option selected>百分比</option>
+                                                        </select>
+                                                    </td>
+                                                    <td><input type="text" class="form-input" value="1.50"></td>
+                                                    <td>
+                                                        <div class="form-range" style="justify-content: center;">
+                                                            <input type="text" class="form-input range-input" style="width: 70px;" value="1.00">
+                                                            <span>-</span>
+                                                            <input type="text" class="form-input range-input" style="width: 70px;" value="10000.00">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            `);
+                                        });
+                                    </script>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
                     <div class="form-item">
-                        <label class="form-label">银行卡手续费:</label>
-                        <div class="form-input-container">
-                            <input type="text" class="form-input" value="2.00">
+                        <label class="form-label">状态:</label>
+                        <div class="form-input-container" style="display: flex; gap: 20px;">
+                            <label class="dynamic-radio">
+                                <input type="radio" name="status_main" checked> 启用
+                            </label>
+                            <label class="dynamic-radio">
+                                <input type="radio" name="status_main"> 禁用
+                            </label>
                         </div>
                     </div>
-
-                    <!-- 【新增】支付宝手续费类型 (修改弹窗) -->
-                    <div class="form-item">
-                        <label class="form-label">支付宝手续费类型:</label>
-                        <div class="form-input-container">
-                            <select class="form-select">
-                                <option>固定金额</option>
-                                <option selected>百分比</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- 【新增】支付宝手续费 (修改弹窗) -->
-                    <div class="form-item">
-                        <label class="form-label">支付宝手续费:</label>
-                        <div class="form-input-container">
-                            <!-- 预填充了 1.50 作为示例，您可以自行修改 -->
-                            <input type="text" class="form-input" value="1.50">
-                        </div>
-                    </div>
-
-                    <div class="form-item">
-                        <label class="form-label">会员单次取款限额:</label>
-                        <div class="form-input-container form-range">
-                            <input type="text" class="form-input range-input" value="1.00">
-                            <span>-</span>
-                            <input type="text" class="form-input range-input" value="10000.00">
-                        </div>
-                    </div>
-
+                    
                     <div class="form-item">
                         <label class="form-label">备注:</label>
                         <div class="form-input-container">
@@ -888,17 +999,9 @@
                         </div>
                     </div>
 
-                    <div class="form-item">
-                        <label class="form-label">状态:</label>
-                        <div class="form-input-container" style="display: flex; gap: 20px;">
-                            <label style="color: #1890ff; display: flex; align-items: center; gap: 4px;">
-                                <input type="radio" name="status" checked> 启用
-                            </label>
-                            <label style="color: #bfbfbf; display: flex; align-items: center; gap: 4px;">
-                                <input type="radio" name="status"> 禁用
-                            </label>
-                        </div>
-                    </div>
+
+
+                </form>
                 </form>
             </div>
             <div class="modal-footer">
