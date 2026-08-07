@@ -542,6 +542,33 @@
             margin: 0;
         }
     
+    /* 👇这是为了拖拽排序新增的样式👇 */
+        .draggable-row {
+            cursor: grab;
+            transition: background-color 0.2s;
+        }
+        .draggable-row:active {
+            cursor: grabbing;
+        }
+        .draggable-row.dragging {
+            opacity: 0.8;
+            background-color: #e6f7ff !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .drag-handle {
+            cursor: grab;
+            color: #bfbfbf;
+            margin-right: 4px;
+            font-size: 16px;
+        }
+        .sort-number {
+            font-weight: bold;
+            color: #1890ff;
+            display: inline-block;
+            width: 20px;
+        }
+        /* 👆新增样式结束👆 */
+
     </style>
 </head>
 <body>
@@ -797,11 +824,13 @@
                             <table class="withdraw-table">
                                 <thead>
                                     <tr>
+                                        <!-- 新增排序表头 -->
+                                        <th style="width: 10%">排序</th>
                                         <th style="width: 12%">提现方式</th>
                                         <th style="width: 18%">状态</th>
-                                        <th style="width: 20%">手续费类型</th>
+                                        <th style="width: 15%">手续费类型</th>
                                         <th style="width: 15%">手续费</th>
-                                        <th style="width: 35%">单次取款限额 (下限-上限)</th>
+                                        <th style="width: 30%">单次取款限额 (下限-上限)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -809,7 +838,12 @@
                                         const methods = ['银行卡', '支付宝', '钱包', 'USDT', '免提直充'];
                                         methods.forEach((method, index) => {
                                             document.write(`
-                                                <tr>
+                                                <tr class="draggable-row" draggable="true">
+                                                    <!-- 新增排序数据列 -->
+                                                    <td>
+                                                        <span class="drag-handle">☰</span>
+                                                        <span class="sort-number">${index + 1}</span>
+                                                    </td>
                                                     <td>${method}</td>
                                                     <td>
                                                         <div class="status-radios">
@@ -935,11 +969,13 @@
                             <table class="withdraw-table">
                                 <thead>
                                     <tr>
+                                        <!-- 新增排序表头 -->
+                                        <th style="width: 10%">排序</th>
                                         <th style="width: 12%">提现方式</th>
                                         <th style="width: 18%">状态</th>
-                                        <th style="width: 20%">手续费类型</th>
+                                        <th style="width: 15%">手续费类型</th>
                                         <th style="width: 15%">手续费</th>
-                                        <th style="width: 35%">单次取款限额 (下限-上限)</th>
+                                        <th style="width: 30%">单次取款限额 (下限-上限)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -949,7 +985,12 @@
                                             const isChecked = method === '支付宝' ? '' : 'checked';
                                             const isUnchecked = method === '支付宝' ? 'checked' : '';
                                             document.write(`
-                                                <tr>
+                                                <tr class="draggable-row" draggable="true">
+                                                    <!-- 新增排序数据列 -->
+                                                    <td>
+                                                        <span class="drag-handle">☰</span>
+                                                        <span class="sort-number">${index + 1}</span>
+                                                    </td>
                                                     <td>${method}</td>
                                                     <td>
                                                         <div class="status-radios">
@@ -1037,28 +1078,90 @@
         const addModal = document.getElementById('addModal');
         const addModalCloseIcon = document.getElementById('modalCloseIcon');
         const addModalCloseBtn = document.getElementById('modalCloseBtn');
+        const addModalSubmitBtn = addModal.querySelector('.btn-submit'); // 获取提交按钮
 
         btnAdd.addEventListener('click', () => openModal(addModal));
         addModalCloseIcon.addEventListener('click', () => closeModal(addModal));
         addModalCloseBtn.addEventListener('click', () => closeModal(addModal));
+        // 👇 点击提交按钮关闭弹窗
+        addModalSubmitBtn.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            closeModal(addModal);
+        });
 
-        // 4. 【修改弹窗】逻辑控制 (为您新增的部分)
+        // 4. 【修改弹窗】逻辑控制
         const btnModifies = document.querySelectorAll('.btn-modify');
         const editModal = document.getElementById('editModal');
         const editModalCloseIcon = document.getElementById('editModalCloseIcon');
         const editModalCloseBtn = document.getElementById('editModalCloseBtn');
+        const editModalSubmitBtn = editModal.querySelector('.btn-submit'); // 获取提交按钮
 
         btnModifies.forEach(btn => {
             btn.addEventListener('click', () => openModal(editModal));
         });
         editModalCloseIcon.addEventListener('click', () => closeModal(editModal));
         editModalCloseBtn.addEventListener('click', () => closeModal(editModal));
+        // 👇 点击提交按钮关闭弹窗
+        editModalSubmitBtn.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            closeModal(editModal);
+        });
 
         // 5. 点击弹窗外部阴影区域关闭
         window.addEventListener('click', (e) => {
             if (e.target === addModal) closeModal(addModal);
             if (e.target === editModal) closeModal(editModal);
         });
+
+        // 6. 👇表格拖拽排序交互逻辑👇
+        const initDragAndDrop = () => {
+            const tbodies = document.querySelectorAll('.withdraw-table tbody');
+            
+            tbodies.forEach(tbody => {
+                let draggingRow = null;
+
+                tbody.addEventListener('dragstart', function(e) {
+                    draggingRow = e.target.closest('tr');
+                    if (draggingRow) {
+                        draggingRow.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', ''); // 兼容浏览器
+                        e.dataTransfer.effectAllowed = 'move';
+                    }
+                });
+
+                tbody.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    const targetRow = e.target.closest('tr');
+                    
+                    if (targetRow && targetRow !== draggingRow && targetRow.classList.contains('draggable-row')) {
+                        const bounding = targetRow.getBoundingClientRect();
+                        const offset = bounding.y + (bounding.height / 2);
+                        if (e.clientY - offset > 0) {
+                            targetRow.after(draggingRow);
+                        } else {
+                            targetRow.before(draggingRow);
+                        }
+                    }
+                });
+
+                tbody.addEventListener('dragend', function(e) {
+                    if (draggingRow) {
+                        draggingRow.classList.remove('dragging');
+                        draggingRow = null;
+                        
+                        // 重新计算序号
+                        const rows = tbody.querySelectorAll('tr.draggable-row');
+                        rows.forEach((row, index) => {
+                            const sortNum = row.querySelector('.sort-number');
+                            if (sortNum) sortNum.textContent = index + 1;
+                        });
+                    }
+                });
+            });
+        };
+        // 执行拖拽初始化
+        initDragAndDrop();
     </script>
 </body>
 </html>
