@@ -291,8 +291,10 @@
                     <input type="text" class="form-input" placeholder="子商户ID/名称" style="width: 180px; padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
                     <select class="form-select" style="width: 150px; padding: 6px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
                         <option value="">全部状态</option>
-                        <option value="1">未跟随</option>
-                        <option value="3">跟随中</option>
+                        <option value="1">跟随变更中</option>
+                        <option value="2">跟随中</option>
+                        <option value="3">待解除</option>
+                        <option value="4">已解除</option>
                     </select>
                     <!-- 【修改点】查询按钮颜色改为系统蓝色 -->
                     <button class="btn-primary" style="padding: 6px 16px;">查询</button>
@@ -313,6 +315,17 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- 状态：跟随变更中 -->
+                        <tr style="border-bottom: 1px solid #e8e8e8;">
+                            <td style="padding: 16px; color: #595959;">1001 / 凤凰娱乐</td>
+                            <td style="padding: 16px; color: #595959;">2088 / 凤凰三台</td>
+                            <td style="padding: 16px;">
+                                <span style="color: #faad14; background: #fffbe6; border: 1px solid #ffe58f; padding: 4px 8px; border-radius: 4px; font-size: 12px;">跟随变更中</span>
+                            </td>
+                            <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-21 09:15</td>
+                            <!-- 【修改点】去掉按钮，展示为 - -->
+                            <td style="padding: 16px; color: #bfbfbf; font-weight: bold;">-</td>
+                        </tr>
                         <!-- 状态：跟随中 -->
                         <tr style="border-bottom: 1px solid #e8e8e8;">
                             <td style="padding: 16px; color: #595959;">1001 / 凤凰娱乐</td>
@@ -321,28 +334,28 @@
                                 <span style="color: #52c41a; background: #f6ffed; border: 1px solid #b7eb8f; padding: 4px 8px; border-radius: 4px; font-size: 12px;">跟随中</span>
                             </td>
                             <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-20 14:30</td>
-                            <td style="padding: 16px;"><button class="btn-primary btn-close-follow" style="background-color: #ff4d4f; padding: 4px 10px; font-size: 13px;">关闭跟随</button></td>
+                            <td style="padding: 16px;"><button class="btn-primary btn-close-follow" style="background-color: #ff4d4f; padding: 4px 10px; font-size: 13px;">解除跟随</button></td>
                         </tr>
-                        <!-- 修改后的数据：改为未跟随状态 -->
+                        <!-- 状态：待解除 -->
                         <tr style="border-bottom: 1px solid #e8e8e8;">
-                            <td style="padding: 16px; color: #595959;">1001 / 凤凰娱乐</td>
-                            <td style="padding: 16px; color: #595959;">2088 / 凤凰三台</td>
+                            <td style="padding: 16px; color: #595959;">1022 / 太阳城</td>
+                            <td style="padding: 16px; color: #595959;">2099 / 太阳城亚州</td>
                             <td style="padding: 16px;">
-                                <span style="color: #8c8c8c; background: #f5f5f5; border: 1px solid #d9d9d9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">未跟随</span>
+                                <span style="color: #1890ff; background: #e6f7ff; border: 1px solid #91d5ff; padding: 4px 8px; border-radius: 4px; font-size: 12px;">待解除</span>
                             </td>
-                            <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-21 09:15</td>
-                            <td style="padding: 16px;"><button class="btn-primary btn-open-follow" style="padding: 4px 10px; font-size: 13px;">开启跟随</button></td>
+                            <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-22 10:00</td>
+                            <!-- 【修改点】去掉按钮，展示为 - -->
+                            <td style="padding: 16px; color: #bfbfbf; font-weight: bold;">-</td>
                         </tr>
-                        <!-- 状态：未跟随 -->
+                        <!-- 状态：已解除 -->
                         <tr style="border-bottom: 1px solid #e8e8e8;">
                             <td style="padding: 16px; color: #595959;">1050 / 钻石国际</td>
                             <td style="padding: 16px; color: #595959;">3012 / 钻石亚太</td>
                             <td style="padding: 16px;">
-                                <span style="color: #8c8c8c; background: #f5f5f5; border: 1px solid #d9d9d9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">未跟随</span>
+                                <span style="color: #8c8c8c; background: #f5f5f5; border: 1px solid #d9d9d9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">已解除</span>
                             </td>
                             <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-18 11:00</td>
-                            <!-- 【修改点】改名为开启跟随 -->
-                            <td style="padding: 16px;"><button class="btn-primary btn-open-follow" style="padding: 4px 10px; font-size: 13px;">开启跟随</button></td>
+                            <td style="padding: 16px;"><button class="btn-primary btn-open-follow" style="padding: 4px 10px; font-size: 13px;">重新开启</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -365,12 +378,14 @@
                 <ul style="margin: 0; padding-left: 20px; color: #595959; font-size: 14px; line-height: 1.8;">
                     <li><strong>绑定规则：</strong>子商户只能跟随 1 个主商户。主商户可以绑定多个子商户。</li>
                     <li><strong>防嵌套规则：</strong>已经拥有子商户的“主商户”，不允许再去跟随其他任何商户（禁止多层级嵌套）。</li>
-                    <li><strong>配置生效时机：</strong>
+                    <li><strong>状态流转说明：</strong>
                         <ul>
-                            <li>设置跟随后，状态直接变更为<span style="color: #52c41a;">「跟随中」</span>。此后所有相关配置均强制使用<b>主商户配置</b>。</li>
+                            <li><span style="color: #faad14;">「跟随变更中」</span>：开启跟随后进入此状态，正式使用主商户配置。注意：层级变更过程中部分用户可能无法正常使用充值提现。</li>
+                            <li><span style="color: #52c41a;">「跟随中」</span>：底层数据全部变更完毕，功能平稳运行。</li>
+                            <li><span style="color: #1890ff;">「待解除」</span>：商户重新配置中。在此期间，子商户可在自己的后台开始配置自身独立的各项功能。</li>
+                            <li><span style="color: #8c8c8c;">「已解除」</span>：待解除状态下配置完毕后确认解除，状态变更为已解除，此时完全脱离主商户管控。</li>
                         </ul>
                     </li>
-                    <li><strong>解绑逻辑：</strong>支持关闭跟随，关闭后状态恢复为「未跟随」，各自独立。</li>
                     <li><strong>后台及数据权限：</strong>子商户跟随主商户后，子商户仍可以单独登录自身后台。但主商户后台后续需要支持查看/处理子商户相关业务数据（如：出入款审核订单）。</li>
                 </ul>
             </div>
