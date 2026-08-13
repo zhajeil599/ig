@@ -323,8 +323,10 @@
                                 <span style="color: #faad14; background: #fffbe6; border: 1px solid #ffe58f; padding: 4px 8px; border-radius: 4px; font-size: 12px;">跟随变更中</span>
                             </td>
                             <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-21 09:15</td>
-                            <!-- 【修改点】去掉按钮，展示为 - -->
-                            <td style="padding: 16px; color: #bfbfbf; font-weight: bold;">-</td>
+                            <!-- 增加【删除】按钮 -->
+                            <td style="padding: 16px;">
+                                <button class="btn-primary btn-delete-record" style="background-color: #ff4d4f; padding: 4px 10px; font-size: 13px;">删除</button>
+                            </td>
                         </tr>
                         <!-- 状态：跟随中 -->
                         <tr style="border-bottom: 1px solid #e8e8e8;">
@@ -360,7 +362,10 @@
                                 <span style="color: #8c8c8c; background: #f5f5f5; border: 1px solid #d9d9d9; padding: 4px 8px; border-radius: 4px; font-size: 12px;">已解除</span>
                             </td>
                             <td style="padding: 16px; color: #8c8c8c; font-size: 14px;">admin<br>2024-05-18 11:00</td>
-                            <td style="padding: 16px;"><button class="btn-primary btn-open-follow" style="padding: 4px 10px; font-size: 13px;">重新开启</button></td>
+                            <td style="padding: 16px;">
+                                <button class="btn-primary btn-open-follow" style="padding: 4px 10px; font-size: 13px;">重新开启</button>
+                                <button class="btn-primary btn-delete-record" style="background-color: #ff4d4f; padding: 4px 10px; font-size: 13px; margin-left: 8px;">删除</button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -491,6 +496,15 @@
                 releaseBtns.forEach(btn => {
                     btn.addEventListener('click', () => {
                         confirmModalText.innerHTML = "确定要为该商户 <span style='color: #ff4d4f; font-weight: bold;'>确认解除</span> 吗？";
+                        confirmModal.style.display = 'flex';
+                    });
+                });
+                
+                // 绑定删除按钮
+                const deleteBtns = document.querySelectorAll('.btn-delete-record');
+                deleteBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        confirmModalText.innerHTML = "确定要 <span style='color: #ff4d4f; font-weight: bold;'>删除</span> 该条配置记录吗？";
                         confirmModal.style.display = 'flex';
                     });
                 });
