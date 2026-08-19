@@ -307,6 +307,7 @@
                             <th>团队</th>
                             <th>资产</th>
                             <th>金流</th>
+                            <th style="min-width: 120px; max-width: 180px;">备注</th>
                             <th>层级</th>
                             <th>会员等级</th>
                             <th>状态</th>
@@ -316,7 +317,6 @@
                             <th><span class="sort-btn" style="display:inline-flex;" onclick="sortTable('login', this)">登录时间 <i class="fa-solid fa-sort sort-icon"></i></span></th>
                             <th><span class="sort-btn" style="display:inline-flex;" onclick="sortTable('active', this)">活跃时间 <i class="fa-solid fa-sort sort-icon"></i></span></th>
                             <th><span class="sort-btn" style="display:inline-flex;" onclick="sortTable('bind', this)">绑定手机时间 <i class="fa-solid fa-sort sort-icon"></i></span></th>
-                            <th>备注</th>
                             <th style="min-width: 200px;">操作</th>
                         </tr>
                     </thead>
@@ -328,7 +328,8 @@
                             <td>18707594013</td>
                             <td>上级ID:0<br>团队:8<br>邀请码:4dq3owjqmX</td>
                             <td>余额:1890</td>
-                            <td>充值:1858<br>提现:0<br>客损:1858</td>
+                            <td>充值:1858<br>提现:0<br>客损:1858<br>总打赏:500<br>总消费:1000</td>
+                            <td class="remark-display">这是一个大客户，请多关注。</td>
                             <td>总充值500-2000可见</td>
                             <td>充值等级:0</td>
                             <td>状态:启用</td>
@@ -338,9 +339,9 @@
                             <td>2026-04-30 14:18:49</td>
                             <td>2026-04-30</td>
                             <td>2026-04-30 14:20:00</td>
-                            <td><button class="btn-small btn-blue" onclick="openRemarkModal(this)">查看/编辑</button></td>
                             <td>
                                 <div class="action-buttons">
+                                    <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                     <button class="btn-small" onclick="openTargetModal('detailModal')">详情</button>
                                     <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                     <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
@@ -358,7 +359,8 @@
                             <td>13800138000</td>
                             <td>上级ID:102<br>团队:12<br>邀请码:8abc9xyz</td>
                             <td>余额:5200</td>
-                            <td>充值:5000<br>提现:200<br>客损:4800</td>
+                            <td>充值:5000<br>提现:200<br>客损:4800<br>总打赏:100<br>总消费:200</td>
+                            <td class="remark-display">此用户最近比较活跃。</td>
                             <td>总充值2000-9999可见</td>
                             <td>充值等级:3</td>
                             <td>状态:启用</td>
@@ -368,9 +370,9 @@
                             <td>2026-05-01 10:20:00</td>
                             <td>2026-05-01</td>
                             <td>2026-02-15 09:35:00</td>
-                            <td><button class="btn-small btn-blue" onclick="openRemarkModal(this)">查看/编辑</button></td>
                             <td>
                                 <div class="action-buttons">
+                                    <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                     <button class="btn-small" onclick="openTargetModal('detailModal')">详情</button>
                                     <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                     <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
@@ -388,7 +390,8 @@
                             <td>13912345678</td>
                             <td>上级ID:55<br>团队:0<br>邀请码:none</td>
                             <td>余额:0</td>
-                            <td>充值:0<br>提现:0<br>客损:0</td>
+                            <td>充值:0<br>提现:0<br>客损:0<br>总打赏:0<br>总消费:0</td>
+                            <td class="remark-display">新注册用户，尚未充值。</td>
                             <td>默认层级 0-500可见</td>
                             <td>充值等级:0</td>
                             <td>状态:冻结</td>
@@ -398,9 +401,9 @@
                             <td>2026-04-28 08:15:22</td>
                             <td>2026-04-28</td>
                             <td>2026-05-02 20:05:12</td>
-                            <td><button class="btn-small btn-blue" onclick="openRemarkModal(this)">查看/编辑</button></td>
                             <td>
                                 <div class="action-buttons">
+                                    <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                     <button class="btn-small" onclick="openTargetModal('detailModal')">详情</button>
                                     <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                     <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
@@ -513,6 +516,16 @@
                                 <td class="stats-label">提充客损</td>
                                 <td class="stats-value">5000</td>
                             </tr>
+
+                            <tr>
+                                <td class="stats-label">总打赏金额</td>
+                                <td class="stats-value">500</td>
+                            </tr>
+                            <tr>
+                                <td class="stats-label">总消费下单金额</td>
+                                <td class="stats-value">1000</td>
+                            </tr>
+
                             <tr>
                                 <td class="stats-label">优惠赠送</td>
                                 <td class="stats-value" style="border-bottom:none;">活动赠送0</td>
@@ -575,12 +588,19 @@
                 <div class="form-group" style="margin-bottom: 15px;"><label class="form-label">真实姓名：</label><input type="text" class="modal-input" value="喜欢123"></div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label class="form-label">账号状态：</label>
-                    <select class="modal-input" style="background:#fff">
+                    <select class="modal-input" style="background:#fff" onchange="handleStatusChange(this)">
                         <option>启用</option>
                         <option>停用</option>
                         <option>冻结</option>
+                        <option value="冻结余额">冻结余额</option>
                     </select>
                 </div>
+                <!-- 下面是新增的备注联动演示区域，选择“冻结余额”时会自动显示 -->
+                <div class="form-group" style="margin-bottom: 15px; display: none;" id="autoRemarkGroup">
+                    <label class="form-label">系统备注：</label>
+                    <input type="text" class="modal-input" id="autoRemarkInput" value="" disabled style="color: #f5222d;">
+                </div>
+
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label class="form-label">用户层级：</label>
                     <select class="modal-input" style="background:#fff">
@@ -700,6 +720,11 @@
                 let newRemark = document.getElementById('modalRemarkInput').value;
                 // 更新隐藏属性
                 currentRemarkRow.setAttribute('data-remark', newRemark);
+                // 同步更新列表中直接显示的备注内容
+                let remarkTd = currentRemarkRow.querySelector('.remark-display');
+                if (remarkTd) {
+                    remarkTd.innerText = newRemark;
+                }
                 alert("备注保存成功！");
                 closeTargetModal('remarkModal');
             }
@@ -768,6 +793,19 @@
             // 把排好序的数据重新塞回表格
             rows.forEach(row => tbody.appendChild(row));
         }
+    // 账号状态联动自动填写备注的演示逻辑
+        function handleStatusChange(selectElem) {
+            const remarkGroup = document.getElementById('autoRemarkGroup');
+            const remarkInput = document.getElementById('autoRemarkInput');
+            if (selectElem.value === '冻结余额') {
+                remarkGroup.style.display = 'flex';
+                remarkInput.value = '余额锁定中，限制游戏、下单、打赏、发言。';
+            } else {
+                remarkGroup.style.display = 'none';
+                remarkInput.value = '';
+            }
+        }
+    
     </script>
 </body>
 </html>
