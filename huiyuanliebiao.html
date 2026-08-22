@@ -169,6 +169,12 @@
         /* 备注弹窗专用修正 */
         .remark-textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; resize: none; outline: none; }
         .remark-textarea:focus { border-color: var(--primary-blue); }
+    
+    /* --- 会员列表新布局补充样式 --- */
+        .avatar-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; vertical-align: middle; }
+        .cell-break { word-break: break-all; font-size: 11px; }
+        .multi-info { display: flex; flex-direction: column; gap: 4px; }
+    
     </style>
 </head>
 <body>
@@ -280,9 +286,24 @@
                     </div>
                 </div>
 
+                <!-- 合并后的排序单选框 -->
+                    
+                    <div class="search-item input-group" style="margin-left: 10px;">
+                        <span class="form-input" style="display: flex; align-items: center; background-color: #fafafa; border-right: none; border-radius: 4px 0 0 4px; width: auto; color: #666; font-size: 13px;">排序</span>
+                        <select class="form-input" id="sortSelect" style="border-radius: 0 4px 4px 0; width: 125px; flex: none;">
+                            <option value="reg_desc" selected>注册时间倒序</option>
+                            <option value="reg_asc">注册时间正序</option>
+                            <option value="login_desc">登录时间倒序</option>
+                            <option value="login_asc">登录时间正序</option>
+                            <option value="active_desc">活跃日期倒序</option>
+                            <option value="active_asc">活跃日期正序</option>
+                        </select>
+                    </div>
+
+
                 <div class="button-row">
                     <div class="btn-group-left">
-                        <button class="btn-primary">查询</button>
+                        <button class="btn-primary" onclick="executeSort()">查询</button>
                         <button class="btn-primary">批量禁用</button>
                         <button class="btn-primary">批量解锁IM账号</button>
                         <button class="btn-primary">导出会员列表</button>
@@ -302,47 +323,54 @@
                         <tr>
                             <th><input type="checkbox"></th>
                             <th>渠道商</th>
-                            <th>昵称/ID</th>
-                            <th>姓名/号码</th>
+                            <th>头像</th>
+                            <th>昵称/ID/层级</th>
+                            <th>姓名/号码/绑定时间</th>
                             <th>团队</th>
-                            <th>资产</th>
+                            <th>资产/VIP等级</th>
                             <th>金流</th>
                             <th style="min-width: 120px; max-width: 180px;">备注</th>
-                            <th>层级</th>
-                            <th>会员等级</th>
                             <th>状态</th>
-                            <th>设备码</th>
-                            <th>登录/注册IP</th>
-                            <th><span class="sort-btn" style="display:inline-flex;" onclick="sortTable('reg', this)">注册时间 <i class="fa-solid fa-sort sort-icon"></i></span></th>
-                            <th><span class="sort-btn" style="display:inline-flex;" onclick="sortTable('login', this)">登录时间 <i class="fa-solid fa-sort sort-icon"></i></span></th>
-                            <th><span class="sort-btn" style="display:inline-flex;" onclick="sortTable('active', this)">活跃时间 <i class="fa-solid fa-sort sort-icon"></i></span></th>
-                            <th><span class="sort-btn" style="display:inline-flex;" onclick="sortTable('bind', this)">绑定手机时间 <i class="fa-solid fa-sort sort-icon"></i></span></th>
-                            <th style="min-width: 200px;">操作</th>
+                            <th>
+                                登录IP<br>
+                                <span style="margin-top:4px; display:inline-block;">登录时间</span><br>
+                                <span style="margin-top:4px; display:inline-block;">活跃日期</span>
+                            </th>
+                            <th>
+                                注册IP<br>
+                                <span style="margin-top:4px; display:inline-block;">注册时间</span><br>
+                                <span style="font-size: 11px; color: #888; margin-top:4px; display:inline-block;">注册设备码</span>
+                            </th>
+                            <th>详情</th>
+                            <th style="min-width: 180px;">操作</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr data-reg="2026-04-30 14:18:49" data-login="2026-04-30 14:18:49" data-active="2026-04-30" data-bind="2026-04-30 14:20:00" data-remark="这是一个大客户，请多关注。">
                             <td><input type="checkbox"></td>
                             <td>官方渠道</td>
-                            <td>无家可归aegp<br><span class="text-gray">100039991</span></td>
-                            <td>18707594013</td>
-                            <td>上级ID:0<br>团队:8<br>邀请码:4dq3owjqmX</td>
-                            <td>余额:1890</td>
-                            <td>充值:1858<br>提现:0<br>客损:1858<br>总打赏:500<br>总消费:1000</td>
+                            <td><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="头像"></td>
+                            <td>无家可归aegp<br><span class="text-gray">100039991</span><br><span class="text-gray">总充值500-2000可见</span></td>
+                            <td>喜欢123<br><span class="text-gray">18707594013</span><br><span class="text-gray">绑: 2026-04-30 14:20</span></td>
+                            <td>上级ID:0<br>团队:8<br>邀请码:4dq3o</td>
+                            <td>余额:1890<br><span class="text-gray">充值等级:0</span></td>
+                            <td>充值:1858 | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td>
                             <td class="remark-display">这是一个大客户，请多关注。</td>
-                            <td>总充值500-2000可见</td>
-                            <td>充值等级:0</td>
-                            <td>状态:启用</td>
-                            <td>登录:ad5c7a14-2e54-4f71-af20-372e89c6da18<br>注册:ad5c7a14-2e54-4f71-af20-372e89c6da18</td>
-                            <td>登录:47.86.106.73（美国）<br>注册:47.86.106.73（美国）</td>
-                            <td>2026-04-30 14:18:49</td>
-                            <td>2026-04-30 14:18:49</td>
-                            <td>2026-04-30</td>
-                            <td>2026-04-30 14:20:00</td>
+                            <td>启用</td>
+                            <td>
+                                47.86.106.73(美国)<br>
+                                2026-04-30 14:18:49<br>
+                                <span class="text-gray">2026-04-30</span>
+                            </td>
+                            <td>
+                                47.86.106.73(美国)<br>
+                                2026-04-30 14:18:49<br>
+                                <div style="word-break: break-all; font-size: 11px; width: 140px; margin-top:2px;" class="text-gray">ad5c7a14-2e54-4f71-af20-372e89c6da18</div>
+                            </td>
+                            <td><button class="btn-small" onclick="openTargetModal('detailModal')">详情</button></td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
-                                    <button class="btn-small" onclick="openTargetModal('detailModal')">详情</button>
                                     <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                     <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
                                     <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
@@ -355,56 +383,28 @@
                         <tr data-reg="2026-02-15 09:30:11" data-login="2026-05-01 10:20:00" data-active="2026-05-01" data-bind="2026-02-15 09:35:00" data-remark="此用户最近比较活跃。">
                             <td><input type="checkbox"></td>
                             <td>抖音推广</td>
-                            <td>风行者<br><span class="text-gray">100039992</span></td>
-                            <td>13800138000</td>
-                            <td>上级ID:102<br>团队:12<br>邀请码:8abc9xyz</td>
-                            <td>余额:5200</td>
-                            <td>充值:5000<br>提现:200<br>客损:4800<br>总打赏:100<br>总消费:200</td>
+                            <td><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=2" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="头像"></td>
+                            <td>风行者<br><span class="text-gray">100039992</span><br><span class="text-gray">总充值2000-9999可见</span></td>
+                            <td>未填<br><span class="text-gray">13800138000</span><br><span class="text-gray">绑: 2026-02-15 09:35</span></td>
+                            <td>上级ID:102<br>团队:12<br>邀请码:8abc9</td>
+                            <td>余额:5200<br><span class="text-gray">充值等级:3</span></td>
+                            <td>充值:5000 | 提现:200<br>客损:4800<br>总打赏:100 | 总消费:200</td>
                             <td class="remark-display">此用户最近比较活跃。</td>
-                            <td>总充值2000-9999可见</td>
-                            <td>充值等级:3</td>
-                            <td>状态:启用</td>
-                            <td>登录:b2c3d4e5-1111-2222-3333-444455556666<br>注册:b2c3d4e5-1111-2222-3333-444455556666</td>
-                            <td>登录:114.114.114.114（中国）<br>注册:114.114.114.114（中国）</td>
-                            <td>2026-02-15 09:30:11</td>
-                            <td>2026-05-01 10:20:00</td>
-                            <td>2026-05-01</td>
-                            <td>2026-02-15 09:35:00</td>
+                            <td>启用</td>
                             <td>
-                                <div class="action-buttons">
-                                    <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
-                                    <button class="btn-small" onclick="openTargetModal('detailModal')">详情</button>
-                                    <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
-                                    <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                    <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
-                                    <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
-                                    <button class="btn-small">解锁IM</button>
-                                </div>
+                                114.114.114.114(中国)<br>
+                                2026-05-01 10:20:00<br>
+                                <span class="text-gray">2026-05-01</span>
                             </td>
-                        </tr>
-
-                        <tr data-reg="2026-05-02 20:00:00" data-login="2026-04-28 08:15:22" data-active="2026-04-28" data-bind="2026-05-02 20:05:12" data-remark="新注册用户，尚未充值。">
-                            <td><input type="checkbox"></td>
-                            <td>快手推广</td>
-                            <td>沉睡的羊<br><span class="text-gray">100039993</span></td>
-                            <td>13912345678</td>
-                            <td>上级ID:55<br>团队:0<br>邀请码:none</td>
-                            <td>余额:0</td>
-                            <td>充值:0<br>提现:0<br>客损:0<br>总打赏:0<br>总消费:0</td>
-                            <td class="remark-display">新注册用户，尚未充值。</td>
-                            <td>默认层级 0-500可见</td>
-                            <td>充值等级:0</td>
-                            <td>状态:冻结</td>
-                            <td>登录:f9e8d7c6-0000-0000-0000-111122223333<br>注册:f9e8d7c6-0000-0000-0000-111122223333</td>
-                            <td>登录:8.8.8.8（美国）<br>注册:8.8.8.8（美国）</td>
-                            <td>2026-05-02 20:00:00</td>
-                            <td>2026-04-28 08:15:22</td>
-                            <td>2026-04-28</td>
-                            <td>2026-05-02 20:05:12</td>
+                            <td>
+                                114.114.114.114(中国)<br>
+                                2026-02-15 09:30:11<br>
+                                <div style="word-break: break-all; font-size: 11px; width: 140px; margin-top:2px;" class="text-gray">b2c3d4e5-1111-2222-3333-444455556666</div>
+                            </td>
+                            <td><button class="btn-small" onclick="openTargetModal('detailModal')">详情</button></td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
-                                    <button class="btn-small" onclick="openTargetModal('detailModal')">详情</button>
                                     <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                     <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
                                     <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
@@ -730,10 +730,12 @@
             }
         }
 
-        // --- 列表排序逻辑 ---
-        let sortState = {}; // 记录当前的排序状态
-        
-        function sortTable(sortKey, btnElement) {
+        // --- 列表排序逻辑（由查询按钮触发） ---
+        function executeSort() {
+            const sortSelect = document.getElementById('sortSelect').value; // 获取下拉框的值，例如 "reg_desc"
+            if (!sortSelect) return;
+            
+            const [sortField, sortOrder] = sortSelect.split('_'); // 拆分为字段和排序方式
             const tbody = document.querySelector('tbody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
 
@@ -743,57 +745,20 @@
                 tbody.setAttribute('data-init', 'true');
             }
 
-            // 判断下一个排序状态：默认(0) -> 降序(desc) -> 升序(asc) -> 默认(0)
-            let currentStatus = sortState[sortKey] || 'default';
-            let nextStatus = 'desc'; 
-            if (currentStatus === 'desc') nextStatus = 'asc';
-            else if (currentStatus === 'asc') nextStatus = 'default';
-
-            // 重置所有其他的排序图标样式
-            document.querySelectorAll('.sort-icon').forEach(icon => {
-                icon.className = 'fa-solid fa-sort sort-icon';
-            });
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.style.color = '#888';
-                btn.style.fontWeight = 'normal';
-            });
-            
-            // 清理其他字段状态，只保留当前操作的字段
-            sortState = {};
-            sortState[sortKey] = nextStatus;
-
-            // 更改当前点击的图标样式
-            let iconElement = btnElement.querySelector('i');
-            if (nextStatus === 'desc') {
-                iconElement.className = 'fa-solid fa-sort-down sort-icon active-sort';
-                btnElement.style.color = 'var(--primary-blue)';
-            } else if (nextStatus === 'asc') {
-                iconElement.className = 'fa-solid fa-sort-up sort-icon active-sort';
-                btnElement.style.color = 'var(--primary-blue)';
-            } else {
-                iconElement.className = 'fa-solid fa-sort sort-icon';
-            }
-
             // 执行排序
             rows.sort((a, b) => {
-                // 如果是恢复默认，就按最开始记录的索引排回去
-                if (nextStatus === 'default') {
-                    return parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index'));
-                }
-
                 // 获取存在 tr 上的时间数据进行对比
-                let valA = a.getAttribute(`data-${sortKey}`);
-                let valB = b.getAttribute(`data-${sortKey}`);
+                let valA = a.getAttribute(`data-${sortField}`);
+                let valB = b.getAttribute(`data-${sortField}`);
 
-                if (valA < valB) return nextStatus === 'asc' ? -1 : 1;
-                if (valA > valB) return nextStatus === 'asc' ? 1 : -1;
+                if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+                if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
                 return 0;
             });
 
             // 把排好序的数据重新塞回表格
             rows.forEach(row => tbody.appendChild(row));
         }
-    // 账号状态联动自动填写备注的演示逻辑
         function handleStatusChange(selectElem) {
             const remarkGroup = document.getElementById('autoRemarkGroup');
             const remarkInput = document.getElementById('autoRemarkInput');
