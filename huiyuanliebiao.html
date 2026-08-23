@@ -84,7 +84,7 @@
         .btn-bank { background-color: #722ed1; }
 
         /* --- 弹窗逻辑 --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 9999 !important; }
         .modal-content { background-color: #fff; width: 750px; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; }
         .modal-header { padding: 15px 20px; background-color: #fff; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
         .modal-body { padding: 25px; }
@@ -174,6 +174,43 @@
         .avatar-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; vertical-align: middle; }
         .cell-break { word-break: break-all; font-size: 11px; }
         .multi-info { display: flex; flex-direction: column; gap: 4px; }
+    
+    /* --- 新增：分页组件样式 --- */
+    .pagination-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* 靠右显示 */
+        gap: 12px;
+        margin-top: 15px;
+        padding-top: 15px;
+        font-size: 14px;
+        color: #333;
+    }
+    .page-select {
+        padding: 0 10px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+        outline: none;
+        color: #666;
+        background: #fff;
+        height: 32px;
+        cursor: pointer;
+    }
+    .page-btn {
+        background-color: #e6f4ff; /* 浅蓝色背景 */
+        color: #1677ff; /* 蓝色文字 */
+        border: 1px solid #e6f4ff;
+        padding: 0 15px;
+        height: 32px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: 0.3s;
+    }
+    .page-btn:hover {
+        background-color: #1677ff;
+        color: #fff;
+    }
     
     </style>
 </head>
@@ -307,7 +344,7 @@
                         <button class="btn-primary">批量禁用</button>
                         <button class="btn-primary">批量解锁IM账号</button>
                         <button class="btn-primary">导出会员列表</button>
-                        <button class="btn-primary">封号/禁言查询</button>
+                        <button class="btn-primary" style="display: none;">封号/禁言查询</button>
                     </div>
                     <div class="btn-group-right">
                         <button class="btn-primary">重置</button>
@@ -317,7 +354,7 @@
             </div>
 
             <div class="table-container">
-                <div class="table-container" style="overflow-x: auto;">
+                <div class="table-container" style="overflow-x: auto; min-height: 350px; padding-bottom: 120px;">
                 <table style="min-width: 1600px;">
                     <thead>
                         <tr>
@@ -369,13 +406,18 @@
                             </td>
                             <td><button class="btn-small" onclick="openTargetModal('detailModal')">详情</button></td>
                             <td>
-                                <div class="action-buttons">
-                                    <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
-                                    <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
-                                    <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                    <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
-                                    <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
-                                    <button class="btn-small">解锁IM</button>
+                                <div class="action-dropdown-container">
+                                    <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">
+                                        操作 <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                    <div class="action-dropdown-menu">
+                                        <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
+                                        <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
+                                        <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
+                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
+                                        <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
+                                        <button class="btn-small">解锁IM</button>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -403,18 +445,35 @@
                             </td>
                             <td><button class="btn-small" onclick="openTargetModal('detailModal')">详情</button></td>
                             <td>
-                                <div class="action-buttons">
-                                    <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
-                                    <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
-                                    <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                    <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
-                                    <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
-                                    <button class="btn-small">解锁IM</button>
+                                <div class="action-dropdown-container">
+                                    <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">
+                                        操作 <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                    <div class="action-dropdown-menu">
+                                        <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
+                                        <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
+                                        <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
+                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
+                                        <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
+                                        <button class="btn-small">解锁IM</button>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- 新增：底部翻页组件 (放在滚动容器外部，永远可见) -->
+            <div class="pagination-container">
+                <span>共 0 条</span>
+                <select class="page-select">
+                    <option>50条/页</option>
+                    <option>100条/页</option>
+                    <option>200条/页</option>
+                </select>
+                <button class="page-btn">上一页</button>
+                <button class="page-btn">下一页</button>
             </div>
         </div>
     </div>
@@ -433,6 +492,29 @@
                 border-width: 5px; border-style: solid; border-color: rgba(0,0,0,0.8) transparent transparent transparent;
             }
             .tooltip-box:hover .tooltip-text { visibility: visible; opacity: 1; }
+        
+        
+        /* --- 新增：操作下拉菜单样式 --- */
+    .action-dropdown-container { position: relative; display: inline-block; }
+    .btn-dropdown-trigger { background-color: #4096ff; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+    .btn-dropdown-trigger:hover { background-color: #1677ff; }
+    .action-dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 5px;
+        background-color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 4px;
+        padding: 10px;
+        z-index: 100;
+        width: 170px; /* 调整宽度，刚好够排下2列 */
+    }
+    /* 使用 grid 布局强制分为2列，6个按钮自然变成3排 */
+    .action-dropdown-menu.show { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .action-dropdown-menu .btn-small { width: 100%; margin: 0; padding: 6px 0; }
+        
         </style>
 
         <div class="modal-content" style="width: 1000px;">
@@ -771,6 +853,34 @@
             }
         }
     
+    // --- 新增：操作下拉菜单点击逻辑 ---
+        function toggleActionDropdown(event, btnElement) {
+            // 阻止事件冒泡，防止触发下面点击空白处关闭的逻辑
+            event.stopPropagation(); 
+            
+            // 获取当前点击按钮对应的下拉菜单
+            const currentMenu = btnElement.nextElementSibling;
+            
+            // 先关闭页面上所有其他已打开的下拉菜单
+            document.querySelectorAll('.action-dropdown-menu.show').forEach(menu => {
+                if (menu !== currentMenu) {
+                    menu.classList.remove('show');
+                }
+            });
+
+            // 切换当前菜单的显示/隐藏状态
+            currentMenu.classList.toggle('show');
+        }
+
+        // 点击页面其他空白处时，自动关闭已打开的下拉菜单
+        window.addEventListener('click', function(event) {
+            if (!event.target.closest('.action-dropdown-container')) {
+                document.querySelectorAll('.action-dropdown-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+
     </script>
 </body>
 </html>
