@@ -326,7 +326,7 @@
 
         .modal-content {
             background-color: #fff;
-            width: 900px; /* 【修改点】宽度扩大1.5倍 */
+            width: 1100px; /* 【修改点】加宽到1100px以适配新增列 */
             border-radius: 4px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             overflow: hidden;
@@ -755,7 +755,7 @@
                     <strong>3. 默认值规则：</strong>新增加的钱包、USDT、免提直充的手续费及提款限额数据不能为空，按照与银行卡的手续费及提款限额相同初始化数据。支付宝的手续费及提款限额保持不变。
                 </p>
                 <p style="margin: 0; color: #595959; font-size: 14px; line-height: 1.6;">
-                    <strong>4. 提款次数限制：</strong>新增各个提现方式的提款次数限制配置，次数可由管理员自行设定。当会员达到最大次数时，前端发起取款需提示会员“当前取款方式取款次数超限”。
+                    <strong>4. 提款次数限制：</strong>新增各个提现方式的提款次数限制配置，次数可由管理员自行设定。当会员达到最大次数时，前端发起取款展示超限提示文案。
                 </p>
             </div>
 
@@ -827,13 +827,14 @@
                             <table class="withdraw-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 8%">排序</th>
-                                        <th style="width: 10%">提现方式</th>
-                                        <th style="width: 17%">状态</th>
-                                        <th style="width: 13%">手续费类型</th>
-                                        <th style="width: 12%">手续费</th>
-                                        <th style="width: 28%">单次限额 (下限-上限)</th>
-                                        <th style="width: 12%">次数限制</th>
+                                        <th style="width: 6%">排序</th>
+                                        <th style="width: 8%">提现方式</th>
+                                        <th style="width: 14%">状态</th>
+                                        <th style="width: 12%">手续费类型</th>
+                                        <th style="width: 10%">手续费</th>
+                                        <th style="width: 24%">单次限额 (下限-上限)</th>
+                                        <th style="width: 10%">次数限制</th>
+                                        <th style="width: 16%">超限提示文案</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -869,6 +870,7 @@
                                                         </div>
                                                     </td>
                                                     <td><input type="text" class="form-input" placeholder="次"></td>
+                                                    <td><input type="text" class="form-input" placeholder="请输入超限提示文案"></td>
                                                 </tr>
                                             `);
                                         });
@@ -973,13 +975,14 @@
                             <table class="withdraw-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 8%">排序</th>
-                                        <th style="width: 10%">提现方式</th>
-                                        <th style="width: 17%">状态</th>
-                                        <th style="width: 13%">手续费类型</th>
-                                        <th style="width: 12%">手续费</th>
-                                        <th style="width: 28%">单次限额 (下限-上限)</th>
-                                        <th style="width: 12%">次数限制</th>
+                                        <th style="width: 6%">排序</th>
+                                        <th style="width: 8%">提现方式</th>
+                                        <th style="width: 14%">状态</th>
+                                        <th style="width: 12%">手续费类型</th>
+                                        <th style="width: 10%">手续费</th>
+                                        <th style="width: 24%">单次限额 (下限-上限)</th>
+                                        <th style="width: 10%">次数限制</th>
+                                        <th style="width: 16%">超限提示文案</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1017,6 +1020,7 @@
                                                         </div>
                                                     </td>
                                                     <td><input type="text" class="form-input" value="5"></td>
+                                                    <td><input type="text" class="form-input" value="当前取款方式取款次数超限"></td>
                                                 </tr>
                                             `);
                                         });
