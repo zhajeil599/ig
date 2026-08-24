@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可拖拽排序的分类列表</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .table-container {
+            width: 100%;
+            max-width: 1200px;
+            background: #ffffff;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #ebeef5;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        th, td {
+            padding: 16px 20px;
+            border: 1px solid #ebeef5;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #909399;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        td {
+            color: #606266;
+            font-size: 15px;
+        }
+        
+        tr {
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        tr:hover {
+            background-color: #f5f7fa;
+        }
+        
+        /* 拖拽相关状态 */
+        tr.dragging {
+            opacity: 0.6;
+            background-color: #e6f1fc;
+        }
+        tr.drag-over-top {
+            border-top: 3px solid #409eff;
+        }
+        tr.drag-over-bottom {
+            border-bottom: 3px solid #409eff;
+        }
+        
+        .serial-number {
+            font-weight: 600;
+            color: #909399;
+        }
+
+        /* 拖拽手柄专属样式 */
+        .drag-handle {
+            cursor: grab;
+            color: #c0c4cc;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        .drag-handle:hover {
+            color: #409eff;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        /* 为了更好的体验，拖拽时禁止选中文本 */
+        .unselectable {
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="table-container">
+        <table id="sortableTable">
+            <thead>
+                <tr>
+                    <th style="width: 10%;"></th> <!-- 专门用于放置拖拽符号 -->
+                    <th style="width: 15%;">序号</th>
+                    <th style="width: 75%;">名称</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 数据由JS渲染 -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const data = [
+            {"name": "标签列表测试"},
+            {"name": "日本有码"},
+            {"name": "国产自拍"},
+            {"name": "SWAG"},
+            {"name": "日韩"},
+            {"name": "传媒"},
+            {"name": "中文字幕"},
+            {"name": "国产探花"},
+            {"name": "日本无码"},
+            {"name": "强奸乱伦"},
+            {"name": "人妻熟女"},
+            {"name": "制度诱惑"},
+            {"name": "欧美"},
+            {"name": "主播"}
+        ];
+
+        const tbody = document.querySelector('#sortableTable tbody');
+
+        // 使用标准的“六个点”拖拽指示器 SVG (Drag Indicator)
+        const dragIconSVG = `
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" style="display:block; margin: 0 auto;">
+                <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+            </svg>
+        `;
+
+        function renderTable() {
+            tbody.innerHTML = '';
+            data.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td class="drag-handle" title="按住拖动排序">${dragIconSVG}</td>
+                    <td class="serial-number">${index + 1}</td>
+                    <td>${item.name}</td>
+                `;
+                tbody.appendChild(tr);
+                
+                const handle = tr.querySelector('.drag-handle');
+                
+                // 只有当鼠标按住【拖拽符号】时，才让整行开启可拖拽模式 ( draggable = true )
+                handle.addEventListener('mousedown', () => {
+                    tr.setAttribute('draggable', 'true');
+                    document.body.classList.add('unselectable');
+                });
+                
+                // 鼠标松开或离开时，取消整行的拖拽能力，防止误触
+                handle.addEventListener('mouseup', () => {
+                    tr.setAttribute('draggable', 'false');
+                    document.body.classList.remove('unselectable');
+                });
+                handle.addEventListener('mouseleave', () => {
+                    tr.setAttribute('draggable', 'false');
+                    document.body.classList.remove('unselectable');
+                });
+
+                addDragEvents(tr);
+            });
+        }
+
+        function updateSerialNumbers() {
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach((row, index) => {
+                row.querySelector('.serial-number').textContent = index + 1;
+            });
+        }
+
+        let dragSrcEl = null;
+
+        function addDragEvents(item) {
+            item.addEventListener('dragstart', handleDragStart, false);
+            item.addEventListener('dragenter', handleDragEnter, false);
+            item.addEventListener('dragover', handleDragOver, false);
+            item.addEventListener('dragleave', handleDragLeave, false);
+            item.addEventListener('drop', handleDrop, false);
+            item.addEventListener('dragend', handleDragEnd, false);
+        }
+
+        function handleDragStart(e) {
+            dragSrcEl = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+            this.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault(); 
+            }
+            e.dataTransfer.dropEffect = 'move';
+            
+            const rect = this.getBoundingClientRect();
+            const relY = e.clientY - rect.top;
+            if (relY < rect.height / 2) {
+                this.classList.add('drag-over-top');
+                this.classList.remove('drag-over-bottom');
+            } else {
+                this.classList.add('drag-over-bottom');
+                this.classList.remove('drag-over-top');
+            }
+            return false;
+        }
+
+        function handleDragEnter(e) {
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over-top');
+            this.classList.remove('drag-over-bottom');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            if (dragSrcEl !== this) {
+                const rect = this.getBoundingClientRect();
+                const relY = e.clientY - rect.top;
+                
+                if (relY < rect.height / 2) {
+                    this.parentNode.insertBefore(dragSrcEl, this);
+                } else {
+                    this.parentNode.insertBefore(dragSrcEl, this.nextSibling);
+                }
+            }
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(function (row) {
+                row.classList.remove('drag-over-top');
+                row.classList.remove('drag-over-bottom');
+                row.classList.remove('dragging');
+                row.setAttribute('draggable', 'false'); // 重置拖拽状态
+            });
+            document.body.classList.remove('unselectable');
+            updateSerialNumbers();
+        }
+
+        renderTable();
+    </script>
+</body>
+</html>
