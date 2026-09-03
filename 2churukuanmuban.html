@@ -581,7 +581,29 @@
             color: #1890ff;
             display: inline-block;
             width: 20px;
+        }.sort-number {
+            font-weight: bold;
+            color: #1890ff;
+            display: inline-block;
+            width: 20px;
         }
+        
+        /* 问号提示图标样式 */
+        .help-icon {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            line-height: 14px;
+            text-align: center;
+            border-radius: 50%;
+            background-color: #bfbfbf;
+            color: #fff;
+            font-size: 11px;
+            cursor: help;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        /* 👆新增样式结束👆 */
         /* 👆新增样式结束👆 */
 
     </style>
@@ -944,7 +966,7 @@
                                         <th style="width: 12%">手续费类型</th>
                                         <th style="width: 10%">手续费</th>
                                         <th style="width: 24%">单次限额 (下限-上限)</th>
-                                        <th style="width: 10%">次数限制</th>
+                                        <th style="width: 10%">次数限制<span class="help-icon" title="以自然日为周期的提现次数限制（进行中+成功状态），填0则不限制。">?</span></th>
                                         <th style="width: 16%">超限提示文案</th>
                                     </tr>
                                 </thead>
@@ -989,6 +1011,13 @@
                                     </script>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">提现说明:</label>
+                        <div class="form-input-container">
+                            <textarea placeholder="请输入提现说明" maxlength="500"></textarea>
                         </div>
                     </div>
 
@@ -1078,7 +1107,7 @@
                                         <th style="width: 12%">手续费类型</th>
                                         <th style="width: 10%">手续费</th>
                                         <th style="width: 24%">单次限额 (下限-上限)</th>
-                                        <th style="width: 10%">次数限制</th>
+                                        <th style="width: 10%">次数限制<span class="help-icon" title="以自然日为周期的提现次数限制（进行中+成功状态），填0则不限制。">?</span></th>
                                         <th style="width: 16%">超限提示文案</th>
                                     </tr>
                                 </thead>
@@ -1129,6 +1158,13 @@
                         </div>
                     </div>
 
+                    <div class="form-item">
+                        <label class="form-label">提现说明:</label>
+                        <div class="form-input-container">
+                            <textarea placeholder="请输入提现说明" maxlength="500">这里是默认提现说明</textarea>
+                        </div>
+                    </div>
+                    
                     <div class="form-item">
                         <label class="form-label">备注:</label>
                         <div class="form-input-container">
