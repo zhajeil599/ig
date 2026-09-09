@@ -17,20 +17,21 @@
 
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #f4f7f6;
+            background-color: #ffffff;
             color: #333;
-            /* 页面四周留出 15px 边距 */
+            /* 紧贴左上角，仅保留15px的基础边距避免贴死屏幕边缘 */
             padding: 15px; 
-            min-height: 100vh;
+            margin: 0;
         }
 
         .container {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-            /* 撑满外层，去除之前的 max-width 限制 */
-            width: 100%; 
+            background: #ffffff;
+            /* 不铺满全屏，设置一个合适的固定宽度 */
+            width: 800px; 
+            max-width: 100%;
+            /* 只去除了最外层的边框和阴影 */
+            box-shadow: none;
+            border: none;
         }
 
         .header {
@@ -38,8 +39,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
             padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
         }
 
         .header h2 {
@@ -80,6 +81,7 @@
             padding: 15px;
             margin-bottom: 12px;
             border-radius: 8px;
+            /* 恢复列表项边框 */
             border: 1px solid #e0e0e0;
             transition: box-shadow 0.2s;
         }
@@ -105,6 +107,7 @@
             position: relative;
             width: 50px;
             height: 50px;
+            /* 恢复虚线边框 */
             border: 1px dashed #ccc;
             border-radius: 8px;
             margin-right: 20px;
@@ -145,14 +148,14 @@
         .form-group {
             display: flex;
             gap: 20px;
-            flex: 1; /* 自适应剩余的所有宽度 */
+            flex: 1;
             align-items: center;
         }
 
         .form-group .field {
             display: flex;
             flex-direction: column;
-            flex: 1; /* 两个输入框均分宽度 */
+            flex: 1; 
         }
         
         .form-group .field label {
@@ -163,11 +166,13 @@
 
         input[type="text"], select {
             padding: 10px;
+            /* 恢复输入框边框 */
             border: 1px solid #ccc;
             border-radius: 6px;
             outline: none;
             font-size: 14px;
             width: 100%;
+            background-color: #fff;
         }
 
         input[type="text"]:focus, select:focus {
@@ -201,13 +206,6 @@
             color: #ccc;
             cursor: not-allowed;
         }
-
-        .tips {
-            font-size: 13px;
-            color: #7f8c8d;
-            margin-top: 20px;
-            line-height: 1.6;
-        }
     </style>
 </head>
 <body>
@@ -221,14 +219,6 @@
     <ul class="menu-list" id="menu-list">
         <!-- JS 动态渲染列表 -->
     </ul>
-
-    <div class="tips">
-        <p><strong>💡 提示：</strong></p>
-        <p>1. 拖动左侧 <i class="fa-solid fa-bars"></i> 图标可调整排序。</p>
-        <p>2. 图标建议尺寸 40*40px，限制大小 5M。</p>
-        <p>3. 菜单名称最多限制输入 5 个字符。</p>
-        <p>4. 游戏中心、我的、聊天室为基础核心模块，不可删除。至多配置 6 个菜单。</p>
-    </div>
 </div>
 
 <script>
