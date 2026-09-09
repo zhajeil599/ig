@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APP底部菜单配置</title>
+    <!-- 引入 Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 SortableJS 拖拽库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .header h2 {
+            font-size: 20px;
+            color: #2c3e50;
+        }
+
+        .header .add-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .header .add-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .header .add-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        /* 列表容器 */
+        .menu-list {
+            list-style: none;
+        }
+
+        /* 列表项 */
+        .menu-item {
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: box-shadow 0.2s;
+        }
+
+        .menu-item.sortable-ghost {
+            opacity: 0.4;
+            background-color: #f0f0f0;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: #95a5a6;
+            font-size: 20px;
+            padding: 0 15px;
+        }
+        
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* 图标上传区 */
+        .icon-upload-wrapper {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            margin-right: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: #fff;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .icon-upload-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .icon-upload-wrapper .placeholder {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .icon-upload-wrapper input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            left: 0;
+            top: 0;
+        }
+
+        /* 表单输入区 */
+        .form-group {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+            align-items: center;
+        }
+
+        .form-group .field {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .form-group .field label {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: #3498db;
+        }
+
+        /* 操作区 */
+        .actions {
+            width: 60px;
+            display: flex;
+            justify-content: flex-end;
+            padding-left: 15px;
+        }
+
+        .delete-btn {
+            color: #e74c3c;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            transition: color 0.3s;
+        }
+
+        .delete-btn:hover {
+            color: #c0392b;
+        }
+        
+        .delete-btn:disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .tips {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>底部菜单配置 <span id="count-display" style="font-size:14px; color:#7f8c8d; font-weight:normal;"></span></h2>
+        <button class="add-btn" id="add-btn" onclick="addMenu()"><i class="fa-solid fa-plus"></i> 新增菜单</button>
+    </div>
+
+    <ul class="menu-list" id="menu-list">
+        <!-- JS 动态渲染列表 -->
+    </ul>
+
+    <div class="tips">
+        <p><strong>💡 提示：</strong></p>
+        <p>1. 拖动左侧 <i class="fa-solid fa-bars"></i> 图标可调整排序。</p>
+        <p>2. 图标建议尺寸 40*40px，限制大小 5M。</p>
+        <p>3. 菜单名称最多限制输入 5 个字符。</p>
+        <p>4. 游戏中心、我的、聊天室为基础核心模块，不可删除。至多配置 6 个菜单。</p>
+    </div>
+</div>
+
+<script>
+    // 支持的展示页选项
+    const pageOptions = [
+        "视频", "短视频", "聊天室", "活动", "游戏中心", 
+        "充值中心", "我的", "体育", "站内信", "私聊"
+    ];
+
+    // 初始/默认数据
+    // protected: true 表示不可删除的特殊项
+    let menuData = [
+        { id: generateId(), name: '视频', page: '视频', icon: '', protected: false },
+        { id: generateId(), name: '抖音', page: '短视频', icon: '', protected: false },
+        { id: generateId(), name: '聊天', page: '聊天室', icon: '', protected: true },
+        { id: generateId(), name: '活动', page: '活动', icon: '', protected: false },
+        { id: generateId(), name: '游戏', page: '游戏中心', icon: '', protected: true },
+        { id: generateId(), name: '我的', page: '我的', icon: '', protected: true }
+    ];
+
+    const listElement = document.getElementById('menu-list');
+    const addBtn = document.getElementById('add-btn');
+    const countDisplay = document.getElementById('count-display');
+
+    // 初始化拖拽
+    let sortable = new Sortable(listElement, {
+        handle: '.drag-handle', // 只有按住 handle 才能拖动
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function (evt) {
+            // 同步数组数据顺序
+            const movedItem = menuData.splice(evt.oldIndex, 1)[0];
+            menuData.splice(evt.newIndex, 0, movedItem);
+        }
+    });
+
+    // 生成随机ID
+    function generateId() {
+        return Math.random().toString(36).substr(2, 9);
+    }
+
+    // 渲染下拉框HTML
+    function getPageOptionsHtml(selectedPage) {
+        return pageOptions.map(page => {
+            const isSelected = page === selectedPage ? 'selected' : '';
+            return `<option value="${page}" ${isSelected}>${page}</option>`;
+        }).join('');
+    }
+
+    // 渲染列表
+    function renderList() {
+        listElement.innerHTML = '';
+        
+        menuData.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.className = 'menu-item';
+            li.dataset.id = item.id;
+
+            // 图标回显逻辑
+            const imgDisplay = item.icon ? 'style="display:block;"' : '';
+            const placeholderDisplay = item.icon ? 'style="display:none;"' : '';
+
+            li.innerHTML = `
+                <i class="fa-solid fa-bars drag-handle" title="拖动排序"></i>
+                
+                <div class="icon-upload-wrapper" title="点击上传图标 (40x40px)">
+                    <div class="placeholder" ${placeholderDisplay}>上传<br>图标</div>
+                    <img src="${item.icon}" ${imgDisplay} id="img-${item.id}">
+                    <input type="file" accept="image/png, image/jpeg, image/gif, image/webp" 
+                           onchange="handleImageUpload(event, '${item.id}')">
+                </div>
+
+                <div class="form-group">
+                    <div class="field">
+                        <label>菜单名称 (最多5字符)</label>
+                        <input type="text" maxlength="5" value="${item.name}" 
+                               placeholder="输入名称"
+                               onchange="updateData('${item.id}', 'name', this.value)">
+                    </div>
+                    
+                    <div class="field">
+                        <label>关联展示页</label>
+                        <select onchange="updateData('${item.id}', 'page', this.value)">
+                            ${getPageOptionsHtml(item.page)}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="delete-btn" 
+                            onclick="deleteMenu('${item.id}')" 
+                            ${item.protected ? 'disabled title="基础模块不可删除"' : 'title="删除菜单"'}>
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            listElement.appendChild(li);
+        });
+
+        updateUIStatus();
+    }
+
+    // 更新按钮状态和数量显示
+    function updateUIStatus() {
+        const currentCount = menuData.length;
+        countDisplay.textContent = `( ${currentCount} / 6 )`;
+        addBtn.disabled = currentCount >= 6;
+    }
+
+    // 更新数据模型
+    window.updateData = function(id, key, value) {
+        const item = menuData.find(m => m.id === id);
+        if (item) {
+            item[key] = value;
+        }
+    };
+
+    // 处理图片上传
+    window.handleImageUpload = function(event, id) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // 限制大小 5M = 5 * 1024 * 1024 bytes
+        if (file.size > 5 * 1024 * 1024) {
+            alert('上传失败：图片大小不能超过 5MB');
+            event.target.value = ''; // 清空 input
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            // 更新数据
+            updateData(id, 'icon', base64Data);
+            
+            // 局部更新DOM，不重新渲染整个列表，防止失去焦点
+            const wrapper = event.target.parentElement;
+            const img = wrapper.querySelector('img');
+            const placeholder = wrapper.querySelector('.placeholder');
+            img.src = base64Data;
+            img.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // 新增菜单
+    window.addMenu = function() {
+        if (menuData.length >= 6) {
+            alert('至多只能配置6个菜单页面！');
+            return;
+        }
+        menuData.push({
+            id: generateId(),
+            name: '新菜单',
+            page: '视频', // 默认选中第一项
+            icon: '',
+            protected: false
+        });
+        renderList();
+    };
+
+    // 删除菜单
+    window.deleteMenu = function(id) {
+        const itemIndex = menuData.findIndex(m => m.id === id);
+        if (itemIndex === -1) return;
+        
+        if (menuData[itemIndex].protected) {
+            alert('核心模块不可删除！');
+            return;
+        }
+
+        if (confirm(`确定要删除【${menuData[itemIndex].name}】菜单吗？`)) {
+            menuData.splice(itemIndex, 1);
+            renderList();
+        }
+    };
+
+    // 初始化渲染
+    renderList();
+</script>
+
+</body>
+</html>
