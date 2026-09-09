@@ -19,21 +19,18 @@
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background-color: #ffffff;
             color: #333;
-            /* 紧贴左上角，仅保留15px的基础边距避免贴死屏幕边缘 */
             padding: 15px; 
             margin: 0;
         }
 
         .container {
             background: #ffffff;
-            /* 不铺满全屏，设置一个合适的固定宽度 */
             width: 800px; 
             max-width: 100%;
-            /* 只去除了最外层的边框和阴影 */
-            box-shadow: none;
             border: none;
         }
 
+        /* 头部区域 */
         .header {
             display: flex;
             justify-content: space-between;
@@ -48,25 +45,37 @@
             color: #2c3e50;
         }
 
-        .header .add-btn {
-            background-color: #3498db;
-            color: white;
+        /* 按钮组通用样式 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
             border: none;
-            padding: 10px 20px;
+            padding: 8px 18px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .header .add-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .header .add-btn:disabled {
-            background-color: #bdc3c7;
+        .btn:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
         }
+
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: #2980b9; }
+
+        .btn-success { background-color: #2ecc71; color: white; }
+        .btn-success:hover:not(:disabled) { background-color: #27ae60; }
+
+        .btn-default { background-color: #f1f3f5; color: #495057; }
+        .btn-default:hover:not(:disabled) { background-color: #e2e6ea; }
 
         /* 列表容器 */
         .menu-list {
@@ -81,7 +90,6 @@
             padding: 15px;
             margin-bottom: 12px;
             border-radius: 8px;
-            /* 恢复列表项边框 */
             border: 1px solid #e0e0e0;
             transition: box-shadow 0.2s;
         }
@@ -96,6 +104,7 @@
             color: #95a5a6;
             font-size: 20px;
             padding: 0 15px;
+            transition: opacity 0.3s;
         }
         
         .drag-handle:active {
@@ -107,7 +116,6 @@
             position: relative;
             width: 50px;
             height: 50px;
-            /* 恢复虚线边框 */
             border: 1px dashed #ccc;
             border-radius: 8px;
             margin-right: 20px;
@@ -118,6 +126,7 @@
             background-color: #fff;
             overflow: hidden;
             flex-shrink: 0;
+            transition: border-color 0.3s;
         }
 
         .icon-upload-wrapper img {
@@ -166,13 +175,13 @@
 
         input[type="text"], select {
             padding: 10px;
-            /* 恢复输入框边框 */
             border: 1px solid #ccc;
             border-radius: 6px;
             outline: none;
             font-size: 14px;
             width: 100%;
             background-color: #fff;
+            transition: all 0.3s;
         }
 
         input[type="text"]:focus, select:focus {
@@ -186,6 +195,7 @@
             justify-content: flex-end;
             padding-left: 15px;
             flex-shrink: 0;
+            transition: opacity 0.3s;
         }
 
         .delete-btn {
@@ -198,13 +208,47 @@
             transition: color 0.3s;
         }
 
-        .delete-btn:hover {
+        .delete-btn:hover:not(:disabled) {
             color: #c0392b;
         }
         
         .delete-btn:disabled {
             color: #ccc;
             cursor: not-allowed;
+        }
+
+        /* ================= 浏览模式（View Mode）特殊样式 ================= */
+        .view-mode .drag-handle {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .view-mode .actions {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .view-mode .icon-upload-wrapper {
+            border-color: transparent; /* 去除虚线 */
+            cursor: default;
+        }
+        
+        .view-mode .icon-upload-wrapper input[type="file"] {
+            display: none; /* 禁用上传 */
+        }
+
+        /* 禁用状态下的输入框看起来像普通文本 */
+        .view-mode input[type="text"]:disabled, 
+        .view-mode select:disabled {
+            background-color: transparent;
+            border-color: transparent;
+            color: #333;
+            -webkit-text-fill-color: #333; /* 解决 iOS/Safari 字体变灰问题 */
+            opacity: 1;
+            padding-left: 0; /* 对齐左边缘 */
+            cursor: default;
+            appearance: none;
+            -webkit-appearance: none; /* 隐藏 select 的下拉箭头 */
         }
     </style>
 </head>
@@ -213,15 +257,35 @@
 <div class="container">
     <div class="header">
         <h2>底部菜单配置 <span id="count-display" style="font-size:14px; color:#7f8c8d; font-weight:normal;"></span></h2>
-        <button class="add-btn" id="add-btn" onclick="addMenu()"><i class="fa-solid fa-plus"></i> 新增菜单</button>
+        
+        <div class="btn-group">
+            <!-- 浏览状态显示的按钮 -->
+            <button class="btn btn-primary" id="edit-mode-btn" onclick="enterEditMode()">
+                <i class="fa-solid fa-pen-to-square"></i> 编辑
+            </button>
+            
+            <!-- 编辑状态显示的按钮 (默认隐藏) -->
+            <button class="btn btn-default" id="cancel-btn" onclick="cancelEdit()" style="display:none;">取消</button>
+            <button class="btn btn-primary" id="save-btn" onclick="saveEdit()" style="display:none;">保存</button>
+            <button class="btn btn-success" id="add-btn" onclick="addMenu()" style="display:none;">
+                <i class="fa-solid fa-plus"></i> 新增菜单
+            </button>
+        </div>
     </div>
 
-    <ul class="menu-list" id="menu-list">
+    <!-- 添加 view-mode 类来控制全局只读样式 -->
+    <ul class="menu-list view-mode" id="menu-list">
         <!-- JS 动态渲染列表 -->
     </ul>
 </div>
 
 <script>
+    // 页面状态：false = 浏览模式(默认) , true = 编辑模式
+    let isEditMode = false;
+    
+    // 用于“取消”时回滚的数据备份
+    let menuDataBackup = []; 
+
     // 支持的展示页选项
     const pageOptions = [
         "视频", "短视频", "聊天室", "活动", "游戏中心", 
@@ -229,7 +293,6 @@
     ];
 
     // 初始/默认数据
-    // protected: true 表示不可删除的特殊项
     let menuData = [
         { id: generateId(), name: '视频', page: '视频', icon: '', protected: false },
         { id: generateId(), name: '抖音', page: '短视频', icon: '', protected: false },
@@ -243,11 +306,12 @@
     const addBtn = document.getElementById('add-btn');
     const countDisplay = document.getElementById('count-display');
 
-    // 初始化拖拽
+    // 初始化拖拽 (默认禁用，进入编辑模式后开启)
     let sortable = new Sortable(listElement, {
-        handle: '.drag-handle', // 只有按住 handle 才能拖动
+        handle: '.drag-handle',
         animation: 150,
         ghostClass: 'sortable-ghost',
+        disabled: true, // 初始禁止拖拽
         onEnd: function (evt) {
             // 同步数组数据顺序
             const movedItem = menuData.splice(evt.oldIndex, 1)[0];
@@ -268,11 +332,63 @@
         }).join('');
     }
 
-    // 渲染列表
+    // ================= 核心操作事件 =================
+
+    // 1. 进入编辑模式
+    window.enterEditMode = function() {
+        isEditMode = true;
+        // 深拷贝备份当前数据，用于取消时还原
+        menuDataBackup = JSON.parse(JSON.stringify(menuData));
+        
+        // 开启拖拽
+        sortable.option("disabled", false);
+        
+        renderList(); // 重新渲染（解除表单禁用状态）
+    };
+
+    // 2. 取消编辑
+    window.cancelEdit = function() {
+        isEditMode = false;
+        // 将数据恢复为备份的数据
+        menuData = JSON.parse(JSON.stringify(menuDataBackup));
+        
+        // 关闭拖拽
+        sortable.option("disabled", true);
+        
+        renderList();
+    };
+
+    // 3. 保存编辑
+    window.saveEdit = function() {
+        // 这里可以加入提交到后端的 API 逻辑
+        isEditMode = false;
+        sortable.option("disabled", true);
+        
+        alert("配置保存成功！");
+        renderList();
+    };
+
+
+    // ================= 渲染与数据更新 =================
+
+    // 渲染列表与控制按钮状态
     function renderList() {
+        // 1. 控制外层容器样式 (切换 view-mode 类)
+        if (isEditMode) {
+            listElement.classList.remove('view-mode');
+        } else {
+            listElement.classList.add('view-mode');
+        }
+
+        // 2. 控制头部按钮显隐
+        document.getElementById('edit-mode-btn').style.display = isEditMode ? 'none' : 'flex';
+        document.getElementById('cancel-btn').style.display = isEditMode ? 'block' : 'none';
+        document.getElementById('save-btn').style.display = isEditMode ? 'block' : 'none';
+        document.getElementById('add-btn').style.display = isEditMode ? 'flex' : 'none';
+
         listElement.innerHTML = '';
         
-        menuData.forEach((item, index) => {
+        menuData.forEach((item) => {
             const li = document.createElement('li');
             li.className = 'menu-item';
             li.dataset.id = item.id;
@@ -280,28 +396,31 @@
             // 图标回显逻辑
             const imgDisplay = item.icon ? 'style="display:block;"' : '';
             const placeholderDisplay = item.icon ? 'style="display:none;"' : '';
+            
+            // 是否禁用表单元素
+            const disableAttr = isEditMode ? '' : 'disabled';
 
             li.innerHTML = `
                 <i class="fa-solid fa-bars drag-handle" title="拖动排序"></i>
                 
-                <div class="icon-upload-wrapper" title="点击上传图标 (40x40px)">
+                <div class="icon-upload-wrapper" title="${isEditMode ? '点击上传图标 (40x40px)' : ''}">
                     <div class="placeholder" ${placeholderDisplay}>上传<br>图标</div>
                     <img src="${item.icon}" ${imgDisplay} id="img-${item.id}">
                     <input type="file" accept="image/png, image/jpeg, image/gif, image/webp" 
-                           onchange="handleImageUpload(event, '${item.id}')">
+                           onchange="handleImageUpload(event, '${item.id}')" ${disableAttr}>
                 </div>
 
                 <div class="form-group">
                     <div class="field">
                         <label>菜单名称 (最多5字符)</label>
                         <input type="text" maxlength="5" value="${item.name}" 
-                               placeholder="输入名称"
+                               placeholder="输入名称" ${disableAttr}
                                onchange="updateData('${item.id}', 'name', this.value)">
                     </div>
                     
                     <div class="field">
                         <label>关联展示页</label>
-                        <select onchange="updateData('${item.id}', 'page', this.value)">
+                        <select onchange="updateData('${item.id}', 'page', this.value)" ${disableAttr}>
                             ${getPageOptionsHtml(item.page)}
                         </select>
                     </div>
@@ -310,7 +429,8 @@
                 <div class="actions">
                     <button class="delete-btn" 
                             onclick="deleteMenu('${item.id}')" 
-                            ${item.protected ? 'disabled title="基础模块不可删除"' : 'title="删除菜单"'}>
+                            ${(item.protected || !isEditMode) ? 'disabled' : ''} 
+                            title="${item.protected ? '基础模块不可删除' : '删除菜单'}">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -321,15 +441,19 @@
         updateUIStatus();
     }
 
-    // 更新按钮状态和数量显示
+    // 更新角标及新增按钮状态
     function updateUIStatus() {
         const currentCount = menuData.length;
         countDisplay.textContent = `( ${currentCount} / 6 )`;
-        addBtn.disabled = currentCount >= 6;
+        // 如果处于编辑模式且达到6个，则禁用新增按钮
+        if(isEditMode) {
+            addBtn.disabled = currentCount >= 6;
+        }
     }
 
-    // 更新数据模型
+    // 更新局部数据
     window.updateData = function(id, key, value) {
+        if(!isEditMode) return;
         const item = menuData.find(m => m.id === id);
         if (item) {
             item[key] = value;
@@ -338,23 +462,22 @@
 
     // 处理图片上传
     window.handleImageUpload = function(event, id) {
+        if(!isEditMode) return;
+        
         const file = event.target.files[0];
         if (!file) return;
 
-        // 限制大小 5M = 5 * 1024 * 1024 bytes
         if (file.size > 5 * 1024 * 1024) {
             alert('上传失败：图片大小不能超过 5MB');
-            event.target.value = ''; // 清空 input
+            event.target.value = ''; 
             return;
         }
 
         const reader = new FileReader();
         reader.onload = function(e) {
             const base64Data = e.target.result;
-            // 更新数据
             updateData(id, 'icon', base64Data);
             
-            // 局部更新DOM，不重新渲染整个列表，防止失去焦点
             const wrapper = event.target.parentElement;
             const img = wrapper.querySelector('img');
             const placeholder = wrapper.querySelector('.placeholder');
@@ -367,6 +490,7 @@
 
     // 新增菜单
     window.addMenu = function() {
+        if(!isEditMode) return;
         if (menuData.length >= 6) {
             alert('至多只能配置6个菜单页面！');
             return;
@@ -374,7 +498,7 @@
         menuData.push({
             id: generateId(),
             name: '新菜单',
-            page: '视频', // 默认选中第一项
+            page: '视频',
             icon: '',
             protected: false
         });
@@ -383,6 +507,7 @@
 
     // 删除菜单
     window.deleteMenu = function(id) {
+        if(!isEditMode) return;
         const itemIndex = menuData.findIndex(m => m.id === id);
         if (itemIndex === -1) return;
         
@@ -397,7 +522,7 @@
         }
     };
 
-    // 初始化渲染
+    // 初始化渲染（默认进入浏览模式）
     renderList();
 </script>
 
