@@ -19,9 +19,9 @@
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background-color: #f4f7f6;
             color: #333;
-            padding: 40px 20px;
-            display: flex;
-            justify-content: center;
+            /* 页面四周留出 15px 边距 */
+            padding: 15px; 
+            min-height: 100vh;
         }
 
         .container {
@@ -29,8 +29,8 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-            width: 100%;
-            max-width: 900px;
+            /* 撑满外层，去除之前的 max-width 限制 */
+            width: 100%; 
         }
 
         .header {
@@ -144,15 +144,15 @@
         /* 表单输入区 */
         .form-group {
             display: flex;
-            gap: 15px;
-            flex: 1;
+            gap: 20px;
+            flex: 1; /* 自适应剩余的所有宽度 */
             align-items: center;
         }
 
         .form-group .field {
             display: flex;
             flex-direction: column;
-            flex: 1;
+            flex: 1; /* 两个输入框均分宽度 */
         }
         
         .form-group .field label {
@@ -180,6 +180,7 @@
             display: flex;
             justify-content: flex-end;
             padding-left: 15px;
+            flex-shrink: 0;
         }
 
         .delete-btn {
