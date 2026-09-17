@@ -650,7 +650,7 @@
                         <tr>
                             <td>123</td>
                             <td>测试套利模版用户</td>
-                            <td>VIP1, VIP2</td>
+                            <td>套利用户</td>
                             <td>正常</td>
                             <td>针对套利用户</td>
                             <td><button class="btn-modify">修改</button></td>
@@ -658,7 +658,7 @@
                         <tr>
                             <td>141</td>
                             <td>ben</td>
-                            <td>VIP3</td>
+                            <td>新用户, 充0-100用户</td>
                             <td>正常</td>
                             <td>123</td>
                             <td><button class="btn-modify">修改</button></td>
@@ -666,7 +666,7 @@
                         <tr>
                             <td>154</td>
                             <td>33</td>
-                            <td>VIP4</td>
+                            <td>充100-200用户</td>
                             <td>正常</td>
                             <td>2222</td>
                             <td><button class="btn-modify">修改</button></td>
@@ -674,7 +674,7 @@
                         <tr>
                             <td>155</td>
                             <td>66</td>
-                            <td>VIP5</td>
+                            <td>充200-300用户</td>
                             <td>正常</td>
                             <td>6</td>
                             <td><button class="btn-modify">修改</button></td>
@@ -728,11 +728,17 @@
                         <label class="form-label required">用户层级:</label>
                         <div class="form-input-container" style="display: flex; flex-direction: column; gap: 10px;">
                             <div style="display: flex; gap: 16px; flex-wrap: wrap; color: #595959;">
-                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> VIP1</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> VIP2</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> VIP3</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> VIP4</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> VIP5</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 新用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 套利用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充0-100用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充100-200用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充200-300用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充300-1000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充1000-5000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充5000-10000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充10000-20000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充20000-50000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="add-level-cb"> 充50000以上用户</label>
                             </div>
                             <label style="color: #1890ff; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px;">
                                 <input type="checkbox" id="addDefaultCb"> 
@@ -887,11 +893,17 @@
                         <label class="form-label required">用户层级:</label>
                         <div class="form-input-container" style="display: flex; flex-direction: column; gap: 10px;">
                             <div style="display: flex; gap: 16px; flex-wrap: wrap; color: #595959;">
-                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb" checked> VIP1</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb" checked> VIP2</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> VIP3</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> VIP4</label>
-                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> VIP5</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 新用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 套利用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充0-100用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充100-200用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充200-300用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充300-1000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充1000-5000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充5000-10000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充10000-20000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充20000-50000用户</label>
+                                <label style="cursor: pointer;"><input type="checkbox" class="edit-level-cb"> 充50000以上用户</label>
                             </div>
                             <label style="color: #1890ff; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 13px;">
                                 <input type="checkbox" id="editDefaultCb"> 
@@ -1065,21 +1077,110 @@
             modalElement.style.display = 'none';
         };
 
+        
+        // 👇---新增：检查列表中已占用层级的逻辑---👇
+        const getUsedLevels = (excludeTr) => {
+            const used = [];
+            const trs = document.querySelectorAll('.table-container tbody tr');
+            trs.forEach(tr => {
+                if (tr === excludeTr) return; // 编辑时，排除当前正在编辑的这行
+                const levelTd = tr.children[2]; // 第3列是【用户层级】列
+                if (levelTd) {
+                    const text = levelTd.textContent.trim();
+                    // 不是默认层级的话，把文字按逗号切分出来
+                    if(text && !text.includes('默认')) {
+                        const levels = text.split(',').map(s => s.trim());
+                        used.push(...levels);
+                    }
+                }
+            });
+            return used;
+        };
+
+        // 检查列表中是否已经存在"默认配置"
+        const hasDefaultConfig = (excludeTr) => {
+            let hasDefault = false;
+            const trs = document.querySelectorAll('.table-container tbody tr');
+            trs.forEach(tr => {
+                if (tr === excludeTr) return;
+                const levelTd = tr.children[2];
+                if (levelTd && levelTd.textContent.includes('默认')) {
+                    hasDefault = true;
+                }
+            });
+            return hasDefault;
+        };
+
+        const updateCheckboxStatus = (modal, usedLevels, cbClass, defaultCbId) => {
+            const cbs = modal.querySelectorAll('.' + cbClass);
+            cbs.forEach(cb => {
+                const label = cb.parentElement;
+                const levelText = label.textContent.trim();
+                
+                // 别的行如果用了这个层级，置灰不可选
+                if (usedLevels.includes(levelText)) {
+                    cb.disabled = true;
+                    cb.checked = false;
+                    label.style.color = '#ccc';
+                    label.title = '该层级已被列表中其他配置使用';
+                    label.style.cursor = 'not-allowed';
+                } else {
+                    cb.disabled = false;
+                    label.style.color = '#595959';
+                    label.title = '';
+                    label.style.cursor = 'pointer';
+                }
+            });
+
+            const defaultCb = modal.querySelector('#' + defaultCbId);
+            if (defaultCb && defaultCb.checked) {
+                cbs.forEach(cb => {
+                    cb.disabled = true;
+                    cb.checked = false;
+                });
+            }
+        };
+        // 👆---新增结束---👆
+
         // 3. 【新增弹窗】逻辑控制
         const btnAdd = document.getElementById('btnAdd');
         const addModal = document.getElementById('addModal');
         const addModalCloseIcon = document.getElementById('modalCloseIcon');
         const addModalCloseBtn = document.getElementById('modalCloseBtn');
-        const addModalSubmitBtn = addModal.querySelector('.btn-submit'); // 👇 获取新增弹窗的提交按钮
+        const addModalSubmitBtn = addModal.querySelector('.btn-submit');
 
-        btnAdd.addEventListener('click', () => openModal(addModal));
+        btnAdd.addEventListener('click', () => {
+            // 每次打开新增，先清空自己身上的勾选
+            const cbs = addModal.querySelectorAll('.add-level-cb');
+            cbs.forEach(cb => cb.checked = false);
+            
+            const addDefaultCb = document.getElementById('addDefaultCb');
+            addDefaultCb.checked = false;
+
+            const usedLevels = getUsedLevels(null);
+            updateCheckboxStatus(addModal, usedLevels, 'add-level-cb', 'addDefaultCb');
+            
+            // 【核心】如果列表里已经有默认的，新增时就不准再勾默认了
+            if (hasDefaultConfig(null)) {
+                addDefaultCb.disabled = true;
+                addDefaultCb.parentElement.style.color = '#ccc';
+                addDefaultCb.parentElement.title = '列表中已有默认配置';
+                addDefaultCb.parentElement.style.cursor = 'not-allowed';
+            } else {
+                addDefaultCb.disabled = false;
+                addDefaultCb.parentElement.style.color = '#1890ff';
+                addDefaultCb.parentElement.title = '';
+                addDefaultCb.parentElement.style.cursor = 'pointer';
+            }
+
+            openModal(addModal);
+        });
+        
         addModalCloseIcon.addEventListener('click', () => closeModal(addModal));
         addModalCloseBtn.addEventListener('click', () => closeModal(addModal));
-        // 👇 为新增弹窗的提交按钮加上关闭功能，并阻止表单刷新页面的默认行为
         addModalSubmitBtn.addEventListener('click', (e) => {
             e.preventDefault(); 
             closeModal(addModal);
-            // 真实开发中，这里还会加上给后端发送数据的接口请求代码
         });
 
         // 4. 【修改弹窗】逻辑控制
@@ -1087,18 +1188,52 @@
         const editModal = document.getElementById('editModal');
         const editModalCloseIcon = document.getElementById('editModalCloseIcon');
         const editModalCloseBtn = document.getElementById('editModalCloseBtn');
-        const editModalSubmitBtn = editModal.querySelector('.btn-submit'); // 👇 获取修改弹窗的提交按钮
+        const editModalSubmitBtn = editModal.querySelector('.btn-submit');
 
         btnModifies.forEach(btn => {
-            btn.addEventListener('click', () => openModal(editModal));
+            btn.addEventListener('click', function() {
+                const currentRow = this.closest('tr');
+                
+                // --- 【核心】获取当前行的文案，打勾回显 ---
+                const myLevelText = currentRow.children[2].textContent.trim();
+                const myLevels = myLevelText.split(',').map(s => s.trim());
+                const isMyDefault = myLevelText.includes('默认');
+
+                const editCbs = editModal.querySelectorAll('.edit-level-cb');
+                editCbs.forEach(cb => {
+                    const labelText = cb.parentElement.textContent.trim();
+                    cb.checked = myLevels.includes(labelText);
+                });
+                
+                const editDefaultCb = editModal.querySelector('#editDefaultCb');
+                editDefaultCb.checked = isMyDefault;
+                // ---------------------------------
+
+                const usedLevels = getUsedLevels(currentRow); // 排除当前行的数据查重
+                updateCheckboxStatus(editModal, usedLevels, 'edit-level-cb', 'editDefaultCb');
+
+                // 检查其他行是否已经占用默认配置
+                if (hasDefaultConfig(currentRow)) {
+                    editDefaultCb.disabled = true;
+                    editDefaultCb.parentElement.style.color = '#ccc';
+                    editDefaultCb.parentElement.title = '列表中已有其他默认配置';
+                    editDefaultCb.parentElement.style.cursor = 'not-allowed';
+                } else {
+                    editDefaultCb.disabled = false;
+                    editDefaultCb.parentElement.style.color = '#1890ff';
+                    editDefaultCb.parentElement.title = '';
+                    editDefaultCb.parentElement.style.cursor = 'pointer';
+                }
+
+                openModal(editModal);
+            });
         });
+        
         editModalCloseIcon.addEventListener('click', () => closeModal(editModal));
         editModalCloseBtn.addEventListener('click', () => closeModal(editModal));
-        // 👇 为修改弹窗的提交按钮加上关闭功能，并阻止表单刷新页面的默认行为
         editModalSubmitBtn.addEventListener('click', (e) => {
             e.preventDefault(); 
             closeModal(editModal);
-            // 真实开发中，这里同样会加上更新数据的接口请求代码
         });
 
         // 5. 点击弹窗外部阴影区域关闭
@@ -1106,61 +1241,8 @@
             if (e.target === addModal) closeModal(addModal);
             if (e.target === editModal) closeModal(editModal);
         });
-    
-    // 👇这是新增的表格拖拽排序交互逻辑👇
-        const initDragAndDrop = () => {
-            const tbodies = document.querySelectorAll('.withdraw-table tbody');
-            
-            tbodies.forEach(tbody => {
-                let draggingRow = null;
 
-                tbody.addEventListener('dragstart', function(e) {
-                    draggingRow = e.target.closest('tr');
-                    if (draggingRow) {
-                        draggingRow.classList.add('dragging');
-                        // 兼容火狐等浏览器必须设置数据
-                        e.dataTransfer.setData('text/plain', ''); 
-                        e.dataTransfer.effectAllowed = 'move';
-                    }
-                });
-
-                tbody.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    const targetRow = e.target.closest('tr');
-                    
-                    if (targetRow && targetRow !== draggingRow && targetRow.classList.contains('draggable-row')) {
-                        const bounding = targetRow.getBoundingClientRect();
-                        const offset = bounding.y + (bounding.height / 2);
-                        // 判断是拖拽到目标行的上方还是下方
-                        if (e.clientY - offset > 0) {
-                            targetRow.after(draggingRow);
-                        } else {
-                            targetRow.before(draggingRow);
-                        }
-                    }
-                });
-
-                tbody.addEventListener('dragend', function(e) {
-                    if (draggingRow) {
-                        draggingRow.classList.remove('dragging');
-                        draggingRow = null;
-                        
-                        // 拖拽结束后，重新计算并刷新排序数值 1,2,3,4,5
-                        const rows = tbody.querySelectorAll('tr.draggable-row');
-                        rows.forEach((row, index) => {
-                            const sortNum = row.querySelector('.sort-number');
-                            if (sortNum) sortNum.textContent = index + 1;
-                        });
-                    }
-                });
-            });
-        };
-        // 执行拖拽初始化
-        initDragAndDrop();
-        // 👆交互逻辑结束👆
-    
-    // 👇这是专门为产品演示新增的层级联动交互逻辑👇
+        // 👇这是专门为产品演示新增的层级联动交互逻辑👇
         const setupLevelCheckboxLogic = (defaultCbId, levelCbClass) => {
             const defaultCb = document.getElementById(defaultCbId);
             const levelCbs = document.querySelectorAll('.' + levelCbClass);
@@ -1169,10 +1251,17 @@
                 defaultCb.addEventListener('change', function() {
                     const isChecked = this.checked;
                     levelCbs.forEach(cb => {
+                        const label = cb.parentElement;
+                        const isUsedByList = label.title === '该层级已被列表中其他配置使用'; 
+
                         if (isChecked) {
-                            cb.checked = false; // 当勾选“作为默认配置”时，自动清空上面具体的VIP勾选
+                            cb.checked = false; 
+                            cb.disabled = true;
+                        } else {
+                            if (!isUsedByList) {
+                                cb.disabled = false;
+                            }
                         }
-                        cb.disabled = isChecked; // 当勾选“作为默认配置”时，禁用上面的VIP勾选框
                     });
                 });
             }
