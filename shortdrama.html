@@ -205,6 +205,32 @@
   .fav-tag-drama { font-size: 10px; padding: 3px 6px; border-radius: 4px; }
   .fav-empty { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
 
+/* === 新增：我的短剧页样式 === */
+  .my-drama-list { padding: 10px 15px; display: flex; flex-direction: column; gap: 15px; }
+  .my-drama-card { display: flex; background: #1c1c22; border-radius: 8px; overflow: hidden; padding: 10px; gap: 12px;}
+  .my-drama-cover { width: 80px; height: 110px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+  .my-drama-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+  .my-drama-title { font-size: 15px; font-weight: bold; color: #fff; }
+  .my-drama-meta { font-size: 12px; color: #aaa; display: flex; flex-direction: column; gap: 4px; }
+  .my-drama-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; }
+  .my-drama-cost { font-size: 13px; color: #ff2a55; font-weight: bold; }
+  .my-drama-btn { background: linear-gradient(135deg, #ff4081, #ff2a55); color: #fff; padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+  /* === 新增：自动解锁提示及二次确认样式 === */
+  .auto-unlock-prompt { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 8px; display: none; align-items: center; justify-content: space-between; border: 1px solid rgba(255,42,85,0.4); backdrop-filter: blur(4px); gap: 8px; }
+  .auto-unlock-prompt span { color: #ddd; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cancel-auto-btn { background: #444; color: #fff; padding: 4px 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
+
+/* === 新增：网页内 Toast 提示样式 === */
+  .toast-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+  .toast-msg { background: rgba(0, 0, 0, 0.8); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; text-align: center; white-space: nowrap; animation: toastFade 2.5s ease forwards; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+  @keyframes toastFade { 
+    0% { opacity: 0; transform: scale(0.9); } 
+    15% { opacity: 1; transform: scale(1); } 
+    85% { opacity: 1; transform: scale(1); } 
+    100% { opacity: 0; transform: scale(0.9); } 
+  }
+
 </style>
 </head>
 <body>
@@ -262,27 +288,17 @@
         <svg viewBox="0 0 26 12" style="width:22px;"><rect x="1" y="1" width="21" height="10" rx="3" fill="none" stroke="#fff" stroke-width="1"/><rect x="3" y="3" width="13" height="6" rx="1.5" fill="#fff"/><path d="M24 4h1c.6 0 1 .4 1 1v2c0 .6-.4 1-1 1h-1V4z"/></svg>
       </div>
     </div>
-    <div class="back-bar">
-      <span class="back-btn" onclick="switchPage('page-home')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      </span>
-      <span>AI短剧</span> <!-- 修改名称 -->
+    <div class="back-bar" style="justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="back-btn" onclick="switchPage('page-home')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </span>
+        <span>AI短剧</span>
+      </div>
+      <!-- 右上角增加【我的短剧】入口 -->
+      <span style="font-size: 14px; color: #ff2a55; cursor: pointer;" onclick="switchPage('page-my-drama')">我的短剧</span>
     </div>
-    
-    <!-- 增加分类，横向滑动 -->
-    <div class="drama-categories">
-      <div class="cat-item active">全部</div>
-      <div class="cat-item">穿越</div>
-      <div class="cat-item">古装</div>
-      <div class="cat-item">逆袭</div>
-      <div class="cat-item">甜宠</div>
-      <div class="cat-item">战神</div>
-      <div class="cat-item">乡村</div>
-      <div class="cat-item">悬疑</div>
-      <div class="cat-item">惊悚</div>
-      <div class="cat-item">喜剧</div>
-      <div class="cat-item">复仇</div>
-    </div>
+    <!-- 已经去掉了底部的分类部分 -->
 
     <div class="content-scroll">
       <div class="ad-banner">
@@ -371,6 +387,64 @@
     </div>
   </div>
 
+<!-- === 新增页面：我的短剧（已付费列表） === -->
+  <div id="page-my-drama" class="page">
+    <div class="status-bar"><span style="margin-left: 10px;">9:41</span></div>
+    <div class="back-bar">
+      <span class="back-btn" onclick="switchPage('page-drama-list')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </span>
+      <span>我的短剧</span>
+    </div>
+    <div class="content-scroll">
+      <div class="my-drama-list">
+        <!-- 根据付费时间倒序展示 -->
+        <div class="my-drama-card">
+          <img src="https://picsum.photos/seed/d2/160/220" class="my-drama-cover">
+          <div class="my-drama-info">
+            <div class="my-drama-title">重生之千金归来</div>
+            <div class="my-drama-meta">
+              <span>总集数：120集</span>
+              <span>已解锁：10集</span>
+              <span>上次购买：刚刚</span>
+            </div>
+            <div class="my-drama-bottom">
+              <span class="my-drama-cost">合计消费：150币</span>
+              <div class="my-drama-btn" onclick="playSpecificDrama('重生之千金归来')">去观看</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="my-drama-card">
+          <img src="https://picsum.photos/seed/d4/160/220" class="my-drama-cover">
+          <div class="my-drama-info">
+            <div class="my-drama-title">穿越古代做王妃</div>
+            <div class="my-drama-meta">
+              <span>总集数：80集</span>
+              <span>已解锁：全剧</span>
+              <span>上次购买：昨天 14:20</span>
+            </div>
+            <div class="my-drama-bottom">
+              <span class="my-drama-cost">合计消费：888币</span>
+              <div class="my-drama-btn" onclick="playSpecificDrama('穿越古代做王妃')">去观看</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 新增：关闭自动解锁二次确认弹窗 === -->
+  <div class="modal-overlay" id="autoUnlockConfirmModal" style="z-index: 1002;">
+    <div class="modal-content" style="background: #222; align-items: center; padding: 30px 20px;">
+      <div style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">确认关闭自动解锁？</div>
+      <div style="font-size: 13px; color: #999; margin-bottom: 25px; text-align: center;">关闭后，观看未付费剧集时需要手动确认支付。</div>
+      <div style="display: flex; gap: 15px; width: 100%;">
+        <div class="pay-btn cancel" onclick="closeModal('autoUnlockConfirmModal')">取消</div>
+        <div class="pay-btn confirm" onclick="disableAutoUnlock()">确认关闭</div>
+      </div>
+    </div>
+  </div>
 
 <!-- === 页面6：收藏记录页 === -->
   <div id="page-favorites" class="page">
@@ -514,6 +588,13 @@
       <div class="video-player-area" id="dramaPlayerArea" style="transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);"></div>
       <div class="video-swipe-overlay" id="dramaSwipeArea" style="z-index: 5;"></div>
 
+      <!-- 新增：自动解锁提示 Banner -->
+      <div class="auto-unlock-banner" id="autoUnlockBanner">
+        <span>🚀 自动付费解锁功能已开启</span>
+        <div class="close-banner" onclick="openAutoUnlockConfirm()">×</div>
+      </div>
+
+
       <!-- 返回按钮 -->
       <div class="status-bar" style="position: absolute; top: 0; width: 100%; z-index: 20;"><span style="margin-left: 10px;">9:41</span></div>
       <div style="position: absolute; top: 50px; left: 15px; z-index: 20; cursor: pointer; background: rgba(0,0,0,0.3); border-radius: 50%; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="switchPage('page-drama-list')">
@@ -534,6 +615,12 @@
           <div class="pay-btn-small" onclick="openPaymentModal()">去付费</div>
         </div>
         
+        <!-- 修改位置：将自动解锁提示放在和去付费相同的位置，默认隐藏 -->
+        <div class="auto-unlock-prompt" id="autoUnlockPrompt">
+          <span>🚀 自动付费解锁功能已开启</span>
+          <div class="cancel-auto-btn" onclick="openAutoUnlockConfirm()">取消</div>
+        </div>
+        
         <div class="drama-title" id="dramaTitle" style="margin-bottom: 4px;">剧名 - 第1集</div>
         
         <!-- 新增：全几集与付费状态标签 -->
@@ -550,6 +637,7 @@
   <!-- === 全局选集弹窗 (支持区间分类) === -->
   <div class="modal-overlay" id="episodeModal">
     <div class="modal-content" style="max-height: 85%;">
+      <span style="position: absolute; right: 60px; top: 22px; font-size: 13px; color: #ff2a55; cursor: pointer; z-index: 10;" onclick="closeModal('episodeModal'); switchPage('page-my-drama')">我的短剧</span>
       <div class="modal-close" onclick="closeModal('episodeModal')">×</div>
       <div class="ep-header">
         <img src="https://picsum.photos/seed/d3/160/220" class="ep-cover" id="epModalCover">
@@ -863,6 +951,8 @@
       document.getElementById('dramaTotalEps').innerText = `全${totalEpisodes}集`;
       
       const isUnlocked = unlockedEpisodes.includes(currentEpisode);
+      const autoPrompt = document.getElementById('autoUnlockPrompt');
+      if(autoPrompt) autoPrompt.style.display = 'none'; // 切换剧集时默认先隐藏
       
       if (isUnlocked) {
         payPrompt.style.display = 'none'; 
@@ -874,6 +964,7 @@
           payPrompt.style.display = 'none';
           statusEl.innerText = '已自动解锁';
           statusEl.style.background = 'rgba(255,255,255,0.2)';
+          if(autoPrompt) autoPrompt.style.display = 'flex'; // 触发了未付费剧集时，底部展示开启提示
         } else {
           payPrompt.style.display = 'flex'; 
           statusEl.innerText = '未付费';
@@ -987,6 +1078,10 @@
         let oldEp = currentEpisode;
         currentEpisode = i;
         closeModal('episodeModal');
+        
+        // 增加此行：无论从哪个入口（视频/抖阴）打开的选集，点击后都统一切换到短剧沉浸播放页
+        switchPage('page-drama-play'); 
+        
         renderDramaContent(currentEpisode > oldEp ? 'up' : 'down'); 
       };
       grid.appendChild(div);
@@ -1020,14 +1115,46 @@
     if (selectedPayOpt === 1) {
       unlockedEpisodes.push(currentEpisode); 
       autoUnlockEnabled = document.getElementById('autoUnlockCheck').checked; 
-      alert('支付成功！已解锁第' + currentEpisode + '集');
+      showToast('支付成功！已解锁第' + currentEpisode + '集');
     } else {
       for(let i=1; i<=totalEpisodes; i++) unlockedEpisodes.push(i); 
-      alert('支付成功！已解锁全剧');
+      showToast('支付成功！已解锁全剧');
     }
     closeModal('paymentModal');
     renderDramaContent('none'); 
   }
+
+// === 新增：自动解锁相关逻辑 ===
+  function openAutoUnlockConfirm() {
+    document.getElementById('autoUnlockConfirmModal').classList.add('active');
+  }
+
+  function disableAutoUnlock() {
+    autoUnlockEnabled = false; // 关闭自动解锁标识
+    closeModal('autoUnlockConfirmModal'); // 关闭二次确认弹窗
+    const prompt = document.getElementById('autoUnlockPrompt');
+    if (prompt) prompt.style.display = 'none'; // 隐藏底部的提示
+    showToast('已成功关闭自动解锁功能');
+  }
+
+// === 新增：生成 Toast 提示的函数 ===
+  function showToast(message) {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'toast-container';
+      document.getElementById('app').appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast-msg';
+    toast.innerText = message;
+    container.appendChild(toast);
+    
+    // 2.5秒后自动移除该提示
+    setTimeout(() => { toast.remove(); }, 2500);
+  }  
+
 </script>
 </body>
 </html>
