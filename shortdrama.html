@@ -8,15 +8,17 @@
   /* 基础重置与容器设置 */
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body { 
-    display: flex; justify-content: center; align-items: center; 
-    height: 100vh; background-color: #222; font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif; 
+    display: block; /* 取消居中对齐，默认靠左上角 */
+    margin: 0; padding: 0; 
+    background-color: #121318; /* 背景色与页面统一 */
+    font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif; 
   }
   #app { 
     width: 375px; height: 812px; 
-    min-width: 375px; min-height: 812px; flex-shrink: 0; /* 严格锁定 375x812，防止缩放变形 */
+    min-width: 375px; min-height: 812px; flex-shrink: 0; 
     background-color: #121318; 
     position: relative; overflow: hidden; color: #fff; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-radius: 40px; border: 8px solid #000;
+    /* 已删除了 box-shadow、border-radius 和 border，彻底去掉手机壳效果 */
   }
 
   /* 通用页面样式 */
