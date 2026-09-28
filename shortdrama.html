@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, user-scalable=no, initial-scale=1.0">
+<title>视频APP交互原型 - 短剧模块 (优化版)</title>
+<style>
+  /* 基础重置与容器设置 */
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { 
+    display: flex; justify-content: center; align-items: center; 
+    height: 100vh; background-color: #222; font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif; 
+  }
+  #app { 
+    width: 375px; height: 812px; 
+    min-width: 375px; min-height: 812px; flex-shrink: 0; /* 严格锁定 375x812，防止缩放变形 */
+    background-color: #121318; 
+    position: relative; overflow: hidden; color: #fff; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-radius: 40px; border: 8px solid #000;
+  }
+
+  /* 通用页面样式 */
+  .page { 
+    width: 100%; height: 100%; position: absolute; top: 0; left: 0; 
+    display: none; flex-direction: column; 
+  }
+  .page.active { display: flex; }
+  .content-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 70px; }
+  .content-scroll::-webkit-scrollbar { display: none; }
+
+  /* 顶部导航与状态栏 (标准iOS) */
+  .status-bar { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font-size: 15px; font-weight: 600; z-index: 999; }
+  .ios-icons { display: flex; align-items: center; gap: 5px; }
+  .ios-icons svg { fill: #fff; height: 12px; }
+  
+  .header-bar { height: 50px; display: flex; align-items: center; padding: 0 15px; gap: 12px; }
+  .app-logo { width: 28px; height: 28px; background: #666; border-radius: 8px; flex-shrink: 0; }
+  .search-box { flex: 1; height: 32px; background: rgba(255,255,255,0.1); border-radius: 16px; display: flex; align-items: center; padding: 0 15px; font-size: 13px; color: #999; }
+  
+  /* 顶部 Tab 菜单 */
+  .top-tabs { display: flex; align-items: center; padding: 10px 15px; gap: 20px; overflow-x: auto; white-space: nowrap; }
+  .top-tabs::-webkit-scrollbar { display: none; }
+  .tab-item { font-size: 15px; color: #aaa; position: relative; cursor: pointer; transition: color 0.2s; }
+  .tab-item.active { color: #ff2a55; font-weight: bold; }
+  .tab-item.active::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: #ff2a55; border-radius: 2px; }
+
+  /* 优化后的短剧入口 */
+  .drama-entrance { 
+    color: #ff2a55; font-size: 15px; font-weight: bold; padding: 3px 12px; 
+    border: 1px solid rgba(255, 42, 85, 0.4); border-radius: 16px; 
+    background: rgba(255,42,85,0.08); cursor: pointer; 
+    display: inline-flex; align-items: center;
+    animation: pulse 2.5s infinite; 
+  }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,42,85,0.3); } 70% { box-shadow: 0 0 0 4px rgba(255,42,85,0); } 100% { box-shadow: 0 0 0 0 rgba(255,42,85,0); } }
+
+  /* 图片展示区 */
+  .banner { margin: 10px 15px; height: 140px; border-radius: 8px; background: url('https://picsum.photos/seed/banner1/345/140') center/cover; }
+  .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 15px; }
+  .video-card { background: #1a1a20; border-radius: 6px; overflow: hidden; }
+  .video-cover { height: 100px; background-size: cover; background-position: center; }
+  .video-title { font-size: 13px; padding: 8px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 底部导航 */
+  .bottom-nav { position: absolute; bottom: 0; width: 100%; height: 80px; padding-bottom: 20px; background: rgba(20,20,25,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 100; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #777; font-size: 10px; cursor: pointer; transition: color 0.2s; }
+  .nav-item.active { color: #ff2a55; }
+  .nav-icon { font-size: 24px; margin-bottom: -2px; }
+
+  /* === 短剧列表页样式 === */
+  .back-bar { display: flex; align-items: center; padding: 10px 15px; gap: 10px; font-size: 17px; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .back-btn { width: 30px; height: 30px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; font-size: 20px; }
+  
+  .ad-banner { margin: 15px; height: 80px; border-radius: 8px; background: url('https://picsum.photos/seed/ad/345/80') center/cover; display: flex; align-items: center; justify-content: center; }
+  .ad-text { background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 15px; font-weight: bold; font-size: 14px; backdrop-filter: blur(4px); }
+  
+  /* 分类横向滑动 */
+  .drama-categories { display: flex; padding: 10px 15px; gap: 12px; overflow-x: auto; white-space: nowrap; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .drama-categories::-webkit-scrollbar { display: none; }
+  .cat-item { color: #999; cursor: pointer; padding: 5px 14px; border-radius: 16px; background: rgba(255,255,255,0.05); transition: all 0.3s; }
+  .cat-item.active { color: #fff; background: #ff2a55; font-weight: bold; }
+
+  /* 短剧列表网格与动画 */
+  .drama-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+  .drama-card { background: #1c1c22; border-radius: 8px; overflow: hidden; position: relative; }
+  
+  /* 上滑入场动画 */
+  .anim-item { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .anim-item.show { opacity: 1; transform: translateY(0); }
+
+  .drama-cover { height: 220px; background-size: cover; background-position: center; position: relative; }
+  .drama-eps { position: absolute; bottom: 6px; right: 6px; font-size: 11px; background: rgba(0,0,0,0.7); padding: 3px 6px; border-radius: 4px; backdrop-filter: blur(2px); }
+  .drama-tag { position: absolute; top: 6px; right: 6px; font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  .tag-free { background: linear-gradient(135deg, #00e676, #00c853); color: white; }
+  .tag-paid { background: linear-gradient(135deg, #ff5252, #ff1744); color: white; }
+  .tag-unlocked { background: linear-gradient(135deg, #ffa726, #f57c00); color: white; }
+  .drama-info { padding: 12px 10px; }
+  .drama-name { font-size: 14px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+
+  /* 全屏可拖拽悬浮球 */
+  .float-ball { 
+    position: absolute; right: 15px; bottom: 100px; width: 52px; height: 52px; 
+    background: linear-gradient(135deg, #ff4081, #ff2a55); border-radius: 50%; 
+    display: flex; justify-content: center; align-items: center; flex-direction: column;
+    color: white; font-size: 11px; font-weight: bold; line-height: 1.2; 
+    box-shadow: 0 6px 16px rgba(255, 42, 85, 0.4); z-index: 200; 
+    cursor: grab; user-select: none; touch-action: none;
+  }
+  .float-ball:active { cursor: grabbing; transform: scale(0.95); }
+
+/* === 页面4：短视频/短剧播放页 === */
+  .video-page-container { 
+    background-color: #000; width: 100%; height: 100%; flex: 1; 
+    position: relative; color: white; overflow: hidden; 
+  }
+  .video-top-bar { position: absolute; top: 44px; width: 100%; display: flex; justify-content: center; align-items: center; padding: 0 15px; z-index: 10; }
+  .video-tabs { display: flex; gap: 20px; font-size: 16px; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .video-tab { opacity: 0.6; cursor: pointer; transition: opacity 0.3s; }
+  .video-tab.active { opacity: 1; border-bottom: 2px solid #fff; padding-bottom: 2px; }
+  .video-search-icon { position: absolute; right: 15px; width: 30px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  
+  .video-player-area { 
+    width: 100%; height: 100%; 
+    position: absolute; top: 0; left: 0; /* 绝对定位，严格铺满 375x812 */
+    background: url('https://picsum.photos/seed/sv1/375/812') center/cover no-repeat; 
+    transition: background-image 0.3s ease; 
+  }
+  /* 模拟上下滑动遮罩 */
+  .video-swipe-overlay { position: absolute; inset: 0; z-index: 5; touch-action: none; }
+  
+  .right-action-bar { position: absolute; right: 10px; bottom: 120px; display: flex; flex-direction: column; gap: 20px; z-index: 10; align-items: center; }
+  .action-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); cursor: pointer; }
+  .action-icon { width: 40px; height: 40px; background: rgba(0,0,0,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; backdrop-filter: blur(4px); transition: all 0.2s; }
+  .action-btn.active .action-icon { color: #ff2a55; }
+  
+  .video-bottom-info { position: absolute; bottom: 90px; left: 15px; right: 70px; z-index: 10; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+  .drama-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+  .drama-desc { font-size: 13px; opacity: 0.9; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* === 播放进度条与付费提示 === */
+  .progress-container { position: absolute; bottom: 40px; left: 15px; right: 70px; z-index: 10; width: calc(100% - 85px); }
+  .pay-prompt { background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,42,85,0.4); backdrop-filter: blur(4px); gap: 10px; }
+  .pay-prompt span { color: #ddd; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pay-btn-small { background: linear-gradient(135deg, #ff4081, #ff2a55); color: #fff; padding: 6px 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+  .progress-bar { height: 2px; background: rgba(255,255,255,0.3); border-radius: 1px; width: 100%; }
+  .progress-bar-inner { height: 100%; width: 30%; background: #fff; border-radius: 1px; }
+
+  /* === 弹窗通用样式 === */
+  .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: none; flex-direction: column; justify-content: flex-end; }
+  .modal-overlay.active { display: flex; }
+  .modal-content { background: #1c1c22; border-radius: 16px 16px 0 0; padding: 20px; animation: slideUp 0.3s ease; max-height: 75%; display: flex; flex-direction: column; position: relative; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-close { position: absolute; right: 20px; top: 15px; font-size: 24px; color: #999; cursor: pointer; padding: 5px; }
+
+  /* 选集弹窗与分类 Tab */
+  .ep-header { display: flex; gap: 15px; margin-bottom: 15px; padding-right: 30px; }
+  .ep-cover { width: 75px; height: 100px; border-radius: 8px; object-fit: cover; }
+  .ep-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .ep-title { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+  .ep-desc { font-size: 12px; color: #999; }
+  
+  .ep-tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding: 4px 4px 8px 4px; }
+  .ep-tabs::-webkit-scrollbar { display: none; }
+  .ep-tab { padding: 6px 14px; background: #2a2a32; border-radius: 16px; font-size: 13px; color: #aaa; cursor: pointer; white-space: nowrap; }
+  .ep-tab.active { background: #ff2a55; color: #fff; font-weight: bold; }
+  
+  .ep-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding-bottom: 20px; }
+  .ep-item { aspect-ratio: 1; background: #2a2a32; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 14px; cursor: pointer; position: relative; color: #ddd; }
+  .ep-item.active { color: #ff2a55; font-weight: bold; border: 1px solid #ff2a55; background: rgba(255,42,85,0.1); }
+  .ep-item.locked::after { content: '🔒'; position: absolute; top: 2px; right: 4px; font-size: 10px; opacity: 0.8;}
+
+  /* 付费弹窗特有 */
+  .pay-modal-content { background: #222; border-top: 1px solid #333; }
+  .pay-balance { font-size: 14px; color: #aaa; margin-bottom: 20px; text-align: center; }
+  .pay-balance strong { color: #f5a623; font-size: 18px; margin: 0 5px; }
+  .pay-options { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
+  .pay-opt { border: 1px solid #444; border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+  .pay-opt.active { border-color: #ff2a55; background: rgba(255,42,85,0.1); }
+  .pay-opt-title { font-size: 15px; font-weight: bold; }
+  .pay-opt-price { color: #ff2a55; font-weight: bold; }
+  .auto-unlock { margin-top: 10px; font-size: 13px; color: #aaa; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .pay-actions { display: flex; gap: 15px; margin-bottom: 10px; }
+  .pay-btn { flex: 1; padding: 12px; border-radius: 20px; text-align: center; font-size: 15px; font-weight: bold; cursor: pointer; }
+  .pay-btn.cancel { background: #444; color: #fff; }
+  .pay-btn.confirm { background: linear-gradient(135deg, #ff4081, #ff2a55); color: #fff; }
+
+/* === 收藏记录页样式 === */
+  .fav-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; font-size: 16px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .fav-header .clear-btn { color: #ff2a55; font-size: 13px; font-weight: normal; cursor: pointer; }
+  .fav-tabs { display: flex; justify-content: center; gap: 40px; margin: 15px 0 5px; }
+  .fav-tab { padding: 5px 10px; font-size: 15px; color: #999; cursor: pointer; position: relative; transition: color 0.2s; }
+  .fav-tab.active { color: #fff; font-weight: bold; }
+  .fav-tab.active::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: #fff; border-radius: 2px; }
+  
+  .fav-list { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; }
+  .fav-card { display: flex; background: #1c1c22; border-radius: 6px; overflow: hidden; height: 90px; }
+  .fav-cover { width: 140px; position: relative; background-size: cover; background-position: center; flex-shrink: 0; }
+  .fav-tag-top { position: absolute; top: 6px; right: 6px; background: #a3ff00; color: #000; font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+  .fav-tag-bottom { position: absolute; bottom: 6px; right: 6px; color: #fff; font-size: 11px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+  .fav-info { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+  .fav-title { font-size: 14px; line-height: 1.4; color: #eee; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .fav-meta { font-size: 12px; color: #999; margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+  .fav-tag-drama { font-size: 10px; padding: 3px 6px; border-radius: 4px; }
+  .fav-empty { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
+
+</style>
+</head>
+<body>
+
+<div id="app">
+  
+  <!-- === 页面1：长视频首页 === -->
+  <div id="page-home" class="page active">
+    <!-- 状态栏: Apple标准风格 -->
+    <div class="status-bar">
+      <span style="margin-left: 10px;">9:41</span>
+      <div class="ios-icons">
+        <!-- 信号 -->
+        <svg viewBox="0 0 18 12" style="width:16px;"><path d="M1 10.5C1 11.3 1.7 12 2.5 12h1C4.3 12 5 11.3 5 10.5v-2C5 7.7 4.3 7 3.5 7h-1C1.7 7 1 7.7 1 8.5v2zm6 0c0 .8.7 1.5 1.5 1.5h1c.8 0 1.5-.7 1.5-1.5v-5c0-.8-.7-1.5-1.5-1.5h-1c-.8 0-1.5.7-1.5 1.5v5zm6 0c0 .8.7 1.5 1.5 1.5h1c.8 0 1.5-.7 1.5-1.5v-8c0-.8-.7-1.5-1.5-1.5h-1c-.8 0-1.5.7-1.5 1.5v8z"/></svg>
+        <!-- Wi-Fi -->
+        <svg viewBox="0 0 18 14" style="width:15px; margin: 0 3px;"><path d="M9 13.5c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5zm4.8-4.3c-.3.3-.8.3-1.1 0C11.7 8.3 10.4 7.8 9 7.8s-2.7.5-3.7 1.4c-.3.3-.8.3-1.1 0-.3-.3-.3-.8 0-1.1C5.5 6.9 7.2 6.2 9 6.2s3.5.7 4.8 1.9c.3.3.3.8 0 1.1zm3.2-3.1c-.3.3-.8.3-1.1 0-1.8-1.7-4.2-2.7-6.9-2.7-2.7 0-5.1 1-6.9 2.7-.3.3-.8.3-1.1 0-.3-.3-.3-.8 0-1.1C3.1 3 6 1.8 9 1.8s5.9 1.2 8.1 3.2c.3.3.3.8 0 1.1z"/></svg>
+        <!-- 电池 -->
+        <svg viewBox="0 0 26 12" style="width:22px;"><rect x="1" y="1" width="21" height="10" rx="3" fill="none" stroke="#fff" stroke-width="1"/><rect x="3" y="3" width="13" height="6" rx="1.5" fill="#fff"/><path d="M24 4h1c.6 0 1 .4 1 1v2c0 .6-.4 1-1 1h-1V4z"/></svg>
+      </div>
+    </div>
+    
+    <div class="header-bar">
+      <div class="app-logo"></div> <!-- 改为灰色的图标 -->
+      <div class="search-box">🔍 极品专区</div>
+      <div style="font-size: 20px;">📜</div>
+      <div style="font-size: 20px; cursor: pointer;" onclick="switchPage('page-favorites')">👍</div>
+    </div>
+    <div class="top-tabs">
+      <div class="tab-item active">推荐</div>
+      <!-- 修改后的短剧入口 -->
+      <div class="drama-entrance" onclick="switchPage('page-drama-list')">AI短剧大全</div>
+      <div class="tab-item">网暴吃瓜</div>
+      <div class="tab-item">国产精品</div>
+      <div class="tab-item">自拍偷拍</div>
+    </div>
+    <div class="content-scroll">
+      <div class="banner"></div>
+      <div style="padding: 0 15px; font-size: 15px; font-weight: bold; margin-top: 15px;">🔴 正在热播</div>
+      <div class="video-grid">
+        <div class="video-card"><div class="video-cover" style="background-image:url('https://picsum.photos/seed/v1/160/100')"></div><div class="video-title">夏日海滩游玩实录</div></div>
+        <div class="video-card"><div class="video-cover" style="background-image:url('https://picsum.photos/seed/v2/160/100')"></div><div class="video-title">深夜档情感电台</div></div>
+        <div class="video-card"><div class="video-cover" style="background-image:url('https://picsum.photos/seed/v3/160/100')"></div><div class="video-title">街头随机采访合集</div></div>
+        <div class="video-card"><div class="video-cover" style="background-image:url('https://picsum.photos/seed/v4/160/100')"></div><div class="video-title">都市传说探秘系列</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 页面3：AI短剧列表页 === -->
+  <div id="page-drama-list" class="page">
+    <div class="status-bar">
+      <span style="margin-left: 10px;">9:41</span>
+      <div class="ios-icons">
+        <svg viewBox="0 0 18 12" style="width:16px;"><path d="M1 10.5C1 11.3 1.7 12 2.5 12h1C4.3 12 5 11.3 5 10.5v-2C5 7.7 4.3 7 3.5 7h-1C1.7 7 1 7.7 1 8.5v2zm6 0c0 .8.7 1.5 1.5 1.5h1c.8 0 1.5-.7 1.5-1.5v-5c0-.8-.7-1.5-1.5-1.5h-1c-.8 0-1.5.7-1.5 1.5v5zm6 0c0 .8.7 1.5 1.5 1.5h1c.8 0 1.5-.7 1.5-1.5v-8c0-.8-.7-1.5-1.5-1.5h-1c-.8 0-1.5.7-1.5 1.5v8z"/></svg>
+        <svg viewBox="0 0 18 14" style="width:15px; margin: 0 3px;"><path d="M9 13.5c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5zm4.8-4.3c-.3.3-.8.3-1.1 0C11.7 8.3 10.4 7.8 9 7.8s-2.7.5-3.7 1.4c-.3.3-.8.3-1.1 0-.3-.3-.3-.8 0-1.1C5.5 6.9 7.2 6.2 9 6.2s3.5.7 4.8 1.9c.3.3.3.8 0 1.1zm3.2-3.1c-.3.3-.8.3-1.1 0-1.8-1.7-4.2-2.7-6.9-2.7-2.7 0-5.1 1-6.9 2.7-.3.3-.8.3-1.1 0-.3-.3-.3-.8 0-1.1C3.1 3 6 1.8 9 1.8s5.9 1.2 8.1 3.2c.3.3.3.8 0 1.1z"/></svg>
+        <svg viewBox="0 0 26 12" style="width:22px;"><rect x="1" y="1" width="21" height="10" rx="3" fill="none" stroke="#fff" stroke-width="1"/><rect x="3" y="3" width="13" height="6" rx="1.5" fill="#fff"/><path d="M24 4h1c.6 0 1 .4 1 1v2c0 .6-.4 1-1 1h-1V4z"/></svg>
+      </div>
+    </div>
+    <div class="back-bar">
+      <span class="back-btn" onclick="switchPage('page-home')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </span>
+      <span>AI短剧</span> <!-- 修改名称 -->
+    </div>
+    
+    <!-- 增加分类，横向滑动 -->
+    <div class="drama-categories">
+      <div class="cat-item active">全部</div>
+      <div class="cat-item">穿越</div>
+      <div class="cat-item">古装</div>
+      <div class="cat-item">逆袭</div>
+      <div class="cat-item">甜宠</div>
+      <div class="cat-item">战神</div>
+      <div class="cat-item">乡村</div>
+      <div class="cat-item">悬疑</div>
+      <div class="cat-item">惊悚</div>
+      <div class="cat-item">喜剧</div>
+      <div class="cat-item">复仇</div>
+    </div>
+
+    <div class="content-scroll">
+      <div class="ad-banner">
+        <div class="ad-text">👑 VIP开通特权 - 畅看全站</div>
+      </div>
+      
+      <!-- 列表数据增多，加入 anim-item 滚动动效类 -->
+      <div class="drama-grid">
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d1/160/220')">
+            <span class="drama-tag tag-free">首发免费</span>
+            <span class="drama-eps">更新至80集 / 100集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">绝世神医在都市</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d2/160/220')">
+            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-eps">全120集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">重生之千金归来</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d3/160/220')">
+            <span class="drama-tag tag-unlocked">已解锁</span>
+            <span class="drama-eps">全99集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">霸道总裁爱上我</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d4/160/220')">
+            <span class="drama-tag tag-paid">需解锁</span>
+            <span class="drama-eps">更新至12集 / 80集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">穿越古代做王妃</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d5/160/220')">
+            <span class="drama-tag tag-free">限免中</span>
+            <span class="drama-eps">全88集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">极品战神归来</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d6/160/220')">
+            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-eps">更新至30集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">我在八零当首富</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d7/160/220')">
+            <span class="drama-tag tag-unlocked">已解锁</span>
+            <span class="drama-eps">全60集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">闪婚后大叔天天宠</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d8/160/220')">
+            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-eps">更新至50集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">九龙神诀</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d9/160/220')">
+            <span class="drama-tag tag-free">首发免费</span>
+            <span class="drama-eps">全72集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">退婚后成了大佬</div></div>
+        </div>
+        <div class="drama-card anim-item">
+          <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d10/160/220')">
+            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-eps">更新至15集</span>
+          </div>
+          <div class="drama-info"><div class="drama-name">末世女王的日常</div></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 全屏可拖拽的悬浮球 -->
+    <div class="float-ball" id="floatBall">
+      <span>悬浮</span>
+      <span>图标</span>
+    </div>
+  </div>
+
+
+<!-- === 页面6：收藏记录页 === -->
+  <div id="page-favorites" class="page">
+    <div class="status-bar">
+      <span style="margin-left: 10px;">9:41</span>
+      <div class="ios-icons">
+        <svg viewBox="0 0 18 12" style="width:16px;"><path d="M1 10.5C1 11.3 1.7 12 2.5 12h1C4.3 12 5 11.3 5 10.5v-2C5 7.7 4.3 7 3.5 7h-1C1.7 7 1 7.7 1 8.5v2zm6 0c0 .8.7 1.5 1.5 1.5h1c.8 0 1.5-.7 1.5-1.5v-5c0-.8-.7-1.5-1.5-1.5h-1c-.8 0-1.5.7-1.5 1.5v5zm6 0c0 .8.7 1.5 1.5 1.5h1c.8 0 1.5-.7 1.5-1.5v-8c0-.8-.7-1.5-1.5-1.5h-1c-.8 0-1.5.7-1.5 1.5v8z"/></svg>
+        <svg viewBox="0 0 18 14" style="width:15px; margin: 0 3px;"><path d="M9 13.5c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5zm4.8-4.3c-.3.3-.8.3-1.1 0C11.7 8.3 10.4 7.8 9 7.8s-2.7.5-3.7 1.4c-.3.3-.8.3-1.1 0-.3-.3-.3-.8 0-1.1C5.5 6.9 7.2 6.2 9 6.2s3.5.7 4.8 1.9c.3.3.3.8 0 1.1zm3.2-3.1c-.3.3-.8.3-1.1 0-1.8-1.7-4.2-2.7-6.9-2.7-2.7 0-5.1 1-6.9 2.7-.3.3-.8.3-1.1 0-.3-.3-.3-.8 0-1.1C3.1 3 6 1.8 9 1.8s5.9 1.2 8.1 3.2c.3.3.3.8 0 1.1z"/></svg>
+        <svg viewBox="0 0 26 12" style="width:22px;"><rect x="1" y="1" width="21" height="10" rx="3" fill="none" stroke="#fff" stroke-width="1"/><rect x="3" y="3" width="13" height="6" rx="1.5" fill="#fff"/><path d="M24 4h1c.6 0 1 .4 1 1v2c0 .6-.4 1-1 1h-1V4z"/></svg>
+      </div>
+    </div>
+    
+    <div class="fav-header">
+      <span style="font-size: 22px; cursor: pointer; width: 60px;" onclick="switchPage('page-home')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </span>
+      <span>收藏记录</span>
+      <span class="clear-btn" style="width: 60px; text-align: right;">清空记录</span>
+    </div>
+
+    <div class="fav-tabs">
+      <div class="fav-tab active" onclick="switchFavTab('video', this)">视频</div>
+      <div class="fav-tab" onclick="switchFavTab('drama', this)">短剧</div>
+    </div>
+
+    <div class="content-scroll">
+      <!-- 视频收藏列表 (参考附件样式) -->
+      <div id="fav-list-video" class="fav-list">
+        <div class="fav-card">
+          <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/fav1/140/90')">
+            <span class="fav-tag-top">免费看片</span>
+            <span class="fav-tag-bottom">00:12:30</span>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">空姐-少妇在线激情裸聊,等你来约</div>
+          </div>
+        </div>
+        <div class="fav-empty">没有更多了</div>
+      </div>
+
+      <!-- 短剧收藏列表 (新增: 倒序排列, 带集数和付费状态) -->
+      <div id="fav-list-drama" class="fav-list" style="display: none;">
+        <!-- 第一条：最新收藏 (今天) -->
+        <div class="fav-card">
+          <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/d2/140/90')">
+            <span class="fav-tag-bottom">全120集</span>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">重生之千金归来</div>
+            <div class="fav-meta">
+              <span class="fav-tag-drama" style="color: #00e676; background: rgba(0,230,118,0.2);">已付费</span>
+              <span>今天 14:30</span>
+            </div>
+          </div>
+        </div>
+        <!-- 第二条：较早收藏 (昨天) -->
+        <div class="fav-card">
+          <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/d1/140/90')">
+            <span class="fav-tag-bottom">更新至80集</span>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">绝世神医在都市</div>
+            <div class="fav-meta">
+              <span class="fav-tag-drama" style="color: #ff2a55; background: rgba(255,42,85,0.2);">未付费</span>
+              <span>昨天 09:15</span>
+            </div>
+          </div>
+        </div>
+        <div class="fav-empty">没有更多了</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 底部导航 (全局可见，除了可能在独立的短剧列表页隐藏。这里保留以便切换测试) -->
+
+
+<!-- === 页面4：抖阴短视频页 (恢复AI短剧Tab) === -->
+  <div id="page-short-video" class="page">
+    <div class="video-page-container">
+      <div class="video-player-area" id="feedPlayerArea" style="background-image:url('https://picsum.photos/seed/douyin/375/812'); transition: transform 0.3s ease;"></div>
+      <!-- 滑动手势层 -->
+      <div class="video-swipe-overlay" id="feedSwipeArea" style="z-index: 5;"></div>
+      
+      <div class="status-bar" style="position:absolute; top:0; width:100%; z-index:10;"><span style="margin-left:10px;">9:41</span></div>
+      
+      <!-- 顶部 Tab 切换 -->
+      <div class="video-top-bar" style="top:44px; z-index:20;">
+        <div class="video-tabs">
+          <div class="video-tab active" onclick="switchFeedTab(this, 'drama')">AI短剧</div>
+          <div class="video-tab" onclick="switchFeedTab(this, 'short')">短视频</div>
+        </div>
+        <div class="video-search-icon">🔍</div>
+      </div>
+
+      <!-- 1. 专属短视频交互UI (默认隐藏) -->
+      <div id="ui-short-video" style="display: none;">
+        <div class="right-action-bar" style="bottom: 150px; z-index:20;">
+          <div class="action-btn" style="position: relative; margin-bottom: 15px;">
+            <img src="https://picsum.photos/seed/avatar/100/100" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #fff;">
+            <div style="position: absolute; bottom: -6px; background: #ff2a55; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; line-height: 1;">+</div>
+          </div>
+          <div class="action-btn" onclick="toggleFavorite(this)"><div class="action-icon" style="background: transparent; font-size: 32px;">🤍</div><span>7404</span></div>
+          <div class="action-btn"><div class="action-icon" style="background: transparent; font-size: 32px;">💬</div><span>786</span></div>
+          <div class="action-btn"><div class="action-icon" style="background: transparent; font-size: 32px;">↪️</div><span>分享</span></div>
+          <div class="action-btn" onclick="toggleMute(this)"><div class="action-icon" style="background: transparent; font-size: 32px;">🔇</div><span>静音</span></div>
+        </div>
+        <div class="video-bottom-info" style="bottom: 95px; z-index:20;">
+          <div class="drama-title" id="feedTitle" style="font-size: 16px; margin-bottom: 5px;">@创作者 1</div>
+          <div class="drama-desc" id="feedDesc" style="font-size: 13px;">今天天气真好，出来溜达溜达~ #日常</div>
+        </div>
+      </div>
+
+      <!-- 2. 专属AI短剧交互UI (默认展示，参考了独立短剧页并上移防遮挡) -->
+      <div id="ui-feed-drama" style="display: block;">
+        <div class="right-action-bar" style="bottom: 180px; z-index: 20;">
+          <div class="action-btn" onclick="toggleFavorite(this)"><div class="action-icon">🤍</div><span>收藏</span></div>
+          <div class="action-btn" onclick="toggleMute(this)"><div class="action-icon">🔇</div><span>静音</span></div>
+          <div class="action-btn" onclick="openEpisodeModal()"><div class="action-icon">📺</div><span>选集</span></div>
+        </div>
+        <div class="progress-container" style="bottom: 95px; z-index: 20;">
+          <div class="pay-prompt" id="feedPayPrompt">
+            <span>试看00:15后结束，观看完整视频请付费</span>
+            <div class="pay-btn-small" onclick="openPaymentModal()">去付费</div>
+          </div>
+          <div class="drama-title" id="feedDramaTitle" style="margin-bottom: 4px;">热门短剧推荐 1 - 第1集</div>
+          <div style="font-size: 11px; color: #ccc; margin-bottom: 10px; display: flex; gap: 8px; align-items: center;">
+            <span id="feedDramaTotalEps" style="background: rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 4px;">全80集</span>
+            <span id="feedDramaPayStatus" style="background: rgba(255,42,85,0.6); padding: 3px 8px; border-radius: 4px; color: #fff;">未付费</span>
+          </div>
+          <div class="progress-bar"><div class="progress-bar-inner"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 页面5：新增的独立短剧播放页 === -->
+  <div id="page-drama-play" class="page">
+    <div class="video-page-container">
+      <!-- 视频画面与手势层 -->
+      <div class="video-player-area" id="dramaPlayerArea" style="transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);"></div>
+      <div class="video-swipe-overlay" id="dramaSwipeArea" style="z-index: 5;"></div>
+
+      <!-- 返回按钮 -->
+      <div class="status-bar" style="position: absolute; top: 0; width: 100%; z-index: 20;"><span style="margin-left: 10px;">9:41</span></div>
+      <div style="position: absolute; top: 50px; left: 15px; z-index: 20; cursor: pointer; background: rgba(0,0,0,0.3); border-radius: 50%; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="switchPage('page-drama-list')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </div>
+
+      <!-- 右侧操作栏 -->
+      <div class="right-action-bar" style="bottom: 120px; z-index: 20;">
+        <div class="action-btn" onclick="toggleFavorite(this)"><div class="action-icon">🤍</div><span>收藏</span></div>
+        <div class="action-btn" onclick="toggleMute(this)"><div class="action-icon">🔇</div><span>静音</span></div>
+        <div class="action-btn" onclick="openEpisodeModal()"><div class="action-icon">📺</div><span>选集</span></div>
+      </div>
+
+      <!-- 底部信息与付费提示 (页面沉浸式，下移恢复原位) -->
+      <div class="progress-container" style="bottom: 40px; z-index: 20;">
+        <div class="pay-prompt" id="payPrompt">
+          <span>试看00:15后结束，观看完整视频请付费</span>
+          <div class="pay-btn-small" onclick="openPaymentModal()">去付费</div>
+        </div>
+        
+        <div class="drama-title" id="dramaTitle" style="margin-bottom: 4px;">剧名 - 第1集</div>
+        
+        <!-- 新增：全几集与付费状态标签 -->
+        <div style="font-size: 11px; color: #ccc; margin-bottom: 10px; display: flex; gap: 8px; align-items: center;">
+          <span id="dramaTotalEps" style="background: rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 4px;">全80集</span>
+          <span id="dramaPayStatus" style="background: rgba(255,42,85,0.6); padding: 3px 8px; border-radius: 4px; color: #fff;">未付费</span>
+        </div>
+        
+        <div class="progress-bar"><div class="progress-bar-inner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === 全局选集弹窗 (支持区间分类) === -->
+  <div class="modal-overlay" id="episodeModal">
+    <div class="modal-content" style="max-height: 85%;">
+      <div class="modal-close" onclick="closeModal('episodeModal')">×</div>
+      <div class="ep-header">
+        <img src="https://picsum.photos/seed/d3/160/220" class="ep-cover" id="epModalCover">
+        <div class="ep-info">
+          <div class="ep-title" id="epModalTitle">短剧名称</div>
+          <div class="ep-desc" id="epModalDesc">更新至80集 / 共100集</div>
+        </div>
+      </div>
+      <div class="ep-tabs" id="epTabs"></div>
+      <div class="ep-grid" id="epGrid"></div>
+    </div>
+  </div>
+
+  <!-- === 全局付费弹窗 === -->
+  <div class="modal-overlay" id="paymentModal" style="z-index: 1001;">
+    <div class="modal-content pay-modal-content">
+      <div class="modal-close" onclick="closeModal('paymentModal')">×</div>
+      <div style="font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 10px;">解锁剧集</div>
+      <div class="pay-balance">当前余额: <strong>1200</strong></div>
+      <div class="pay-options">
+        <div class="pay-opt active" id="payOpt1" onclick="selectPayOpt(1)">
+          <span class="pay-opt-title" id="payOpt1Title">解锁本集</span>
+          <span class="pay-opt-price">15</span>
+        </div>
+        <label class="auto-unlock" id="autoUnlockLabel">
+          <input type="checkbox" id="autoUnlockCheck" checked> 自动解锁下一集
+        </label>
+        <div class="pay-opt" id="payOptAll" onclick="selectPayOpt('all')" style="margin-top: 10px;">
+          <span class="pay-opt-title">解锁全剧 (立省30%)</span>
+          <span class="pay-opt-price">888</span>
+        </div>
+      </div>
+      <div class="pay-actions">
+        <div class="pay-btn cancel" onclick="closeModal('paymentModal')">取消</div>
+        <div class="pay-btn confirm" onclick="confirmPayment()">确认支付</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bottom-nav" class="bottom-nav">
+    <div class="nav-item active" onclick="switchPage('page-home', this)">
+      <span class="nav-icon">📺</span>
+      <span>视频</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('page-short-video', this)">
+      <span class="nav-icon">🎵</span>
+      <span>抖阴</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">💬</span>
+      <span>聊天</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🏀</span>
+      <span>体育</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">🎮</span>
+      <span>游戏</span>
+    </div>
+    <div class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span>我的</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 页面切换逻辑
+  function switchPage(pageId, navEl) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    
+    // 控制底部导航栏显示隐藏 (独立二级页面均隐藏底部导航)
+    if(pageId === 'page-drama-list' || pageId === 'page-drama-play' || pageId === 'page-favorites') {
+      document.getElementById('bottom-nav').style.display = 'none';
+    } else {
+      document.getElementById('bottom-nav').style.display = 'flex';
+      if(navEl) {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        navEl.classList.add('active');
+      }
+    }
+  }
+
+  // 收藏页分类切换逻辑
+  function switchFavTab(type, el) {
+    document.querySelectorAll('.fav-tab').forEach(tab => tab.classList.remove('active'));
+    el.classList.add('active');
+    
+    if (type === 'video') {
+      document.getElementById('fav-list-video').style.display = 'flex';
+      document.getElementById('fav-list-drama').style.display = 'none';
+    } else {
+      document.getElementById('fav-list-video').style.display = 'none';
+      document.getElementById('fav-list-drama').style.display = 'flex';
+    }
+  }
+
+  // 分类切换特效
+  document.querySelectorAll('.cat-item').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.cat-item').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      this.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+  });
+
+  // ========== 滚动动效 (IntersectionObserver) ==========
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('show');
+        // 动画触发后可以取消观察提升性能
+        observer.unobserve(entry.target); 
+      }
+    });
+  }, { threshold: 0.1 }); // 元素露出 10% 时触发
+
+  // 页面加载后绑定观察者
+  document.querySelectorAll('.anim-item').forEach(el => {
+    observer.observe(el);
+  });
+
+  // ========== 悬浮球全屏拖拽逻辑 ==========
+  const ball = document.getElementById('floatBall');
+  const appContainer = document.getElementById('app');
+  let isDragging = false;
+  let startX, startY, initialLeft, initialTop;
+
+  function dragStart(e) {
+    isDragging = true;
+    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+    
+    startX = clientX;
+    startY = clientY;
+    
+    // 获取当前相对 app 容器的位置
+    initialLeft = ball.offsetLeft;
+    initialTop = ball.offsetTop;
+    
+    // 移除默认 right bottom 防止冲突
+    ball.style.right = 'auto';
+    ball.style.bottom = 'auto';
+    ball.style.transition = 'none'; // 拖拽时取消动画
+  }
+
+  function dragAction(e) {
+    if (!isDragging) return;
+    e.preventDefault(); // 阻止滚动
+    
+    const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+    const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+    
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    
+    let newLeft = initialLeft + dx;
+    let newTop = initialTop + dy;
+    
+    // 边界碰撞检测 (限制在 app 容器内)
+    const maxX = appContainer.clientWidth - ball.clientWidth;
+    const maxY = appContainer.clientHeight - ball.clientHeight;
+    
+    newLeft = Math.max(0, Math.min(newLeft, maxX));
+    newTop = Math.max(0, Math.min(newTop, maxY));
+    
+    ball.style.left = newLeft + 'px';
+    ball.style.top = newTop + 'px';
+  }
+
+  function dragEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+    // 吸边效果（可选）：松手后自动贴近左右侧
+    ball.style.transition = 'left 0.3s ease';
+    if (ball.offsetLeft < appContainer.clientWidth / 2) {
+      ball.style.left = '10px';
+    } else {
+      ball.style.left = (appContainer.clientWidth - ball.clientWidth - 10) + 'px';
+    }
+  }
+
+  // 鼠标事件
+  ball.addEventListener('mousedown', dragStart);
+  document.addEventListener('mousemove', dragAction);
+  document.addEventListener('mouseup', dragEnd);
+  
+  // 触摸事件 (passive: false 允许 e.preventDefault)
+  ball.addEventListener('touchstart', dragStart, { passive: false });
+  document.addEventListener('touchmove', dragAction, { passive: false });
+  document.addEventListener('touchend', dragEnd);
+
+// ========== 独立短剧播放页、抖阴页、选集与付费逻辑 ==========
+  let currentDramaName = '';
+  let currentEpisode = 1;
+  const totalEpisodes = 80; 
+  let unlockedEpisodes = [1, 2, 3]; // 模拟前3集已免费/已购买
+  let autoUnlockEnabled = false; 
+
+  let feedMode = 'drama'; // 'short' 纯短视频 or 'drama' AI短剧
+  let feedIndex = 1;
+
+  // 1. 绑定：在短剧列表点击任意卡片进入播放
+  document.querySelectorAll('.drama-card').forEach(card => {
+    card.addEventListener('click', function() {
+      const title = this.querySelector('.drama-name').innerText;
+      const bgImage = this.querySelector('.drama-cover').style.backgroundImage;
+      const urlMatch = bgImage.match(/url\(['"]?(.*?)['"]?\)/);
+      if(urlMatch) document.getElementById('epModalCover').src = urlMatch[1];
+      
+      playSpecificDrama(title);
+    });
+  });
+
+  // 2. 播放特定短剧逻辑
+  function playSpecificDrama(name) {
+    currentDramaName = name;
+    currentEpisode = 1; 
+    unlockedEpisodes = [1, 2, 3]; 
+    switchPage('page-drama-play'); 
+    renderDramaContent('none'); 
+  }
+
+  // 3. 抖阴页 Tab 切换逻辑
+  function switchFeedTab(el, mode) {
+    document.querySelectorAll('.video-tab').forEach(tab => tab.classList.remove('active'));
+    el.classList.add('active');
+    feedMode = mode;
+    feedIndex = 1;
+    
+    // 根据 Tab 模式，控制两套 UI 的显示与隐藏
+    if (mode === 'drama') {
+      document.getElementById('ui-short-video').style.display = 'none';
+      document.getElementById('ui-feed-drama').style.display = 'block';
+    } else {
+      document.getElementById('ui-short-video').style.display = 'block';
+      document.getElementById('ui-feed-drama').style.display = 'none';
+    }
+    
+    renderFeedContent('none');
+  }
+
+  // 通用收藏静音控制 (支持多个页面)
+  function toggleFavorite(btn) {
+    const icon = btn.querySelector('.action-icon');
+    if(icon.innerText === '🤍') { icon.style.color = '#ff2a55'; icon.innerText = '❤️'; } 
+    else { icon.style.color = '#fff'; icon.innerText = '🤍'; }
+  }
+  function toggleMute(btn) {
+    const icon = btn.querySelector('.action-icon');
+    const text = btn.querySelector('span');
+    if(icon.innerText === '🔇') { icon.innerText = '🔊'; if(text) text.innerText = '取消'; } 
+    else { icon.innerText = '🔇'; if(text) text.innerText = '静音'; }
+  }
+
+  // 4. 渲染抖阴页画面
+  function renderFeedContent(animDir) {
+    const area = document.getElementById('feedPlayerArea');
+
+    if (animDir === 'up' || animDir === 'down') {
+      area.style.transform = animDir === 'up' ? 'translateY(100%)' : 'translateY(-100%)';
+      area.style.transition = 'none';
+      setTimeout(() => {
+        area.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        area.style.transform = 'translateY(0)';
+        updateFeed();
+      }, 50);
+    } else { updateFeed(); }
+
+    function updateFeed() {
+      area.style.backgroundImage = `url('https://picsum.photos/seed/feed${Date.now()}/375/812')`;
+      if(feedMode === 'drama') {
+        // 更新 AI短剧 的文案和状态
+        currentDramaName = `热门短剧推荐 ${feedIndex}`; // 联动选集弹窗的标题
+        document.getElementById('feedDramaTitle').innerText = `${currentDramaName} - 第1集`;
+        document.getElementById('feedPayPrompt').style.display = 'flex';
+        document.getElementById('feedDramaPayStatus').innerText = '未付费';
+        document.getElementById('feedDramaPayStatus').style.background = 'rgba(255,42,85,0.6)';
+      } else {
+        // 更新 短视频 的文案
+        document.getElementById('feedTitle').innerText = `@创作者 ${feedIndex}`;
+        document.getElementById('feedDesc').innerText = `今天天气真好，出来溜达溜达~ #日常`;
+      }
+    }
+  }
+
+  // 5. 渲染独立短剧播放画面
+  function renderDramaContent(animDir) {
+    const area = document.getElementById('dramaPlayerArea');
+    const titleEl = document.getElementById('dramaTitle');
+    const statusEl = document.getElementById('dramaPayStatus');
+    const payPrompt = document.getElementById('payPrompt');
+
+    // 处理滑动动画
+    if (animDir === 'up' || animDir === 'down') {
+      area.style.transform = animDir === 'up' ? 'translateY(100%)' : 'translateY(-100%)';
+      area.style.transition = 'none';
+      setTimeout(() => {
+        area.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        area.style.transform = 'translateY(0)';
+        updateDrama();
+      }, 50);
+    } else { updateDrama(); }
+
+    function updateDrama() {
+      area.style.backgroundImage = `url('https://picsum.photos/seed/drama${currentEpisode}/375/812')`;
+      titleEl.innerText = `${currentDramaName} - 第${currentEpisode}集`;
+      document.getElementById('dramaTotalEps').innerText = `全${totalEpisodes}集`;
+      
+      const isUnlocked = unlockedEpisodes.includes(currentEpisode);
+      
+      if (isUnlocked) {
+        payPrompt.style.display = 'none'; 
+        statusEl.innerText = '已解锁';
+        statusEl.style.background = 'rgba(255,255,255,0.2)';
+      } else {
+        if (autoUnlockEnabled) {
+          unlockedEpisodes.push(currentEpisode); 
+          payPrompt.style.display = 'none';
+          statusEl.innerText = '已自动解锁';
+          statusEl.style.background = 'rgba(255,255,255,0.2)';
+        } else {
+          payPrompt.style.display = 'flex'; 
+          statusEl.innerText = '未付费';
+          statusEl.style.background = 'rgba(255,42,85,0.6)';
+        }
+      }
+    }
+  }
+
+  // 6. 绑定上下滑动手势 (封装复用，增加PC鼠标支持以便你在电脑上测试)
+  function bindSwipe(areaId, onUp, onDown) {
+    const area = document.getElementById(areaId);
+    let startY = 0;
+    let isMouseDown = false;
+
+    // 手机触摸事件
+    area.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, {passive: true});
+    area.addEventListener('touchend', e => {
+      let endY = e.changedTouches[0].clientY;
+      if (startY - endY > 50) onUp(); // 上滑
+      else if (endY - startY > 50) onDown(); // 下滑
+    });
+
+    // 电脑鼠标拖拽事件 (方便在PC浏览器直接预览测试)
+    area.addEventListener('mousedown', e => { isMouseDown = true; startY = e.clientY; });
+    area.addEventListener('mouseup', e => {
+      if (!isMouseDown) return;
+      isMouseDown = false;
+      let endY = e.clientY;
+      if (startY - endY > 50) onUp();
+      else if (endY - startY > 50) onDown();
+    });
+    area.addEventListener('mouseleave', e => { isMouseDown = false; });
+  }
+
+  // 给抖阴页绑定滑动
+  bindSwipe('feedSwipeArea', 
+    () => { feedIndex++; renderFeedContent('up'); },
+    () => { if(feedIndex > 1) { feedIndex--; renderFeedContent('down'); } }
+  );
+  
+  // 给短剧页绑定滑动
+  bindSwipe('dramaSwipeArea', 
+    () => { 
+      // 【新增交互】：上滑(看下一集)时，判断当前集是否已经解锁
+      // 如果当前集未解锁，且没有开启自动解锁，则拦截滑动，直接弹出付费框
+      if (!unlockedEpisodes.includes(currentEpisode) && !autoUnlockEnabled) {
+        openPaymentModal();
+        return; // 终止滑动，不允许看下一集
+      }
+      // 如果已解锁，则正常进入下一集
+      if(currentEpisode < totalEpisodes) { 
+        currentEpisode++; 
+        renderDramaContent('up'); 
+      } 
+    },
+    () => { 
+      // 下滑(看上一集)不限制，随时可以回看
+      if(currentEpisode > 1) { 
+        currentEpisode--; 
+        renderDramaContent('down'); 
+      } 
+    }
+  );
+
+  // 7. 选集弹窗 (支持分类)
+  function openEpisodeModal() {
+    document.getElementById('episodeModal').classList.add('active');
+    document.getElementById('epModalTitle').innerText = currentDramaName;
+    
+    const tabsContainer = document.getElementById('epTabs');
+    tabsContainer.innerHTML = '';
+    
+    const range = 30; // 30集一个分类
+    const numTabs = Math.ceil(totalEpisodes / range);
+    
+    for(let t = 0; t < numTabs; t++) {
+      const start = t * range + 1;
+      const end = Math.min((t + 1) * range, totalEpisodes);
+      
+      const tab = document.createElement('div');
+      tab.className = 'ep-tab';
+      tab.innerText = `${start}-${end}集`;
+      
+      if (currentEpisode >= start && currentEpisode <= end) {
+        tab.classList.add('active');
+        renderEpisodesGrid(start, end);
+      }
+      
+      tab.onclick = () => {
+        document.querySelectorAll('.ep-tab').forEach(el => el.classList.remove('active'));
+        tab.classList.add('active');
+        renderEpisodesGrid(start, end);
+      };
+      tabsContainer.appendChild(tab);
+    }
+  }
+
+  function renderEpisodesGrid(start, end) {
+    const grid = document.getElementById('epGrid');
+    grid.innerHTML = '';
+    for(let i = start; i <= end; i++) {
+      const isLocked = !unlockedEpisodes.includes(i);
+      const isActive = (i === currentEpisode);
+      
+      const div = document.createElement('div');
+      div.className = `ep-item ${isActive ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
+      div.innerText = i;
+      
+      div.onclick = () => {
+        let oldEp = currentEpisode;
+        currentEpisode = i;
+        closeModal('episodeModal');
+        renderDramaContent(currentEpisode > oldEp ? 'up' : 'down'); 
+      };
+      grid.appendChild(div);
+    }
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  // 8. 付费逻辑
+  let selectedPayOpt = 1;
+  function selectPayOpt(opt) {
+    selectedPayOpt = opt;
+    document.getElementById('payOpt1').classList.remove('active');
+    document.getElementById('payOptAll').classList.remove('active');
+    if(opt === 1) {
+      document.getElementById('payOpt1').classList.add('active');
+      document.getElementById('autoUnlockLabel').style.display = 'flex';
+    } else {
+      document.getElementById('payOptAll').classList.add('active');
+      document.getElementById('autoUnlockLabel').style.display = 'none';
+    }
+  }
+
+  function openPaymentModal() {
+    document.getElementById('paymentModal').classList.add('active');
+    document.getElementById('payOpt1Title').innerText = `解锁本集 (第${currentEpisode}集)`;
+    selectPayOpt(1);
+  }
+
+  function confirmPayment() {
+    if (selectedPayOpt === 1) {
+      unlockedEpisodes.push(currentEpisode); 
+      autoUnlockEnabled = document.getElementById('autoUnlockCheck').checked; 
+      alert('支付成功！已解锁第' + currentEpisode + '集');
+    } else {
+      for(let i=1; i<=totalEpisodes; i++) unlockedEpisodes.push(i); 
+      alert('支付成功！已解锁全剧');
+    }
+    closeModal('paymentModal');
+    renderDramaContent('none'); 
+  }
+</script>
+</body>
+</html>
