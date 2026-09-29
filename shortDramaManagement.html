@@ -219,16 +219,39 @@
                         <label class="block font-medium mb-1 text-gray-700"><span class="text-red-500">*</span> 短剧名称</label>
                         <input type="text" v-model="dramaForm.name" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
                     </div>
-                    <div class="col-span-2 flex gap-4">
-                        <div class="w-24 h-32 bg-gray-100 border border-dashed border-gray-300 rounded flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50">
-                            <i class="fas fa-image text-2xl mb-1"></i>
-                            <span class="text-xs">上传封面</span>
+                    <!-- 修改后的封面上传区域开始 -->
+                    <div class="col-span-2">
+                        <label class="block font-medium mb-1 text-gray-700">短剧封面图</label>
+                        <!-- 两种方式切换单选框 -->
+                        <div class="flex gap-4 mb-3 mt-2">
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" v-model="dramaForm.coverType" value="url" class="mt-0.5"> 输入URL
+                            </label>
+                            <label class="flex items-center gap-1 cursor-pointer">
+                                <input type="radio" v-model="dramaForm.coverType" value="upload" class="mt-0.5"> 本地上传
+                            </label>
                         </div>
-                        <div class="flex-1">
-                            <label class="block font-medium mb-1 text-gray-700">短剧封面图</label>
-                            <input type="text" placeholder="或输入图片URL" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                        
+                        <!-- 方式1：URL输入框 -->
+                        <div v-if="dramaForm.coverType === 'url'" class="flex-1">
+                            <input type="text" v-model="dramaForm.coverUrl" placeholder="请输入图片URL地址 (如: http://...)" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500 text-sm">
+                        </div>
+                        
+                        <!-- 方式2：本地上传框 -->
+                        <div v-if="dramaForm.coverType === 'upload'" class="flex gap-4">
+                            <div class="w-24 h-32 bg-gray-100 border border-dashed border-gray-300 rounded flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50 relative hover:border-blue-400 hover:text-blue-500 transition">
+                                <i class="fas fa-cloud-upload-alt text-2xl mb-1"></i>
+                                <span class="text-xs">点击上传</span>
+                                <!-- 原生的文件上传组件，设置为透明覆盖在上方以便点击 -->
+                                <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*">
+                            </div>
+                            <div class="flex-1 text-xs text-gray-500 flex flex-col justify-end pb-2">
+                                <p class="mb-1">支持 JPG, PNG, GIF 格式</p>
+                                <p>建议尺寸: 300x400 像素，大小不超过 2MB</p>
+                            </div>
                         </div>
                     </div>
+                    <!-- 修改后的封面上传区域结束 -->
                     <div>
                         <label class="block font-medium mb-1 text-gray-700"><span class="text-red-500">*</span> 总集数</label>
                         <input type="number" v-model="dramaForm.totalEpisodes" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
@@ -333,7 +356,7 @@
             const currentDrama = ref({}); 
             
             // 表单数据绑定
-            const dramaForm = reactive({ name: '', totalEpisodes: 0, isPaid: false, totalPrice: 0, status: true });
+            const dramaForm = reactive({ name: '', totalEpisodes: 0, isPaid: false, totalPrice: 0, status: true, coverType: 'url', coverUrl: '' });
             const episodeForm = reactive({ episodeNum: 1, title: '', playUrl: '', price: 0, freeDuration: 0, status: true });
 
             // ---------------- 排序管理相关逻辑 ----------------
@@ -373,7 +396,7 @@
             // ---------------- 弹窗控制逻辑 ----------------
             const openDramaModal = (mode, data = null) => {
                 modalMode.value = mode;
-                Object.assign(dramaForm, mode === 'edit' && data ? data : { name: '', totalEpisodes: 0, isPaid: false, totalPrice: 0, status: true });
+                Object.assign(dramaForm, mode === 'edit' && data ? data : { name: '', totalEpisodes: 0, isPaid: false, totalPrice: 0, status: true, coverType: 'url', coverUrl: '' });
                 showDramaModal.value = true;
             };
 
