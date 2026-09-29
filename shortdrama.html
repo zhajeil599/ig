@@ -141,8 +141,8 @@
 
 /* === 播放进度条与付费提示 === */
   .progress-container { position: absolute; bottom: 40px; left: 15px; right: 70px; z-index: 10; width: calc(100% - 85px); }
-  .pay-prompt { background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,42,85,0.4); backdrop-filter: blur(4px); gap: 10px; }
-  .pay-prompt span { color: #ddd; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pay-prompt { background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,42,85,0.4); backdrop-filter: blur(4px); gap: 10px; width: fit-content; max-width: 100%; }
+  .pay-prompt span { color: #ddd; flex: 1; }
   .pay-btn-small { background: linear-gradient(135deg, #ff4081, #ff2a55); color: #fff; padding: 6px 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
   .progress-bar { height: 2px; background: rgba(255,255,255,0.3); border-radius: 1px; width: 100%; }
   .progress-bar-inner { height: 100%; width: 30%; background: #fff; border-radius: 1px; }
@@ -217,8 +217,8 @@
   .my-drama-btn { background: linear-gradient(135deg, #ff4081, #ff2a55); color: #fff; padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
   /* === 新增：自动解锁提示及二次确认样式 === */
-  .auto-unlock-prompt { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 8px; display: none; align-items: center; justify-content: space-between; border: 1px solid rgba(255,42,85,0.4); backdrop-filter: blur(4px); gap: 8px; }
-  .auto-unlock-prompt span { color: #ddd; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .auto-unlock-prompt { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-bottom: 8px; display: none; align-items: center; justify-content: space-between; border: 1px solid rgba(255,42,85,0.4); backdrop-filter: blur(4px); gap: 8px; width: fit-content; max-width: 100%; }
+  .auto-unlock-prompt span { color: #ddd; flex: 1; }
   .cancel-auto-btn { background: #444; color: #fff; padding: 4px 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
 
 /* === 新增：网页内 Toast 提示样式 === */
@@ -230,6 +230,55 @@
     85% { opacity: 1; transform: scale(1); } 
     100% { opacity: 0; transform: scale(0.9); } 
   }
+
+/* === 新增：搜索页面及横屏相关样式 === */
+.search-page {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: #121318; z-index: 3000; display: none; flex-direction: column;
+}
+.search-page.active { display: flex; }
+.search-header {
+  display: flex; align-items: center; padding: 50px 15px 10px; gap: 10px;
+}
+.search-input-box {
+  flex: 1; height: 36px; background: rgba(255,255,255,0.1); border-radius: 18px;
+  display: flex; align-items: center; padding: 0 15px;
+}
+.search-input-box input {
+  flex: 1; background: transparent; border: none; color: #fff; outline: none; font-size: 14px;
+}
+.search-cancel { font-size: 14px; color: #aaa; cursor: pointer; }
+.search-results { flex: 1; overflow-y: auto; padding: 15px; display: none; }
+.search-results.active { display: block; }
+
+/* 横屏模式：旋转整个容器并重置宽高 */
+.video-page-container.landscape {
+  width: 812px !important;
+  height: 375px !important;
+  transform-origin: left top;
+  transform: rotate(90deg) translateY(-100%);
+  position: absolute; top: 0; left: 0;
+}
+/* === 全屏切换按钮 - 默认状态（半屏模式），放在中间横向视频的下方居中 === */
+.fullscreen-btn {
+  position: absolute; 
+  top: calc(50% + 130px); /* 视频大约在屏幕正中间，往下偏移130px正好在视频下方 */
+  left: 50%;
+  transform: translateX(-50%); /* 保证按钮水平居中 */
+  z-index: 30;
+  background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px;
+  font-size: 14px; color: #fff; cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(4px); display: none; 
+}
+
+/* === 全屏切换按钮 - 全屏状态（屏幕旋转后），放在右下角 === */
+.video-page-container.landscape .fullscreen-btn {
+  top: auto;       /* 取消顶部的定位 */
+  left: auto;      /* 取消左侧的定位 */
+  transform: none; /* 取消居中偏移 */
+  bottom: 25px;    /* 放在右下角，距离底部25px */
+  right: 25px;     /* 距离右侧25px */
+}
 
 </style>
 </head>
@@ -255,13 +304,14 @@
     <div class="header-bar">
       <div class="app-logo"></div> <!-- 改为灰色的图标 -->
       <div class="search-box">🔍 极品专区</div>
-      <div style="font-size: 20px;">📜</div>
+      <!-- 给浏览记录图标增加点击事件 -->
+      <div style="font-size: 20px; cursor: pointer;" onclick="switchPage('page-history')">📜</div>
       <div style="font-size: 20px; cursor: pointer;" onclick="switchPage('page-favorites')">👍</div>
     </div>
     <div class="top-tabs">
       <div class="tab-item active">推荐</div>
       <!-- 修改后的短剧入口 -->
-      <div class="drama-entrance" onclick="switchPage('page-drama-list')">AI短剧大全</div>
+      <div class="drama-entrance" onclick="switchPage('page-drama-list')">AI短剧</div>
       <div class="tab-item">网暴吃瓜</div>
       <div class="tab-item">国产精品</div>
       <div class="tab-item">自拍偷拍</div>
@@ -295,8 +345,11 @@
         </span>
         <span>AI短剧</span>
       </div>
-      <!-- 右上角增加【我的短剧】入口 -->
-      <span style="font-size: 14px; color: #ff2a55; cursor: pointer;" onclick="switchPage('page-my-drama')">我的短剧</span>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <!-- 新增搜索按钮 -->
+        <span style="font-size: 18px; cursor: pointer;" onclick="openSearchPage()">🔍</span>
+        <span style="font-size: 14px; color: #ff2a55; cursor: pointer;" onclick="switchPage('page-my-drama')">我的短剧</span>
+      </div>
     </div>
     <!-- 已经去掉了底部的分类部分 -->
 
@@ -486,9 +539,10 @@
       </div>
 
       <!-- 短剧收藏列表 (新增: 倒序排列, 带集数和付费状态) -->
+      <!-- 短剧收藏列表 (新增: 倒序排列, 带集数和付费状态) -->
       <div id="fav-list-drama" class="fav-list" style="display: none;">
         <!-- 第一条：最新收藏 (今天) -->
-        <div class="fav-card">
+        <div class="fav-card" style="cursor: pointer;" onclick="openDramaModalFromList(this, '重生之千金归来')">
           <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/d2/140/90')">
             <span class="fav-tag-bottom">全120集</span>
           </div>
@@ -501,7 +555,7 @@
           </div>
         </div>
         <!-- 第二条：较早收藏 (昨天) -->
-        <div class="fav-card">
+        <div class="fav-card" style="cursor: pointer;" onclick="openDramaModalFromList(this, '绝世神医在都市')">
           <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/d1/140/90')">
             <span class="fav-tag-bottom">更新至80集</span>
           </div>
@@ -518,9 +572,70 @@
     </div>
   </div>
 
+<!-- === 页面7：新增浏览记录页 === -->
+  <div id="page-history" class="page">
+    <div class="status-bar">
+      <span style="margin-left: 10px;">9:41</span>
+    </div>
+    
+    <div class="fav-header">
+      <span style="font-size: 22px; cursor: pointer; width: 60px;" onclick="switchPage('page-home')">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </span>
+      <span>浏览记录</span>
+      <span class="clear-btn" style="width: 60px; text-align: right;">清空记录</span>
+    </div>
 
-  <!-- 底部导航 (全局可见，除了可能在独立的短剧列表页隐藏。这里保留以便切换测试) -->
+    <div class="fav-tabs">
+      <div class="fav-tab active" onclick="switchHistoryTab('video', this)">视频</div>
+      <div class="fav-tab" onclick="switchHistoryTab('drama', this)">短剧</div>
+    </div>
 
+    <div class="content-scroll">
+      <!-- 视频浏览记录 (按附件图样式) -->
+      <div id="history-list-video" class="fav-list">
+        <div class="fav-card">
+          <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/fav1/140/90')">
+            <span class="fav-tag-top">免费看片</span>
+            <span class="fav-tag-bottom">01:10:01</span>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">REBD930Mio6PlatinumLullaby by · 君島みお</div>
+          </div>
+        </div>
+        <div class="fav-empty">没有更多了</div>
+      </div>
+
+      <!-- 短剧浏览记录 (带点击弹窗事件) -->
+      <div id="history-list-drama" class="fav-list" style="display: none;">
+        <div class="fav-card" style="cursor: pointer;" onclick="openDramaModalFromList(this, '重生之千金归来')">
+          <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/d2/140/90')">
+            <span class="fav-tag-bottom">全120集</span>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">重生之千金归来</div>
+            <div class="fav-meta">
+              <span class="fav-tag-drama" style="color: #00e676; background: rgba(0,230,118,0.2);">已付费</span>
+              <span>今天 14:30</span>
+            </div>
+          </div>
+        </div>
+        <div class="fav-card" style="cursor: pointer;" onclick="openDramaModalFromList(this, '绝世神医在都市')">
+          <div class="fav-cover" style="background-image:url('https://picsum.photos/seed/d1/140/90')">
+            <span class="fav-tag-bottom">更新至80集</span>
+          </div>
+          <div class="fav-info">
+            <div class="fav-title">绝世神医在都市</div>
+            <div class="fav-meta">
+              <span class="fav-tag-drama" style="color: #ff2a55; background: rgba(255,42,85,0.2);">未付费</span>
+              <span>昨天 09:15</span>
+            </div>
+          </div>
+        </div>
+        <div class="fav-empty">没有更多了</div>
+      </div>
+    </div>
+  </div>
 
 <!-- === 页面4：抖阴短视频页 (恢复AI短剧Tab) === -->
   <div id="page-short-video" class="page">
@@ -537,7 +652,7 @@
           <div class="video-tab active" onclick="switchFeedTab(this, 'drama')">AI短剧</div>
           <div class="video-tab" onclick="switchFeedTab(this, 'short')">短视频</div>
         </div>
-        <div class="video-search-icon">🔍</div>
+        <div class="video-search-icon" style="cursor:pointer;" onclick="openSearchPage()">🔍</div>
       </div>
 
       <!-- 1. 专属短视频交互UI (默认隐藏) -->
@@ -567,7 +682,7 @@
         </div>
         <div class="progress-container" style="bottom: 95px; z-index: 20;">
           <div class="pay-prompt" id="feedPayPrompt">
-            <span>试看00:15后结束，观看完整视频请付费</span>
+            <span>试看00:15后结束，观看完整视频请</span>
             <div class="pay-btn-small" onclick="openPaymentModal()">去付费</div>
           </div>
           <div class="drama-title" id="feedDramaTitle" style="margin-bottom: 4px;">热门短剧推荐 1 - 第1集</div>
@@ -587,17 +702,12 @@
       <!-- 视频画面与手势层 -->
       <div class="video-player-area" id="dramaPlayerArea" style="transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);"></div>
       <div class="video-swipe-overlay" id="dramaSwipeArea" style="z-index: 5;"></div>
-
-      <!-- 新增：自动解锁提示 Banner -->
-      <div class="auto-unlock-banner" id="autoUnlockBanner">
-        <span>🚀 自动付费解锁功能已开启</span>
-        <div class="close-banner" onclick="openAutoUnlockConfirm()">×</div>
-      </div>
-
+      <!-- 新增：半屏短剧的全屏切换按钮 -->
+      <div class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">🔲 全屏播放</div>
 
       <!-- 返回按钮 -->
       <div class="status-bar" style="position: absolute; top: 0; width: 100%; z-index: 20;"><span style="margin-left: 10px;">9:41</span></div>
-      <div style="position: absolute; top: 50px; left: 15px; z-index: 20; cursor: pointer; background: rgba(0,0,0,0.3); border-radius: 50%; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="switchPage('page-drama-list')">
+      <div style="position: absolute; top: 50px; left: 15px; z-index: 20; cursor: pointer; background: rgba(0,0,0,0.3); border-radius: 50%; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px);" onclick="switchPage(dramaPlayOrigin)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </div>
 
@@ -611,13 +721,13 @@
       <!-- 底部信息与付费提示 (页面沉浸式，下移恢复原位) -->
       <div class="progress-container" style="bottom: 40px; z-index: 20;">
         <div class="pay-prompt" id="payPrompt">
-          <span>试看00:15后结束，观看完整视频请付费</span>
+          <span>试看00:15后结束，观看完整视频请</span>
           <div class="pay-btn-small" onclick="openPaymentModal()">去付费</div>
         </div>
         
         <!-- 修改位置：将自动解锁提示放在和去付费相同的位置，默认隐藏 -->
         <div class="auto-unlock-prompt" id="autoUnlockPrompt">
-          <span>🚀 自动付费解锁功能已开启</span>
+          <span>已开启自动解锁，00:15后自动付费解锁</span>
           <div class="cancel-auto-btn" onclick="openAutoUnlockConfirm()">取消</div>
         </div>
         
@@ -677,6 +787,29 @@
     </div>
   </div>
 
+  <!-- === 新增：统一的搜索页面 === -->
+  <div id="page-search" class="search-page">
+    <div class="search-header">
+      <div class="search-input-box">
+        <span style="margin-right: 8px;">🔍</span>
+        <!-- 监听输入框内容变化 -->
+        <input type="text" id="searchInput" placeholder="搜索短剧名称..." oninput="handleSearch(this.value)">
+      </div>
+      <div class="search-cancel" onclick="closeSearchPage()">取消</div>
+    </div>
+    
+    <div id="searchEmpty" style="padding: 20px; text-align: center; color: #666; font-size: 13px;">
+      请输入想看的短剧名称，例如“重生”
+    </div>
+    
+    <!-- 搜索结果列表 -->
+    <div id="searchResults" class="search-results">
+      <div class="my-drama-list" id="searchResultList">
+        <!-- 搜索结果将通过JS渲染在这里 -->
+      </div>
+    </div>
+  </div>
+
   <div id="bottom-nav" class="bottom-nav">
     <div class="nav-item active" onclick="switchPage('page-home', this)">
       <span class="nav-icon">📺</span>
@@ -713,7 +846,7 @@
     document.getElementById(pageId).classList.add('active');
     
     // 控制底部导航栏显示隐藏 (独立二级页面均隐藏底部导航)
-    if(pageId === 'page-drama-list' || pageId === 'page-drama-play' || pageId === 'page-favorites') {
+    if(pageId === 'page-drama-list' || pageId === 'page-drama-play' || pageId === 'page-favorites' || pageId === 'page-history') {
       document.getElementById('bottom-nav').style.display = 'none';
     } else {
       document.getElementById('bottom-nav').style.display = 'flex';
@@ -855,11 +988,21 @@
     });
   });
 
+  // 全局变量：记录是从哪个页面进入播放页的
+  let dramaPlayOrigin = 'page-drama-list';
+
   // 2. 播放特定短剧逻辑
   function playSpecificDrama(name) {
     currentDramaName = name;
     currentEpisode = 1; 
     unlockedEpisodes = [1, 2, 3]; 
+    
+    // 在跳转前，获取当前正在显示的页面，并保存下来
+    const activePage = document.querySelector('.page.active').id;
+    if (activePage !== 'page-drama-play') {
+      dramaPlayOrigin = activePage;
+    }
+    
     switchPage('page-drama-play'); 
     renderDramaContent('none'); 
   }
@@ -927,14 +1070,17 @@
     }
   }
 
-  // 5. 渲染独立短剧播放画面
+  // 5. 渲染独立短剧播放画面 (支持半屏与全屏)
+  let isLandscape = false;
+  let isHalfScreenDrama = false; // 当前集是否为半屏短剧
+
   function renderDramaContent(animDir) {
     const area = document.getElementById('dramaPlayerArea');
     const titleEl = document.getElementById('dramaTitle');
     const statusEl = document.getElementById('dramaPayStatus');
     const payPrompt = document.getElementById('payPrompt');
+    const fullBtn = document.getElementById('fullscreenBtn');
 
-    // 处理滑动动画
     if (animDir === 'up' || animDir === 'down') {
       area.style.transform = animDir === 'up' ? 'translateY(100%)' : 'translateY(-100%)';
       area.style.transition = 'none';
@@ -946,13 +1092,30 @@
     } else { updateDrama(); }
 
     function updateDrama() {
-      area.style.backgroundImage = `url('https://picsum.photos/seed/drama${currentEpisode}/375/812')`;
       titleEl.innerText = `${currentDramaName} - 第${currentEpisode}集`;
       document.getElementById('dramaTotalEps').innerText = `全${totalEpisodes}集`;
       
+      // 【修改点】：为了演示，假设偶数集是半屏/横屏短剧，奇数集是竖屏全屏短剧
+      isHalfScreenDrama = (currentEpisode % 2 === 0); 
+      
+      // 切换剧集时，强制恢复竖屏模式
+      exitFullscreen();
+
+      if (isHalfScreenDrama) {
+        // 半屏短剧：加载较宽比例的图，上下居中留黑边
+        area.style.backgroundImage = `url('https://picsum.photos/seed/drama${currentEpisode}/375/210')`;
+        area.style.backgroundSize = 'contain'; 
+        fullBtn.style.display = 'block'; // 显示全屏按钮
+      } else {
+        // 竖屏全屏短剧
+        area.style.backgroundImage = `url('https://picsum.photos/seed/drama${currentEpisode}/375/812')`;
+        area.style.backgroundSize = 'cover';
+        fullBtn.style.display = 'none'; // 隐藏全屏按钮
+      }
+      
       const isUnlocked = unlockedEpisodes.includes(currentEpisode);
       const autoPrompt = document.getElementById('autoUnlockPrompt');
-      if(autoPrompt) autoPrompt.style.display = 'none'; // 切换剧集时默认先隐藏
+      if(autoPrompt) autoPrompt.style.display = 'none'; 
       
       if (isUnlocked) {
         payPrompt.style.display = 'none'; 
@@ -964,7 +1127,7 @@
           payPrompt.style.display = 'none';
           statusEl.innerText = '已自动解锁';
           statusEl.style.background = 'rgba(255,255,255,0.2)';
-          if(autoPrompt) autoPrompt.style.display = 'flex'; // 触发了未付费剧集时，底部展示开启提示
+          if(autoPrompt) autoPrompt.style.display = 'flex'; 
         } else {
           payPrompt.style.display = 'flex'; 
           statusEl.innerText = '未付费';
@@ -972,6 +1135,36 @@
         }
       }
     }
+  }
+
+  // --- 横竖屏切换逻辑 ---
+  function toggleFullscreen() {
+    const container = document.querySelector('#page-drama-play .video-page-container');
+    const btn = document.getElementById('fullscreenBtn');
+    const area = document.getElementById('dramaPlayerArea');
+
+    if (!isLandscape) {
+      // 旋转整个容器进入横屏
+      container.classList.add('landscape');
+      btn.innerText = '📴 退出全屏';
+      // 横屏后图片填满
+      area.style.backgroundSize = 'cover';
+      isLandscape = true;
+    } else {
+      exitFullscreen();
+    }
+  }
+
+  function exitFullscreen() {
+    const container = document.querySelector('#page-drama-play .video-page-container');
+    const btn = document.getElementById('fullscreenBtn');
+    const area = document.getElementById('dramaPlayerArea');
+    
+    if(container) container.classList.remove('landscape');
+    if(btn) btn.innerText = '🔲 全屏播放';
+    // 退回竖屏时，恢复上下居中
+    if(area && isHalfScreenDrama) area.style.backgroundSize = 'contain';
+    isLandscape = false;
   }
 
   // 6. 绑定上下滑动手势 (封装复用，增加PC鼠标支持以便你在电脑上测试)
@@ -1079,7 +1272,13 @@
         currentEpisode = i;
         closeModal('episodeModal');
         
-        // 增加此行：无论从哪个入口（视频/抖阴）打开的选集，点击后都统一切换到短剧沉浸播放页
+        // 在跳转前，获取当前正在显示的页面，并保存下来
+        const activePage = document.querySelector('.page.active').id;
+        if (activePage !== 'page-drama-play') {
+          dramaPlayOrigin = activePage;
+        }
+        
+        // 无论从哪个入口（视频/抖阴/历史）打开的选集，点击后都统一切换到短剧沉浸播放页
         switchPage('page-drama-play'); 
         
         renderDramaContent(currentEpisode > oldEp ? 'up' : 'down'); 
@@ -1154,6 +1353,74 @@
     // 2.5秒后自动移除该提示
     setTimeout(() => { toast.remove(); }, 2500);
   }  
+
+// === 新增：搜索页面交互逻辑 ===
+  function openSearchPage() {
+    document.getElementById('page-search').classList.add('active');
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchEmpty').style.display = 'block';
+    document.getElementById('searchResults').classList.remove('active');
+  }
+
+  function closeSearchPage() {
+    document.getElementById('page-search').classList.remove('active');
+  }
+
+  function handleSearch(val) {
+    if(val.trim() === '') {
+      document.getElementById('searchEmpty').style.display = 'block';
+      document.getElementById('searchResults').classList.remove('active');
+      return;
+    }
+    // 隐藏默认提示，显示搜索结果区
+    document.getElementById('searchEmpty').style.display = 'none';
+    document.getElementById('searchResults').classList.add('active');
+    
+    // 模拟搜索结果的实时渲染
+    const resultList = document.getElementById('searchResultList');
+    resultList.innerHTML = `
+      <div class="my-drama-card" style="cursor:pointer;" onclick="closeSearchPage(); playSpecificDrama('${val}的逆袭');">
+        <img src="https://picsum.photos/seed/s1/160/220" class="my-drama-cover">
+        <div class="my-drama-info">
+          <div class="my-drama-title">${val}的逆袭 (搜索结果)</div>
+          <div class="my-drama-meta"><span>全80集</span><span>首发免费</span></div>
+          <div class="my-drama-bottom">
+            <span class="my-drama-cost" style="color:#00e676;">免费观看</span>
+            <div class="my-drama-btn">立即播放</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+// === 新增：浏览记录页分类切换逻辑 ===
+  function switchHistoryTab(type, el) {
+    document.querySelectorAll('#page-history .fav-tab').forEach(tab => tab.classList.remove('active'));
+    el.classList.add('active');
+    
+    if (type === 'video') {
+      document.getElementById('history-list-video').style.display = 'flex';
+      document.getElementById('history-list-drama').style.display = 'none';
+    } else {
+      document.getElementById('history-list-video').style.display = 'none';
+      document.getElementById('history-list-drama').style.display = 'flex';
+    }
+  }
+
+  // === 新增：从收藏/浏览记录列表点击短剧卡片打开选集弹窗 ===
+  function openDramaModalFromList(cardEl, dramaName) {
+    currentDramaName = dramaName;
+    
+    // 自动提取卡片里的图片作为弹窗封面
+    const bgImage = cardEl.querySelector('.fav-cover').style.backgroundImage;
+    const urlMatch = bgImage.match(/url\(['"]?(.*?)['"]?\)/);
+    if(urlMatch) {
+      document.getElementById('epModalCover').src = urlMatch[1];
+    }
+    
+    // 复用已有的打开选集弹窗逻辑
+    openEpisodeModal();
+  }
 
 </script>
 </body>
