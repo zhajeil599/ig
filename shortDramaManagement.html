@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短剧管理系统原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
+        [v-cloak] { display: none; }
+        /* 去除数字输入框默认的上下箭头 */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="bg-gray-100 p-6 text-gray-800">
+
+<div id="app" v-cloak class="max-w-full mx-auto">
+    <!-- 主界面：短剧列表视图 -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold border-l-4 border-blue-500 pl-3">短剧管理</h2>
+        </div>
+
+        <!-- 筛选区域 -->
+        <div class="flex flex-wrap gap-4 mb-6 bg-gray-50 p-4 rounded border">
+            <div class="flex items-center gap-2">
+                <label class="text-sm font-medium">短剧名称：</label>
+                <input type="text" placeholder="请输入短剧名称" class="border rounded px-3 py-1.5 text-sm w-48 focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex items-center gap-2">
+                <label class="text-sm font-medium">状态：</label>
+                <select class="border rounded px-3 py-1.5 text-sm w-32 focus:outline-none focus:border-blue-500">
+                    <option value="">全部</option>
+                    <option value="1">开启</option>
+                    <option value="0">关闭</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2 ml-auto">
+                <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm transition">查询</button>
+                <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded text-sm transition">重置</button>
+            </div>
+        </div>
+
+        <!-- 操作按钮区域 -->
+        <div class="flex gap-3 mb-4">
+            <button @click="openDramaModal('add')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded text-sm transition">新增短剧</button>
+            <button class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-4 py-1.5 rounded text-sm transition">刷新列表</button>
+        </div>
+
+        <!-- 列表区域 -->
+        <div class="overflow-x-auto border rounded">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="px-4 py-3 font-medium w-32">排序</th>
+                        <th class="px-4 py-3 font-medium">封面图</th>
+                        <th class="px-4 py-3 font-medium">短剧名称</th>
+                        <th class="px-4 py-3 font-medium">总集数</th>
+                        <th class="px-4 py-3 font-medium">是否收费</th>
+                        <th class="px-4 py-3 font-medium">整部费用</th>
+                        <th class="px-4 py-3 font-medium">累计收费</th>
+                        <th class="px-4 py-3 font-medium">收藏次数</th>
+                        <th class="px-4 py-3 font-medium">状态</th>
+                        <th class="px-4 py-3 font-medium">操作人</th>
+                        <th class="px-4 py-3 font-medium">操作时间</th>
+                        <th class="px-4 py-3 font-medium text-center">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    <tr v-for="item in dramaList" :key="item.id" class="hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <!-- 排序查看状态 -->
+                            <div v-if="!item.isEditingSort" class="flex items-center gap-2">
+                                <span class="font-bold w-6 text-center">{{ item.sort }}</span>
+                                <button @click="startEditSort(item)" class="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50">编辑</button>
+                            </div>
+                            <!-- 排序编辑状态 -->
+                            <div v-else class="flex items-center gap-1">
+                                <input type="number" v-model="item.tempSort" class="w-12 border rounded px-1 py-1 text-center text-xs focus:outline-none focus:border-blue-500 bg-white shadow-inner">
+                                <button @click="saveSort(item, dramaList)" class="text-green-600 hover:text-green-800 text-xs px-1.5 py-1">保存</button>
+                                <button @click="cancelEditSort(item)" class="text-gray-400 hover:text-gray-600 text-xs px-1.5 py-1">取消</button>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <div class="w-10 h-14 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+                                <span class="text-xs text-gray-400">封面</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 font-medium text-blue-600">{{ item.name }}</td>
+                        <td class="px-4 py-3">{{ item.totalEpisodes }}</td>
+                        <td class="px-4 py-3">
+                            <span :class="item.isPaid ? 'text-red-500' : 'text-green-500'">{{ item.isPaid ? '收费' : '免费' }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-orange-500 font-medium">{{ item.totalPrice > 0 ? item.totalPrice : '-' }}</td>
+                        <td class="px-4 py-3">{{ item.accumulatedRevenue }}</td>
+                        <td class="px-4 py-3">{{ item.favorites }}</td>
+                        <td class="px-4 py-3">
+                            <span :class="item.status ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'" class="px-2 py-1 rounded text-xs">
+                                {{ item.status ? '开启' : '关闭' }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-500">{{ item.operator }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ item.updateTime }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex justify-center gap-2">
+                                <button @click="openDramaModal('edit', item)" class="bg-blue-100 text-blue-600 hover:bg-blue-200 px-3 py-1 rounded text-xs">编辑</button>
+                                <button @click="openEpisodeListModal(item)" class="bg-purple-100 text-purple-600 hover:bg-purple-200 px-3 py-1 rounded text-xs">剧集列表</button>
+                                <button class="bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1 rounded text-xs">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 弹窗：剧集列表视图 -->
+    <div v-if="showEpisodeListModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
+                <h3 class="text-xl font-bold border-l-4 border-purple-500 pl-3">《{{ currentDrama.name }}》 - 剧集管理</h3>
+                <button @click="showEpisodeListModal = false" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+
+            <div class="p-6 flex-1 overflow-y-auto">
+                <!-- 剧集筛选区域 -->
+                <div class="flex flex-wrap gap-4 mb-4 bg-gray-50 p-4 rounded border">
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium">剧集标题：</label>
+                        <input type="text" placeholder="请输入标题" class="border rounded px-3 py-1.5 text-sm w-48 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-1.5 rounded text-sm transition">查询</button>
+                        <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-1.5 rounded text-sm transition">重置</button>
+                    </div>
+                </div>
+
+                <!-- 剧集操作按钮区域 -->
+                <div class="flex gap-3 mb-4">
+                    <button @click="openEpisodeModal('add')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded text-sm transition">新增剧集</button>
+                    <button class="bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 px-4 py-1.5 rounded text-sm transition">刷新列表</button>
+                </div>
+
+                <!-- 剧集列表区域 -->
+                <div class="overflow-x-auto border rounded">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 font-medium w-32">排序</th>
+                                <th class="px-4 py-3 font-medium w-20">集数</th>
+                                <th class="px-4 py-3 font-medium w-1/4">标题</th>
+                                <th class="px-4 py-3 font-medium">播放地址</th>
+                                <th class="px-4 py-3 font-medium">收费金额</th>
+                                <th class="px-4 py-3 font-medium">免费时长(秒)</th>
+                                <th class="px-4 py-3 font-medium">收藏次数</th>
+                                <th class="px-4 py-3 font-medium">状态</th>
+                                <th class="px-4 py-3 font-medium">操作人</th>
+                                <th class="px-4 py-3 font-medium">操作时间</th>
+                                <th class="px-4 py-3 font-medium text-center w-36">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y">
+                            <tr v-for="item in episodeList" :key="item.id" class="hover:bg-gray-50">
+                                <td class="px-4 py-3">
+                                    <!-- 排序查看状态 -->
+                                    <div v-if="!item.isEditingSort" class="flex items-center gap-2">
+                                        <span class="font-bold w-6 text-center">{{ item.sort }}</span>
+                                        <button @click="startEditSort(item)" class="text-purple-500 hover:text-purple-700 text-xs px-2 py-1 rounded hover:bg-purple-50">编辑</button>
+                                    </div>
+                                    <!-- 排序编辑状态 -->
+                                    <div v-else class="flex items-center gap-1">
+                                        <input type="number" v-model="item.tempSort" class="w-12 border rounded px-1 py-1 text-center text-xs focus:outline-none focus:border-purple-500 bg-white shadow-inner">
+                                        <button @click="saveSort(item, episodeList)" class="text-green-600 hover:text-green-800 text-xs px-1.5 py-1">保存</button>
+                                        <button @click="cancelEditSort(item)" class="text-gray-400 hover:text-gray-600 text-xs px-1.5 py-1">取消</button>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 font-bold text-gray-500">第{{ item.episodeNum }}集</td>
+                                <td class="px-4 py-3 font-medium text-gray-900">{{ item.title }}</td>
+                                <td class="px-4 py-3 text-gray-400 text-xs truncate max-w-[150px]" :title="item.playUrl">{{ item.playUrl }}</td>
+                                <td class="px-4 py-3 text-orange-500">{{ item.price > 0 ? item.price : '免费' }}</td>
+                                <td class="px-4 py-3">{{ item.freeDuration > 0 ? item.freeDuration : '无限制' }}</td>
+                                <td class="px-4 py-3">{{ item.favorites }}</td>
+                                <td class="px-4 py-3">
+                                    <span :class="item.status ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'" class="px-2 py-1 rounded text-xs">
+                                        {{ item.status ? '开启' : '关闭' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-gray-500">{{ item.operator }}</td>
+                                <td class="px-4 py-3 text-gray-500">{{ item.updateTime }}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <div class="flex justify-center gap-2">
+                                        <button @click="openEpisodeModal('edit', item)" class="bg-blue-100 text-blue-600 hover:bg-blue-200 px-3 py-1 rounded text-xs">编辑</button>
+                                        <button class="bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1 rounded text-xs">删除</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：短剧 新增/编辑 -->
+    <div v-if="showDramaModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl overflow-hidden">
+            <div class="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
+                <h3 class="text-lg font-bold">{{ modalMode === 'add' ? '新增短剧' : '编辑短剧' }}</h3>
+                <button @click="showDramaModal = false" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="col-span-2">
+                        <label class="block font-medium mb-1 text-gray-700"><span class="text-red-500">*</span> 短剧名称</label>
+                        <input type="text" v-model="dramaForm.name" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="col-span-2 flex gap-4">
+                        <div class="w-24 h-32 bg-gray-100 border border-dashed border-gray-300 rounded flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-50">
+                            <i class="fas fa-image text-2xl mb-1"></i>
+                            <span class="text-xs">上传封面</span>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block font-medium mb-1 text-gray-700">短剧封面图</label>
+                            <input type="text" placeholder="或输入图片URL" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-gray-700"><span class="text-red-500">*</span> 总集数</label>
+                        <input type="number" v-model="dramaForm.totalEpisodes" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-gray-700">是否收费</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="dramaForm.isPaid" :value="true" class="mt-0.5"> 是</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="dramaForm.isPaid" :value="false" class="mt-0.5"> 否</label>
+                        </div>
+                    </div>
+                    <div class="col-span-2" v-if="dramaForm.isPaid">
+                        <label class="block font-medium mb-1 text-gray-700">整部费用</label>
+                        <input type="number" v-model="dramaForm.totalPrice" placeholder="填0表示不支持整部购买" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block font-medium mb-1 text-gray-700">状态</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="dramaForm.status" :value="true" class="mt-0.5"> 开启</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="dramaForm.status" :value="false" class="mt-0.5"> 关闭</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
+                <button @click="showDramaModal = false" class="px-4 py-2 border rounded text-sm hover:bg-gray-100 transition">取消</button>
+                <button @click="showDramaModal = false" class="px-4 py-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：剧集 新增/编辑 -->
+    <div v-if="showEpisodeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl overflow-hidden">
+            <div class="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
+                <h3 class="text-lg font-bold text-purple-700">{{ modalMode === 'add' ? '新增剧集' : '编辑剧集' }}</h3>
+                <button @click="showEpisodeModal = false" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <label class="block font-medium mb-1 text-gray-700"><span class="text-red-500">*</span> 集数 (第几集)</label>
+                        <input type="number" v-model="episodeForm.episodeNum" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-gray-700"><span class="text-red-500">*</span> 标题</label>
+                        <input type="text" v-model="episodeForm.title" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block font-medium mb-1 text-gray-700"><span class="text-red-500">*</span> 播放地址</label>
+                        <input type="text" v-model="episodeForm.playUrl" placeholder="http://..." class="w-full border rounded px-3 py-2 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-gray-700">收费金额</label>
+                        <input type="number" v-model="episodeForm.price" placeholder="0表示不收费" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-gray-700">免费观看时长 (秒)</label>
+                        <input type="number" v-model="episodeForm.freeDuration" placeholder="填0表示整集免费或无限制" class="w-full border rounded px-3 py-2 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block font-medium mb-1 text-gray-700">状态</label>
+                        <div class="flex gap-4 mt-2">
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="episodeForm.status" :value="true" class="mt-0.5"> 开启</label>
+                            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" v-model="episodeForm.status" :value="false" class="mt-0.5"> 关闭</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
+                <button @click="showEpisodeModal = false" class="px-4 py-2 border rounded text-sm hover:bg-gray-100 transition">取消</button>
+                <button @click="showEpisodeModal = false" class="px-4 py-2 bg-purple-500 text-white rounded text-sm hover:bg-purple-600 transition">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, reactive } = Vue;
+
+    createApp({
+        setup() {
+            // 短剧数据
+            const dramaList = ref([
+                { id: 1, sort: 1, isEditingSort: false, tempSort: 1, name: '射屌英雄', totalEpisodes: 4, isPaid: true, totalPrice: 9.9, accumulatedRevenue: 12500, favorites: 450, status: true, operator: 'admin', updateTime: '2026-09-29 09:30:00' },
+                { id: 2, sort: 2, isEditingSort: false, tempSort: 2, name: '豪门赘婿的逆袭', totalEpisodes: 80, isPaid: true, totalPrice: 39.9, accumulatedRevenue: 8000, favorites: 320, status: true, operator: 'admin', updateTime: '2026-09-28 14:20:00' }
+            ]);
+
+            // 剧集数据
+            const episodeList = ref([
+                { id: 101, sort: 1, isEditingSort: false, tempSort: 1, episodeNum: 1, title: '射屌英雄-第1集 桃花岛提亲', playUrl: '/20260928/Q6ArIXzx', price: 0, freeDuration: 0, favorites: 120, status: true, operator: 'admin', updateTime: '2026-09-29 09:30:00' },
+                { id: 102, sort: 2, isEditingSort: false, tempSort: 2, episodeNum: 2, title: '射屌英雄-第2集 欧阳克回忆与美女大战', playUrl: '/20260928/GmHNc6T6', price: 0, freeDuration: 0, favorites: 98, status: true, operator: 'admin', updateTime: '2026-09-29 09:30:00' },
+                { id: 103, sort: 3, isEditingSort: false, tempSort: 3, episodeNum: 3, title: '射屌英雄-第3集 欧阳克草原大战华筝', playUrl: '/20260928/ZxJvlM61', price: 1.5, freeDuration: 60, favorites: 156, status: true, operator: 'admin', updateTime: '2026-09-29 09:30:00' },
+                { id: 104, sort: 4, isEditingSort: false, tempSort: 4, episodeNum: 4, title: '射屌英雄-第4集 欧阳克威胁程姑娘', playUrl: '/20260928/Fs9UAo6j', price: 1.5, freeDuration: 60, favorites: 180, status: true, operator: 'admin', updateTime: '2026-09-29 09:30:00' }
+            ]);
+
+            // 弹窗状态管理
+            const showEpisodeListModal = ref(false);
+            const showDramaModal = ref(false);
+            const showEpisodeModal = ref(false);
+            const modalMode = ref('add'); 
+            const currentDrama = ref({}); 
+            
+            // 表单数据绑定
+            const dramaForm = reactive({ name: '', totalEpisodes: 0, isPaid: false, totalPrice: 0, status: true });
+            const episodeForm = reactive({ episodeNum: 1, title: '', playUrl: '', price: 0, freeDuration: 0, status: true });
+
+            // ---------------- 排序管理相关逻辑 ----------------
+            const startEditSort = (item) => {
+                item.tempSort = item.sort;
+                item.isEditingSort = true;
+            };
+
+            const cancelEditSort = (item) => {
+                item.isEditingSort = false;
+            };
+
+            // 核心排序与重新分配算法（支持两个列表复用）
+            const saveSort = (item, listTarget) => {
+                let newSort = parseInt(item.tempSort);
+                const maxSort = listTarget.length;
+                
+                // 边界校验：最少排在第1位，最多排在列表末尾
+                if (isNaN(newSort) || newSort < 1) newSort = 1;
+                if (newSort > maxSort) newSort = maxSort;
+                
+                const currentIndex = listTarget.findIndex(e => e.id === item.id);
+                if (currentIndex > -1) {
+                    // 从原位置拿出来
+                    const [targetItem] = listTarget.splice(currentIndex, 1);
+                    // 插入到新的指定位置
+                    listTarget.splice(newSort - 1, 0, targetItem);
+                    
+                    // 重置列表的所有排序号为正序正整数，并且关闭编辑模式
+                    listTarget.forEach((row, index) => {
+                        row.sort = index + 1;
+                        row.isEditingSort = false;
+                    });
+                }
+            };
+
+            // ---------------- 弹窗控制逻辑 ----------------
+            const openDramaModal = (mode, data = null) => {
+                modalMode.value = mode;
+                Object.assign(dramaForm, mode === 'edit' && data ? data : { name: '', totalEpisodes: 0, isPaid: false, totalPrice: 0, status: true });
+                showDramaModal.value = true;
+            };
+
+            const openEpisodeListModal = (drama) => {
+                currentDrama.value = drama;
+                showEpisodeListModal.value = true;
+            };
+
+            const openEpisodeModal = (mode, data = null) => {
+                modalMode.value = mode;
+                Object.assign(episodeForm, mode === 'edit' && data ? data : { episodeNum: episodeList.value.length + 1, title: '', playUrl: '', price: 0, freeDuration: 0, status: true });
+                showEpisodeModal.value = true;
+            };
+
+            return {
+                dramaList, episodeList, currentDrama,
+                showEpisodeListModal, showDramaModal, showEpisodeModal, modalMode,
+                dramaForm, episodeForm,
+                startEditSort, cancelEditSort, saveSort,
+                openDramaModal, openEpisodeListModal, openEpisodeModal
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
