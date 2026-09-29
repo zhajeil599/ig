@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广告列表原型</title>
+    <!-- 引入 Element Plus 样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入 Element Plus -->
+    <script src="https://unpkg.com/element-plus"></script>
+    <!-- 引入图标 -->
+    <script src="https://unpkg.com/@element-plus/icons-vue"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+        }
+        .app-container {
+            background: #fff;
+            padding: 24px;
+            border-radius: 4px;
+            box-shadow: 0 1px 4px rgba(0,21,41,.08);
+        }
+        .filter-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .left-actions, .right-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .filter-label {
+            font-size: 14px;
+            color: #606266;
+            font-weight: bold;
+        }
+        .pagination-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .danger-text {
+            color: #f56c6c;
+        }
+        .sort-hint {
+            font-size: 12px;
+            color: #f56c6c;
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+        .img-preview-table {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+        .upload-input-group {
+            display: flex;
+            width: 100%;
+        }
+        .upload-input-group .el-button {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            background-color: #f5f7fa;
+            color: #606266;
+            border: 1px solid #dcdfe6;
+            border-right: 0;
+        }
+        .upload-input-group .el-input__wrapper {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        /* 推荐尺寸表格样式 */
+        .size-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .size-table td {
+            border: 1px solid #ebeef5;
+            padding: 12px 15px;
+        }
+        .size-table td.label-cell {
+            background-color: #f5f7fa;
+            color: #606266;
+            font-weight: bold;
+            width: 15%;
+        }
+        .size-table td.value-cell {
+            color: #f56c6c;
+            width: 18%;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <!-- 顶部筛选区域 -->
+            <div class="filter-container">
+                <div class="left-actions">
+                    <span class="filter-label">广告位置</span>
+                    <el-select v-model="listQuery.position" placeholder="请选择" style="width: 180px;">
+                        <el-option label="首页轮播" value="首页轮播"></el-option>
+                        <el-option label="首页图标区" value="首页图标区"></el-option>
+                        <el-option label="视频列表" value="视频列表"></el-option>
+                        <el-option label="游戏中心" value="游戏中心"></el-option>
+                        <el-option label="个人中心" value="个人中心"></el-option>
+                        <el-option label="推广中心" value="推广中心"></el-option>
+                        <el-option label="启动页" value="启动页"></el-option>
+                        <el-option label="视频游戏滚动" value="视频游戏滚动"></el-option>
+                        <el-option label="长视频浮标" value="长视频浮标"></el-option>
+                        <el-option label="视频详情横幅" value="视频详情横幅"></el-option>
+                        <el-option label="视频封面" value="视频封面"></el-option>
+                        <el-option label="短视频广告" value="短视频广告"></el-option>
+                        <el-option label="聊天室广告" value="聊天室广告"></el-option>
+                        <el-option label="裸聊横幅" value="裸聊横幅"></el-option>
+                        <el-option label="短视频浮标" value="短视频浮标"></el-option>
+                        <el-option label="长视频非VIP广告" value="长视频非VIP广告"></el-option>
+                        <el-option label="首页浮标广告" value="首页浮标广告"></el-option>
+                        <el-option label="短剧列表广告位" value="短剧列表广告位"></el-option>
+                        <el-option label="短剧列表悬浮" value="短剧列表悬浮"></el-option>
+                    </el-select>
+                    <el-button type="primary" style="background-color: #409EFF; border-color: #409EFF;">查询</el-button>
+                    <el-button type="primary" style="background-color: #409EFF; border-color: #409EFF;" @click="handleAdd">新增</el-button>
+                    <el-button type="primary" style="background-color: #409EFF; border-color: #409EFF;" @click="dialogSizesVisible = true">推荐尺寸</el-button>
+                </div>
+                <div class="right-actions">
+                    <el-button type="primary" style="background-color: #409EFF; border-color: #409EFF;">重置</el-button>
+                    <el-button type="primary" style="background-color: #409EFF; border-color: #409EFF;" :icon="RefreshIcon"></el-button>
+                </div>
+            </div>
+
+            <!-- 列表区域 -->
+            <el-table :data="tableData" border style="width: 100%" stripe>
+                <el-table-column prop="id" label="ID" width="80" align="center"></el-table-column>
+                <el-table-column prop="name" label="名称" align="center"></el-table-column>
+                <el-table-column label="图片" align="center" width="80">
+                    <template #default="scope">
+                        <img :src="scope.row.image" class="img-preview-table" v-if="scope.row.image">
+                    </template>
+                </el-table-column>
+                <el-table-column prop="position" label="广告位置" align="center"></el-table-column>
+                <el-table-column prop="jump" label="跳转位置" align="center"></el-table-column>
+                <el-table-column prop="sort" label="排序" align="center" width="80"></el-table-column>
+                <el-table-column prop="status" label="状态" align="center" width="80">
+                    <template #default="scope">
+                        <span :class="scope.row.status === '启用' ? '' : 'danger-text'">{{ scope.row.status }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createTime" label="创建时间" align="center" width="160"></el-table-column>
+                <el-table-column prop="updateTime" label="更新时间" align="center" width="160"></el-table-column>
+                <el-table-column label="操作" align="center" width="160">
+                    <template #default="scope">
+                        <el-button size="small" type="primary" @click="handleEdit(scope.row)">修改</el-button>
+                        <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <!-- 分页 -->
+            <div class="pagination-container">
+                <span style="line-height: 32px; font-size: 13px; color: #606266; margin-right: 15px;">共 71 条</span>
+                <el-pagination
+                    v-model:current-page="listQuery.page"
+                    v-model:page-size="listQuery.limit"
+                    :page-sizes="[10, 20, 50, 100]"
+                    background
+                    layout="sizes, prev, pager, next, jumper"
+                    :total="71">
+                </el-pagination>
+            </div>
+        </div>
+
+        <!-- 推荐尺寸弹窗 -->
+        <el-dialog title="推荐尺寸" v-model="dialogSizesVisible" width="900px" custom-class="size-dialog">
+            <table class="size-table">
+                <tbody>
+                    <tr>
+                        <td class="label-cell">首页轮播</td>
+                        <td class="value-cell">710*300px</td>
+                        <td class="label-cell">首页图标区</td>
+                        <td class="value-cell">110*110px</td>
+                        <td class="label-cell">视频列表</td>
+                        <td class="value-cell">710*300px</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">游戏中心</td>
+                        <td class="value-cell">710*260px</td>
+                        <td class="label-cell">个人中心</td>
+                        <td class="value-cell">702*300px</td>
+                        <td class="label-cell">推广中心</td>
+                        <td class="value-cell">702*300px</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">启动页</td>
+                        <td class="value-cell">750*1624px</td>
+                        <td class="label-cell">视频游戏滚动</td>
+                        <td class="value-cell">110*110px</td>
+                        <td class="label-cell">长视频浮标</td>
+                        <td class="value-cell">110*110px</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">视频详情横幅</td>
+                        <td class="value-cell">750*120px</td>
+                        <td class="label-cell">视频封面</td>
+                        <td class="value-cell">710*300px</td>
+                        <td class="label-cell">短视频广告</td>
+                        <td class="value-cell">750*1236px</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">聊天室广告</td>
+                        <td class="value-cell">110*110px</td>
+                        <td class="label-cell">裸聊横幅</td>
+                        <td class="value-cell">702*170px</td>
+                        <td class="label-cell">短视频浮标</td>
+                        <td class="value-cell">110*110px</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">长视频非VIP广告</td>
+                        <td class="value-cell">750*424px</td>
+                        <td class="label-cell">首页浮标广告</td>
+                        <td class="value-cell">110*110px</td>
+                        <td class="label-cell"></td>
+                        <td class="value-cell"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </el-dialog>
+
+        <!-- 添加/修改弹窗 -->
+        <el-dialog :title="dialogType === 'add' ? '添加' : '修改'" v-model="dialogFormVisible" width="600px">
+            <el-form :model="form" label-width="100px">
+                <el-form-item label="广告标题：" required>
+                    <el-input v-model="form.name" placeholder="请输入广告标题"></el-input>
+                </el-form-item>
+                
+                <el-form-item label="显示位置：" required>
+                    <el-select v-model="form.position" placeholder="请选择显示位置" style="width: 100%">
+                        <el-option label="首页轮播" value="首页轮播"></el-option>
+                        <el-option label="首页图标区" value="首页图标区"></el-option>
+                        <el-option label="视频列表" value="视频列表"></el-option>
+                        <el-option label="游戏中心" value="游戏中心"></el-option>
+                        <el-option label="个人中心" value="个人中心"></el-option>
+                        <el-option label="推广中心" value="推广中心"></el-option>
+                        <el-option label="启动页" value="启动页"></el-option>
+                        <el-option label="视频游戏滚动" value="视频游戏滚动"></el-option>
+                        <el-option label="长视频浮标" value="长视频浮标"></el-option>
+                        <el-option label="视频详情横幅" value="视频详情横幅"></el-option>
+                        <el-option label="视频封面" value="视频封面"></el-option>
+                        <el-option label="短视频广告" value="短视频广告"></el-option>
+                        <el-option label="聊天室广告" value="聊天室广告"></el-option>
+                        <el-option label="裸聊横幅" value="裸聊横幅"></el-option>
+                        <el-option label="短视频浮标" value="短视频浮标"></el-option>
+                        <el-option label="长视频非VIP广告" value="长视频非VIP广告"></el-option>
+                        <el-option label="首页浮标广告" value="首页浮标广告"></el-option>
+                        <el-option label="短剧列表广告位" value="短剧列表广告位"></el-option>
+                        <el-option label="短剧列表悬浮" value="短剧列表悬浮"></el-option>
+                    </el-select>
+                </el-form-item>
+                
+                <el-form-item label="跳转位置：" required>
+                    <el-select v-model="form.jump" placeholder="请选择跳转位置" style="width: 100%">
+                        <el-option label="游戏中心" value="游戏中心"></el-option>
+                        <el-option label="充值中心" value="充值中心"></el-option>
+                        <el-option label="个人中心" value="个人中心"></el-option>
+                        <el-option label="推广中心" value="推广中心"></el-option>
+                        <el-option label="活动中心" value="活动中心"></el-option>
+                        <el-option label="外部链接" value="外部链接"></el-option>
+                        <el-option label="跳转游戏" value="跳转游戏"></el-option>
+                        <el-option label="跳转聊天室" value="跳转聊天室"></el-option>
+                        <el-option label="跳转棋牌" value="跳转棋牌"></el-option>
+                        <el-option label="跳转站内信" value="跳转站内信"></el-option>
+                        <el-option label="游戏列表弹窗" value="游戏列表弹窗"></el-option>
+                        <el-option label="签到" value="签到"></el-option>
+                        <el-option label="VIP售禄" value="VIP售禄"></el-option>
+                        <el-option label="客服" value="客服"></el-option>
+                        <el-option label="红包中心" value="红包中心"></el-option>
+                        <el-option label="绑定手机" value="绑定手机"></el-option>
+                        <el-option label="视频会员卡" value="视频会员卡"></el-option>
+                        <el-option label="指定活动" value="指定活动"></el-option>
+                    </el-select>
+                </el-form-item>
+                
+                <el-form-item label="广告图片：" required>
+                    <div class="upload-input-group">
+                        <el-button>选择文件</el-button>
+                        <el-input v-model="form.imagePath" placeholder="请上传" readonly></el-input>
+                    </div>
+                    <div v-if="dialogType === 'edit'" style="margin-top: 5px;">
+                        <span class="danger-text" style="font-size: 12px; display: block; margin-bottom: 5px;">建议尺寸110*110px</span>
+                        <img :src="form.image" style="width: 60px; height: 60px; object-fit: contain;">
+                    </div>
+                </el-form-item>
+                
+                <el-form-item label="状态：" required>
+                    <el-radio-group v-model="form.status">
+                        <el-radio label="启用">启用</el-radio>
+                        <el-radio label="禁用">禁用</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                
+                <el-form-item label="排序：" required>
+                    <el-input v-model="form.sort" placeholder="请输入排序"></el-input>
+                    <div class="sort-hint">数字越小，排序位置越靠前，出现值为-1时，相同位置广告呈现完全无序状态，随机展示</div>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="dialogFormVisible = false">关 闭</el-button>
+                    <el-button type="primary" @click="dialogFormVisible = false">提 交</el-button>
+                </div>
+            </template>
+        </el-dialog>
+    </div>
+
+    <script>
+        const { createApp, ref, reactive } = Vue
+        const { ElMessageBox, ElMessage } = ElementPlus
+        // 注册图标
+        const RefreshIcon = Vue.markRaw(ElementPlusIconsVue.Refresh)
+        
+        const app = createApp({
+            setup() {
+                const listQuery = reactive({
+                    position: '',
+                    page: 1,
+                    limit: 50
+                })
+                
+                const tableData = ref([
+                    { id: 243, name: '裸聊', image: 'https://via.placeholder.com/40', position: '首页图标区', jump: '绑定手机', sort: '-1', status: '启用', createTime: '2026-09-11 02:42:51', updateTime: '2026-09-11 02:45:44' },
+                    { id: 218, name: '宝马视频推给好友一次推广终身收益', image: 'https://via.placeholder.com/40/2980b9/ffffff', position: '首页图标区', jump: '游戏列表弹窗', sort: '-1', status: '启用', createTime: '2026-06-06 03:05:29', updateTime: '2026-09-22 00:52:13' },
+                    { id: 216, name: '指定活动888', image: 'https://via.placeholder.com/40/e74c3c/ffffff', position: '首页图标区', jump: '指定活动', sort: '-1', status: '禁用', createTime: '2026-05-14 17:46:32', updateTime: '2026-08-11 16:45:46' },
+                    { id: 214, name: '测试跳转指定活动6666', image: 'https://via.placeholder.com/40/f1c40f/ffffff', position: '视频详情横幅', jump: '指定活动', sort: '-1', status: '启用', createTime: '2026-05-14 17:45:15', updateTime: '2026-05-14 17:45:15' },
+                    { id: 213, name: '测试跳转指定活动444', image: 'https://via.placeholder.com/40/f39c12/ffffff', position: '视频游戏滚动', jump: '指定活动', sort: '-1', status: '启用', createTime: '2026-05-14 17:43:42', updateTime: '2026-09-12 21:36:20' },
+                    { id: 211, name: '测试跳转指定活动333', image: 'https://via.placeholder.com/40/8e44ad/ffffff', position: '游戏中心', jump: '游戏中心', sort: '-1', status: '禁用', createTime: '2026-05-14 17:41:54', updateTime: '2026-09-18 00:26:02' }
+                ])
+                
+                const dialogSizesVisible = ref(false)
+                const dialogFormVisible = ref(false)
+                const dialogType = ref('add') // 'add' or 'edit'
+                
+                const form = reactive({
+                    name: '',
+                    position: '',
+                    jump: '',
+                    imagePath: '',
+                    image: '',
+                    status: '启用',
+                    sort: ''
+                })
+
+                const resetForm = () => {
+                    form.name = ''
+                    form.position = ''
+                    form.jump = ''
+                    form.imagePath = ''
+                    form.image = ''
+                    form.status = '启用'
+                    form.sort = ''
+                }
+                
+                // 新增按钮点击
+                const handleAdd = () => {
+                    dialogType.value = 'add'
+                    resetForm()
+                    dialogFormVisible.value = true
+                }
+                
+                // 修改按钮点击
+                const handleEdit = (row) => {
+                    dialogType.value = 'edit'
+                    // 模拟数据回显
+                    form.name = row.name
+                    form.position = row.position
+                    form.jump = row.jump
+                    form.imagePath = 'public/20260911/178906576446464.js'
+                    form.image = row.image
+                    form.status = row.status
+                    form.sort = row.sort
+                    dialogFormVisible.value = true
+                }
+                
+                // 删除按钮点击
+                const handleDelete = (row) => {
+                    ElMessageBox.confirm(
+                        '您确定要删除吗？',
+                        '提示',
+                        {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning',
+                            icon: ElementPlusIconsVue.Warning
+                        }
+                    ).then(() => {
+                        ElMessage({
+                            type: 'success',
+                            message: '删除成功'
+                        })
+                    }).catch(() => {
+                        // 取消删除
+                    })
+                }
+                
+                return {
+                    listQuery,
+                    tableData,
+                    RefreshIcon,
+                    dialogSizesVisible,
+                    dialogFormVisible,
+                    dialogType,
+                    form,
+                    handleAdd,
+                    handleEdit,
+                    handleDelete
+                }
+            }
+        })
+        
+        app.use(ElementPlus)
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component)
+        }
+        app.mount('#app')
+    </script>
+</body>
+</html>
