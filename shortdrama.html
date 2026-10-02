@@ -362,70 +362,70 @@
       <div class="drama-grid">
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d1/160/220')">
-            <span class="drama-tag tag-free">首发免费</span>
+            <span class="drama-tag tag-free">免费</span>
             <span class="drama-eps">更新至80集 / 100集</span>
           </div>
           <div class="drama-info"><div class="drama-name">绝世神医在都市</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d2/160/220')">
-            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-tag tag-paid">未付费</span>
             <span class="drama-eps">全120集</span>
           </div>
           <div class="drama-info"><div class="drama-name">重生之千金归来</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d3/160/220')">
-            <span class="drama-tag tag-unlocked">已解锁</span>
+            <span class="drama-tag tag-unlocked">已付费</span>
             <span class="drama-eps">全99集</span>
           </div>
           <div class="drama-info"><div class="drama-name">霸道总裁爱上我</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d4/160/220')">
-            <span class="drama-tag tag-paid">需解锁</span>
+            <span class="drama-tag tag-paid">未付费</span>
             <span class="drama-eps">更新至12集 / 80集</span>
           </div>
           <div class="drama-info"><div class="drama-name">穿越古代做王妃</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d5/160/220')">
-            <span class="drama-tag tag-free">限免中</span>
+            <span class="drama-tag tag-free">免费</span>
             <span class="drama-eps">全88集</span>
           </div>
           <div class="drama-info"><div class="drama-name">极品战神归来</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d6/160/220')">
-            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-tag tag-paid">未付费</span>
             <span class="drama-eps">更新至30集</span>
           </div>
           <div class="drama-info"><div class="drama-name">我在八零当首富</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d7/160/220')">
-            <span class="drama-tag tag-unlocked">已解锁</span>
+            <span class="drama-tag tag-unlocked">已付费</span>
             <span class="drama-eps">全60集</span>
           </div>
           <div class="drama-info"><div class="drama-name">闪婚后大叔天天宠</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d8/160/220')">
-            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-tag tag-paid">未付费</span>
             <span class="drama-eps">更新至50集</span>
           </div>
           <div class="drama-info"><div class="drama-name">九龙神诀</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d9/160/220')">
-            <span class="drama-tag tag-free">首发免费</span>
+            <span class="drama-tag tag-free">免费</span>
             <span class="drama-eps">全72集</span>
           </div>
           <div class="drama-info"><div class="drama-name">退婚后成了大佬</div></div>
         </div>
         <div class="drama-card anim-item">
           <div class="drama-cover" style="background-image:url('https://picsum.photos/seed/d10/160/220')">
-            <span class="drama-tag tag-paid">需付费</span>
+            <span class="drama-tag tag-paid">未付费</span>
             <span class="drama-eps">更新至15集</span>
           </div>
           <div class="drama-info"><div class="drama-name">末世女王的日常</div></div>
@@ -458,7 +458,7 @@
             <div class="my-drama-title">重生之千金归来</div>
             <div class="my-drama-meta">
               <span>总集数：120集</span>
-              <span>已解锁：10集</span>
+              <span>已付费：10集</span>
               <span>上次购买：刚刚</span>
             </div>
             <div class="my-drama-bottom">
@@ -474,7 +474,7 @@
             <div class="my-drama-title">穿越古代做王妃</div>
             <div class="my-drama-meta">
               <span>总集数：80集</span>
-              <span>已解锁：全剧</span>
+              <span>已付费：全剧</span>
               <span>上次购买：昨天 14:20</span>
             </div>
             <div class="my-drama-bottom">
@@ -681,14 +681,18 @@
           <div class="action-btn" onclick="openEpisodeModal()"><div class="action-icon">📺</div><span>选集</span></div>
         </div>
         <div class="progress-container" style="bottom: 95px; z-index: 20;">
-          <div class="pay-prompt" id="feedPayPrompt">
+          <div class="pay-prompt" id="feedPayPrompt" style="display: none;">
             <span>试看00:15后结束，观看完整视频请</span>
             <div class="pay-btn-small" onclick="openPaymentModal()">去付费</div>
           </div>
           <div class="drama-title" id="feedDramaTitle" style="margin-bottom: 4px;">热门短剧推荐 1 - 第1集</div>
+          
+          <!-- 新增：展示抖阴AI短剧这一集的名称 -->
+          <div id="feedDramaEpisodeTitle" style="font-size: 13px; color: #ddd; margin-bottom: 8px;">本集标题：精彩剧情第1回</div>
+          
           <div style="font-size: 11px; color: #ccc; margin-bottom: 10px; display: flex; gap: 8px; align-items: center;">
             <span id="feedDramaTotalEps" style="background: rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 4px;">全80集</span>
-            <span id="feedDramaPayStatus" style="background: rgba(255,42,85,0.6); padding: 3px 8px; border-radius: 4px; color: #fff;">未付费</span>
+            <span id="feedDramaPayStatus" style="background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 4px; color: #fff;">免费</span>
           </div>
           <div class="progress-bar"><div class="progress-bar-inner"></div></div>
         </div>
@@ -732,6 +736,9 @@
         </div>
         
         <div class="drama-title" id="dramaTitle" style="margin-bottom: 4px;">剧名 - 第1集</div>
+        
+        <!-- 新增：展示这一集短剧的名称 -->
+        <div id="dramaEpisodeTitle" style="font-size: 13px; color: #ddd; margin-bottom: 8px;">本集标题：精彩剧情第1回</div>
         
         <!-- 新增：全几集与付费状态标签 -->
         <div style="font-size: 11px; color: #ccc; margin-bottom: 10px; display: flex; gap: 8px; align-items: center;">
@@ -1059,9 +1066,14 @@
         // 更新 AI短剧 的文案和状态
         currentDramaName = `热门短剧推荐 ${feedIndex}`; // 联动选集弹窗的标题
         document.getElementById('feedDramaTitle').innerText = `${currentDramaName} - 第1集`;
-        document.getElementById('feedPayPrompt').style.display = 'flex';
-        document.getElementById('feedDramaPayStatus').innerText = '未付费';
-        document.getElementById('feedDramaPayStatus').style.background = 'rgba(255,42,85,0.6)';
+        
+        // 新增：动态更新抖阴AI短剧的单集名称
+        document.getElementById('feedDramaEpisodeTitle').innerText = `本集标题：精彩剧情第1回`;
+        
+        // 修改：将随机浏览的短剧改为免费，并隐藏付费提示框
+        document.getElementById('feedPayPrompt').style.display = 'none';
+        document.getElementById('feedDramaPayStatus').innerText = '免费';
+        document.getElementById('feedDramaPayStatus').style.background = 'rgba(255,255,255,0.2)'; // 使用已解锁/免费的灰色半透明背景
       } else {
         // 更新 短视频 的文案
         document.getElementById('feedTitle').innerText = `@创作者 ${feedIndex}`;
@@ -1093,6 +1105,9 @@
 
     function updateDrama() {
       titleEl.innerText = `${currentDramaName} - 第${currentEpisode}集`;
+      // 新增：动态更新本集短剧的名称
+      document.getElementById('dramaEpisodeTitle').innerText = `本集标题：精彩剧情第${currentEpisode}回`;
+      
       document.getElementById('dramaTotalEps').innerText = `全${totalEpisodes}集`;
       
       // 【修改点】：为了演示，假设偶数集是半屏/横屏短剧，奇数集是竖屏全屏短剧
@@ -1119,13 +1134,13 @@
       
       if (isUnlocked) {
         payPrompt.style.display = 'none'; 
-        statusEl.innerText = '已解锁';
+        statusEl.innerText = '已付费';
         statusEl.style.background = 'rgba(255,255,255,0.2)';
       } else {
         if (autoUnlockEnabled) {
           unlockedEpisodes.push(currentEpisode); 
           payPrompt.style.display = 'none';
-          statusEl.innerText = '已自动解锁';
+          statusEl.innerText = '已自动付费';
           statusEl.style.background = 'rgba(255,255,255,0.2)';
           if(autoPrompt) autoPrompt.style.display = 'flex'; 
         } else {
@@ -1208,7 +1223,7 @@
         openPaymentModal();
         return; // 终止滑动，不允许看下一集
       }
-      // 如果已解锁，则正常进入下一集
+      // 如果已付费，则正常进入下一集
       if(currentEpisode < totalEpisodes) { 
         currentEpisode++; 
         renderDramaContent('up'); 
@@ -1383,7 +1398,7 @@
         <img src="https://picsum.photos/seed/s1/160/220" class="my-drama-cover">
         <div class="my-drama-info">
           <div class="my-drama-title">${val}的逆袭 (搜索结果)</div>
-          <div class="my-drama-meta"><span>全80集</span><span>首发免费</span></div>
+          <div class="my-drama-meta"><span>全80集</span><span>免费</span></div>
           <div class="my-drama-bottom">
             <span class="my-drama-cost" style="color:#00e676;">免费观看</span>
             <div class="my-drama-btn">立即播放</div>
