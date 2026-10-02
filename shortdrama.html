@@ -665,7 +665,7 @@
           <div class="action-btn" onclick="toggleFavorite(this)"><div class="action-icon" style="background: transparent; font-size: 32px;">🤍</div><span>7404</span></div>
           <div class="action-btn"><div class="action-icon" style="background: transparent; font-size: 32px;">💬</div><span>786</span></div>
           <div class="action-btn"><div class="action-icon" style="background: transparent; font-size: 32px;">↪️</div><span>分享</span></div>
-          <div class="action-btn" onclick="toggleMute(this)"><div class="action-icon" style="background: transparent; font-size: 32px;">🔇</div><span>静音</span></div>
+          <div class="action-btn" onclick="toggleMute(this)"><div class="action-icon" style="background: transparent; font-size: 32px;">🔊</div><span>有声</span></div>
         </div>
         <div class="video-bottom-info" style="bottom: 95px; z-index:20;">
           <div class="drama-title" id="feedTitle" style="font-size: 16px; margin-bottom: 5px;">@创作者 1</div>
@@ -677,7 +677,7 @@
       <div id="ui-feed-drama" style="display: block;">
         <div class="right-action-bar" style="bottom: 180px; z-index: 20;">
           <div class="action-btn" onclick="toggleFavorite(this)"><div class="action-icon">🤍</div><span>收藏</span></div>
-          <div class="action-btn" onclick="toggleMute(this)"><div class="action-icon">🔇</div><span>静音</span></div>
+          <div class="action-btn" onclick="toggleMute(this)"><div class="action-icon">🔊</div><span>有声</span></div>
           <div class="action-btn" onclick="openEpisodeModal()"><div class="action-icon">📺</div><span>选集</span></div>
         </div>
         <div class="progress-container" style="bottom: 95px; z-index: 20;">
@@ -1042,7 +1042,7 @@
   function toggleMute(btn) {
     const icon = btn.querySelector('.action-icon');
     const text = btn.querySelector('span');
-    if(icon.innerText === '🔇') { icon.innerText = '🔊'; if(text) text.innerText = '取消'; } 
+    if(icon.innerText === '🔇') { icon.innerText = '🔊'; if(text) text.innerText = '有声'; } 
     else { icon.innerText = '🔇'; if(text) text.innerText = '静音'; }
   }
 
