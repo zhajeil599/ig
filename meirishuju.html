@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>每日数据</title>
+    <style>
+        /* 基础页面样式 */
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 顶部搜索/筛选区域样式 */
+        .filter-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #606266;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .filter-item label { margin-right: 10px; }
+        .filter-item input, .filter-item select {
+            height: 32px; line-height: 32px; padding: 0 10px;
+            border: 1px solid #dcdfe6; border-radius: 4px;
+            outline: none; color: #606266; box-sizing: border-box;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            display: inline-block; line-height: 1; white-space: nowrap;
+            cursor: pointer; background: #fff; border: 1px solid #dcdfe6;
+            color: #606266; text-align: center; box-sizing: border-box;
+            outline: none; margin: 0; transition: .1s; font-weight: 500;
+            padding: 9px 15px; font-size: 12px; border-radius: 3px;
+        }
+        .btn-primary { color: #fff; background-color: #409eff; border-color: #409eff; }
+        .btn-primary:hover { background: #66b1ff; border-color: #66b1ff; }
+        .right-btns { margin-left: auto; }
+        .right-btns .btn { margin-left: 10px; }
+
+        /* 表格样式 */
+        table {
+            width: 100%; border-collapse: collapse; text-align: center;
+            border: 1px solid #ebeef5; font-size: 13px;
+        }
+        thead { background-color: #f5f7fa; color: #909399; font-weight: bold; }
+        th, td { padding: 12px 8px; border: 1px solid #ebeef5; }
+        tbody tr:hover { background-color: #f5f7fa; }
+        td { color: #606266; }
+        
+        /* 文本颜色辅助类 */
+        .text-success { color: #67c23a; }
+        .text-warning { color: #e6a23c; }
+        .text-danger { color: #f56c6c; }
+        
+        /* 表格操作栏蓝底白字按钮样式 */
+        .action-btn {
+            display: inline-block; background-color: #409eff; color: #ffffff !important; 
+            text-decoration: none; padding: 5px 10px; border-radius: 3px;
+            font-size: 12px; border: none; transition: 0.2s;
+        }
+        .action-btn:hover { background-color: #66b1ff; }
+
+        /* 日期范围选择器样式 */
+        .date-picker-wrapper { position: relative; display: inline-block; }
+        .date-range-picker {
+            display: inline-flex; align-items: center; border: 1px solid #409eff; 
+            border-radius: 4px; padding: 0 10px; height: 32px;
+            background-color: #fff; box-sizing: border-box; cursor: pointer;
+        }
+        .date-range-picker i { color: #c0c4cc; margin-right: 8px; font-size: 14px; font-style: normal; }
+        .date-range-picker input {
+            border: none !important; outline: none; text-align: center;
+            width: 100px; padding: 0 !important; color: #606266 !important;
+            height: 28px !important; line-height: 28px !important;
+            background: transparent; cursor: pointer; pointer-events: none;
+        }
+        .date-range-picker .separator { margin: 0 5px; color: #303133; }
+        
+        /* 弹窗面板整体 */
+        .date-picker-panel {
+            display: none; position: absolute; top: 40px; left: 0;
+            background: #fff; border: 1px solid #e4e7ed;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,.1); border-radius: 4px; z-index: 1000;
+        }
+        
+        /* 左侧快捷选项 & 右侧日历区域 */
+        .date-picker-sidebar { width: 80px; border-right: 1px solid #e4e7ed; padding: 10px 0; background: #fff; }
+        .date-picker-sidebar ul { list-style: none; margin: 0; padding: 0; }
+        .date-picker-sidebar li { padding: 8px 15px; cursor: pointer; font-size: 14px; color: #606266; text-align: center; }
+        .date-picker-sidebar li:hover { background-color: #f5f7fa; color: #409eff; }
+        .date-picker-sidebar li.active { color: #409eff; }
+        .date-picker-body { display: flex; flex-direction: column; width: 580px; }
+        .date-picker-header-inputs { padding: 10px 15px; border-bottom: 1px solid #e4e7ed; display: flex; align-items: center; gap: 10px; }
+        .mini-input { width: 100px; height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 13px; color: #606266; outline: none; }
+        .date-picker-calendars { display: flex; padding: 15px; border-bottom: 1px solid #e4e7ed; }
+        .calendar-box { flex: 1; padding: 0 10px; }
+        .calendar-box:first-child { border-right: 1px solid #e4e7ed; }
+        .cal-header { text-align: center; margin-bottom: 15px; color: #606266; font-size: 14px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px 0; text-align: center; font-size: 13px; color:#606266; }
+        .cal-grid span { padding: 4px 0; cursor: pointer; }
+        .cal-grid span:hover { color: #409eff; }
+        .cal-grid .gray { color: #c0c4cc; }
+        .cal-grid .active { background-color: #409eff; color: #fff; border-radius: 3px; }
+        .date-picker-footer { padding: 10px 15px; text-align: right; }
+        .btn-text { background: none; border: none; color: #606266; cursor: pointer; margin-right: 15px; font-size: 13px; }
+        .btn-text:hover { color: #409eff; }
+
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 2000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #fff; width: 900px; max-width: 95%;
+            border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 15px 20px; border-bottom: 1px solid #ebeef5;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { margin: 0; font-size: 16px; color: #303133; }
+        .modal-header .close-btn {
+            border: none; background: transparent; font-size: 20px;
+            cursor: pointer; color: #909399; padding: 0;
+        }
+        .modal-body { padding: 20px; max-height: 70vh; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 顶部筛选区域 -->
+    <div class="filter-container">
+        <!-- 时间筛选 -->
+        <div class="filter-item">
+            <label>时间</label>
+            <div class="date-picker-wrapper" id="datePickerWrapper">
+                <div class="date-range-picker" id="datePickerTrigger">
+                    <i>🕒</i>
+                    <input type="text" value="2026-10-03" readonly />
+                    <span class="separator">-</span>
+                    <input type="text" value="2026-10-03" readonly />
+                </div>
+                <!-- 日历弹窗面板 -->
+                <div class="date-picker-panel" id="datePickerPanel">
+                    <div class="date-picker-sidebar">
+                        <ul>
+                            <li class="active">今天</li>
+                            <li>昨天</li>
+                            <li>本周</li>
+                            <li>上周</li>
+                            <li>本月</li>
+                            <li>上月</li>
+                        </ul>
+                    </div>
+                    <div class="date-picker-body">
+                        <div class="date-picker-header-inputs">
+                           <input type="text" value="2026-10-03" class="mini-input">
+                           <input type="text" value="00:00:00" class="mini-input">
+                           <span style="color:#c0c4cc;">></span>
+                           <input type="text" value="2026-10-03" class="mini-input">
+                           <input type="text" value="23:59:59" class="mini-input">
+                        </div>
+                        <div class="date-picker-calendars">
+                            <div class="calendar-box">
+                               <div class="cal-header">&laquo; &lsaquo; 2026 年 10 月 &rsaquo; &raquo;</div>
+                               <div class="cal-grid">
+                                   <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                   <span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span>1</span><span>2</span><span class="active">3</span><span>4</span>
+                                   <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+                                   <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+                                   <span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+                                   <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span class="gray">1</span>
+                               </div>
+                            </div>
+                            <div class="calendar-box">
+                               <div class="cal-header">&laquo; &lsaquo; 2026 年 11 月 &rsaquo; &raquo;</div>
+                               <div class="cal-grid">
+                                   <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                   <span class="gray">26</span><span class="gray">27</span><span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span class="gray">31</span><span>1</span>
+                                   <span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+                                   <span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+                                   <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span>
+                                   <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span>
+                               </div>
+                            </div>
+                        </div>
+                        <div class="date-picker-footer">
+                            <button class="btn-text" id="clearBtn">清空</button>
+                            <button class="btn btn-primary" style="padding: 6px 15px;" id="confirmBtn">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="filter-item">
+            <label>商户</label>
+            <select>
+                <option>全部商户</option>
+                <option selected>test渠道</option>
+                <option>VIP专属商户</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <label>会员ID</label>
+            <input type="text" value="" placeholder="请输入会员ID" />
+        </div>
+        <button class="btn btn-primary">查询</button>
+        
+        <div class="right-btns">
+            <button class="btn btn-primary">重置</button>
+            <button class="btn btn-primary">导出数据</button>
+        </div>
+    </div>
+
+    <!-- 每日数据 主表格 -->
+    <table>
+        <thead>
+            <tr>
+                <th style="white-space: nowrap;">日期</th>
+                <th style="white-space: nowrap;">会员ID</th>
+                <th style="white-space: nowrap;">当日佣金 (直属贡献 / 非直属贡献 / 累计总额)</th>
+                <th style="white-space: nowrap;">游戏流水 (直属 / 非直属 / 团队)</th>
+                <th style="white-space: nowrap;">游戏输赢 (直属 / 非直属 / 团队)</th>
+                <th style="width: 120px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>2026-10-03</td>
+                <td>100039500</td>
+                <td>20.00 / 80.00 / <span class="text-success">100.00</span></td>
+                <td>1110.00 / 3000.00 / 4110.00</td>
+                <td><span class="text-success">+50.00</span> / <span class="text-danger">-200.00</span> / <span class="text-danger">-150.00</span></td>
+                <td>
+                    <a href="javascript:void(0);" class="action-btn" onclick="openCommissionModal('2026-10-03', '100039500')">佣金详情</a>
+                </td>
+            </tr>
+            <tr>
+                <td>2026-10-03</td>
+                <td>100039601</td>
+                <td>50.00 / 0.00 / <span class="text-success">50.00</span></td>
+                <td>2500.00 / 0.00 / 2500.00</td>
+                <td><span class="text-success">+300.00</span> / 0.00 / <span class="text-success">+300.00</span></td>
+                <td>
+                    <a href="javascript:void(0);" class="action-btn" onclick="openCommissionModal('2026-10-03', '100039601')">佣金详情</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 佣金构成弹窗 HTML (参考团队数据弹窗格式) -->
+<div class="modal-overlay" id="commissionModalOverlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>佣金构成详情</h3>
+            <button class="close-btn" onclick="closeCommissionModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            
+            <!-- 顶部单独显示的汇总字段 -->
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; background: #f5f7fa; padding: 15px; border-radius: 4px; border: 1px solid #ebeef5;">
+                <div style="flex: 1;">
+                    <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">日期</div>
+                    <div style="font-size: 14px; font-weight: bold; color: #303133;" id="modalDate">2026-10-03</div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">会员ID</div>
+                    <div style="font-size: 14px; font-weight: bold; color: #303133;" id="modalMemberId">100039500</div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">直属贡献佣金</div>
+                    <div style="font-size: 14px; font-weight: bold; color: #67c23a;">20.00</div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">非直属贡献佣金</div>
+                    <div style="font-size: 14px; font-weight: bold; color: #67c23a;">80.00</div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">当日总佣金</div>
+                    <div style="font-size: 16px; font-weight: bold; color: #f56c6c;">100.00</div>
+                </div>
+            </div>
+            
+            <!-- 详情表格：佣金来源明细 -->
+            <table>
+                <thead>
+                    <tr>
+                        <th style="white-space: nowrap;">贡献用户ID</th>
+                        <th style="white-space: nowrap;">层级</th>
+                        <th style="white-space: nowrap;">关系</th>
+                        <th style="white-space: nowrap;">当日游戏流水</th>
+                        <th style="white-space: nowrap;">贡献佣金</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>100039501</td>
+                        <td>二级</td>
+                        <td><span style="color: #409eff;">直属下级</span></td>
+                        <td>1110.00</td>
+                        <td class="text-success">20.00</td>
+                    </tr>
+                    <tr>
+                        <td>100039605</td>
+                        <td>三级</td>
+                        <td><span style="color: #909399;">非直属下级</span></td>
+                        <td>2000.00</td>
+                        <td class="text-success">50.00</td>
+                    </tr>
+                    <tr>
+                        <td>100039606</td>
+                        <td>三级</td>
+                        <td><span style="color: #909399;">非直属下级</span></td>
+                        <td>1000.00</td>
+                        <td class="text-success">30.00</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        // 日期组件交互逻辑
+        var trigger = document.getElementById('datePickerTrigger');
+        var panel = document.getElementById('datePickerPanel');
+        var wrapper = document.getElementById('datePickerWrapper');
+        var clearBtn = document.getElementById('clearBtn');
+        var confirmBtn = document.getElementById('confirmBtn');
+
+        trigger.onclick = function(e) {
+            e.stopPropagation();
+            panel.style.display = (panel.style.display === 'flex') ? 'none' : 'flex';
+        };
+        panel.onclick = function(e) { e.stopPropagation(); };
+        clearBtn.onclick = function() { panel.style.display = 'none'; };
+        confirmBtn.onclick = function() { panel.style.display = 'none'; };
+        document.onclick = function(e) {
+            if (wrapper && !wrapper.contains(e.target)) {
+                panel.style.display = 'none';
+            }
+        };
+    };
+
+    // 佣金详情弹窗逻辑
+    function openCommissionModal(date, memberId) {
+        document.getElementById('modalDate').innerText = date;
+        document.getElementById('modalMemberId').innerText = memberId;
+        document.getElementById('commissionModalOverlay').style.display = 'flex';
+    }
+
+    function closeCommissionModal() {
+        document.getElementById('commissionModalOverlay').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

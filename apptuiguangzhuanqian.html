@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我要赚钱 - 原型图</title>
+    <!-- 引入 FontAwesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #333; /* 外层背景 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        /* 主容器：固定 375x812 尺寸 */
+        .app-container {
+            width: 375px;
+            height: 812px;
+            background-color: #0d0d12;
+            overflow-y: auto;
+            position: relative;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        /* 隐藏滚动条但保留滚动功能 */
+        .app-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* 顶部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 50px;
+            padding: 0 15px;
+            background-color: #1a1a20;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header .back-btn {
+            font-size: 18px;
+            color: #fff;
+        }
+        .header .title {
+            font-size: 17px;
+            font-weight: bold;
+            flex-grow: 1;
+            text-align: center;
+            margin-right: 18px; /* 平衡左侧图标宽度 */
+        }
+
+        .content {
+            padding: 12px;
+            padding-bottom: 30px;
+        }
+
+        /* 顶部 Banner */
+        .banner {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            border-radius: 12px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 20px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .banner h2 {
+            color: #e91e63;
+            font-style: italic;
+            font-size: 22px;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+        .banner p {
+            color: #fff;
+            background-color: #ff4757;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            align-self: flex-start;
+        }
+        
+        /* 公告栏 */
+        .announcement {
+            background-color: #25252b;
+            border-radius: 8px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            overflow: hidden;
+        }
+        .announcement i {
+            color: #ff4757;
+            margin-right: 10px;
+            z-index: 2;
+            background-color: #25252b;
+            padding-right: 5px;
+        }
+        /* 跑马灯滚动动画 */
+        .announcement-scroll {
+            white-space: nowrap;
+            animation: scrollText 10s linear infinite;
+        }
+        @keyframes scrollText {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* 给Tab增加鼠标可点击的手型提示 */
+        .tab {
+            font-size: 14px;
+            color: #999;
+            position: relative;
+            padding-bottom: 5px;
+            cursor: pointer;
+        }
+
+        /* 菜单网格 */
+        .menu-grid {
+            background-color: #25252b;
+            border-radius: 12px;
+            padding: 15px 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px 0;
+            margin-bottom: 12px;
+        }
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            color: #ddd;
+        }
+        .menu-item i {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        /* 图标颜色设定 */
+        .icon-color-1 { color: #5a87ff; }
+        .icon-color-2 { color: #2ecc71; }
+        .icon-color-3 { color: #ff6b81; }
+        .icon-color-4 { color: #f1c40f; }
+        .icon-color-5 { color: #3498db; }
+        .icon-color-6 { color: #ff7f50; }
+
+        /* 推广说明区块 */
+        .instruction-box {
+            background-color: #25252b;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .instruction-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .instruction-title i {
+            color: #ff4757;
+            margin-right: 8px;
+        }
+        .instruction-list {
+            list-style: none;
+            font-size: 12px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+        .instruction-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        .step-num {
+            background-color: #5a87ff;
+            color: white;
+            font-size: 10px;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 3px;
+            margin-right: 8px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .instruction-footer {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #ddd;
+            display: flex;
+            align-items: center;
+        }
+        .instruction-footer i {
+            color: #5a87ff;
+            margin-right: 6px;
+        }
+
+        /* 报表区块 */
+        .stats-box {
+            background-color: #25252b;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .tab {
+            font-size: 14px;
+            color: #999;
+            position: relative;
+            padding-bottom: 5px;
+        }
+        .tab.active {
+            color: #fff;
+            font-weight: bold;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background-color: #ff4757;
+            border-radius: 2px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .stat-card {
+            background-color: #2c2c34;
+            border-radius: 8px;
+            padding: 12px 5px;
+            text-align: center;
+        }
+        .stat-title {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-size: 14px;
+            color: #ff4757;
+            font-weight: bold;
+        }
+
+
+
+        /* --- 团队列表页 专属样式 --- */
+        #team-page {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 375px;
+            height: 812px;
+            background-color: #0d0d12;
+            z-index: 100; /* 层级最高，覆盖原页面 */
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        /* 隐藏滚动条 */
+        #team-page::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* 搜索框区域 */
+        .search-bar-container {
+            padding: 10px 15px;
+            background-color: #1a1a20;
+            display: flex;
+            align-items: center;
+        }
+        .search-input-wrapper {
+            flex-grow: 1;
+            background-color: #25252b;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            height: 36px;
+        }
+        .search-input-wrapper i {
+            color: #666;
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        .search-input-wrapper input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            width: 100%;
+            font-size: 12px;
+        }
+        .search-btn {
+            color: #ff4757;
+            margin-left: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 卡片列表区域 */
+        .team-list {
+            padding: 15px;
+        }
+        .team-card {
+            background-color: #25252b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        .team-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .team-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ddd;
+        }
+        .setting-btn {
+            background: linear-gradient(90deg, #ff6b81, #ff4757);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .team-card-data {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+            position: relative;
+        }
+        /* 中间的竖线分割 */
+        .team-card-data::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 15%;
+            height: 70%;
+            width: 1px;
+            background-color: #3a3a42;
+        }
+        .data-item {
+            width: 50%;
+        }
+        .data-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .val-red { color: #ff4757; }
+        .val-white { color: #fff; }
+        .data-label {
+            font-size: 12px;
+            color: #888;
+        }
+        .no-more {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+            padding-bottom: 30px;
+        }
+
+        /* --- 直属/非直属 切换菜单 --- */
+        .type-toggle-container {
+            display: flex;
+            background-color: #1a1a20;
+            padding: 10px 15px;
+            border-bottom: 1px solid #25252b;
+        }
+        .type-tab {
+            margin-right: 20px;
+            font-size: 14px;
+            color: #999;
+            cursor: pointer;
+            padding-bottom: 5px;
+            position: relative;
+        }
+        .type-tab.active {
+            color: #fff;
+            font-weight: bold;
+        }
+        .type-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background-color: #ff4757;
+            border-radius: 2px;
+        }
+
+        /* --- 底部弹窗通用样式 --- */
+        .modal-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .bottom-sheet {
+            background-color: #1a1a20;
+            border-radius: 16px 16px 0 0;
+            padding: 20px;
+            box-sizing: border-box;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .submit-btn {
+            background: linear-gradient(90deg, #ff6b81, #ff4757);
+            color: #fff;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- APP内提示 (Toast) 样式 --- */
+        .app-toast {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 9999; /* 确保层级最高不会被遮挡 */
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none; /* 防止提示框遮挡用户点击 */
+            width: max-content;
+            max-width: 80%;
+        }
+        .app-toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        /* --- 佣金报表 专属样式 --- */
+        .date-filter-bar {
+            background-color: #1a1a20;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #25252b;
+            font-size: 13px;
+        }
+        .date-range {
+            display: flex;
+            align-items: center;
+            color: #ddd;
+        }
+        .date-range-icon {
+            margin-right: 10px;
+            color: #888;
+            font-size: 16px;
+        }
+        .date-texts {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.8;
+        }
+        .date-shortcut {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            cursor: pointer;
+        }
+        /* 报表卡片3列数据布局 (去除原有的单竖线) */
+        .commission-card-data {
+            display: flex;
+            justify-content: space-between;
+            text-align: center;
+            align-items: center;
+        }
+        .commission-card-data .data-item {
+            width: 33.33%;
+        }
+        /* 给前两列右侧加上竖线 */
+        .commission-card-data .data-item:not(:last-child) {
+            border-right: 1px solid #3a3a42;
+        }
+/* --- /* --- 选择器弹窗样式 (静态模拟滚轮) --- */
+        .picker-bottom-sheet {
+            background-color: #000;
+            border-radius: 16px 16px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            width: 375px; /* 强制固定为375px宽度 */
+            margin: 0 auto; /* 强制水平居中，防止左偏 */
+        }
+        .picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #1a1a20;
+            border-radius: 16px 16px 0 0;
+            color: #fff;
+            font-size: 15px;
+        }
+        .picker-body {
+            position: relative;
+            height: 220px;
+            display: flex;
+            background-color: #000;
+            padding-top: 10px;
+        }
+        .picker-highlight {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 44px;
+            transform: translateY(-50%);
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+            pointer-events: none;
+        }
+        .picker-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .picker-item {
+            height: 44px;
+            line-height: 44px;
+            color: #fff;
+            font-size: 16px;
+        }
+        .picker-item.fade-1 { opacity: 0.6; font-size: 14px; }
+        .picker-item.fade-2 { opacity: 0.3; font-size: 13px; }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- 头部 -->
+    <div class="header">
+        <i class="fas fa-chevron-left back-btn"></i>
+        <div class="title">我要赚钱</div>
+    </div>
+
+    <div class="content">
+        <!-- 横幅区域 -->
+        <div class="banner">
+            <h2>VIP等级尊享</h2>
+            <p>充值永久累计 幸运赢家加冕</p>
+        </div>
+
+        <!-- 跑马灯公告 -->
+        <div class="announcement">
+            <i class="fas fa-volume-high"></i>
+            <div style="flex-grow: 1; overflow: hidden; position: relative;">
+                <div class="announcement-scroll">这是通知文案内容。。</div>
+            </div>
+        </div>
+
+        <!-- 功能菜单 -->
+        <div class="menu-grid">
+            <div class="menu-item" style="cursor: pointer;" onclick="showTeamPage()">
+                <i class="fas fa-share-nodes icon-color-1"></i>
+                <span>成员管理</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-bullhorn icon-color-2"></i>
+                <span>我的链接</span>
+            </div>
+            <div class="menu-item" style="cursor: pointer;" onclick="showCommissionPage()">
+                <i class="fas fa-chart-line icon-color-3"></i>
+                <span>佣金报表</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-user-plus icon-color-4"></i>
+                <span>绑定下级</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-file-invoice-dollar icon-color-5"></i>
+                <span>佣金方案</span>
+            </div>
+            <div class="menu-item">
+                <i class="fas fa-user-group icon-color-6"></i>
+                <span>上下级</span>
+            </div>
+        </div>
+
+        <!-- 推广说明 -->
+        <div class="instruction-box">
+            <div class="instruction-title">
+                <i class="fas fa-bullhorn"></i> 如何通过推广赚佣金？
+            </div>
+            <ul class="instruction-list">
+                <li><span class="step-num">1</span> 点击【我的链接】，复制专属邀请地址；</li>
+                <li><span class="step-num">2</span> 分享给好友，让他们注册并开始打码；</li>
+                <li><span class="step-num">3</span> 当好友投注或充值，你将获得对应比例的佣金奖励；</li>
+                <li><span class="step-num">4</span> 在【佣金报表】中随时查看收益明细；</li>
+                <li><span class="step-num">5</span> 团队越大，收入越稳！</li>
+            </ul>
+            <div class="instruction-footer">
+                <i class="fas fa-gem"></i> 邀请越多，收益越高，马上行动吧！
+            </div>
+        </div>
+
+        <!-- 报表数据 -->
+        <div class="stats-box">
+            <div class="tabs">
+                <div class="tab active" onclick="changeData('today', this)">本日</div>
+                <div class="tab" onclick="changeData('month', this)">本月</div>
+                <div class="tab" onclick="changeData('lastMonth', this)">上月</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">我的佣金</div>
+                    <div class="stat-value" id="val-yongjin">6.07</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">注册人数</div>
+                    <div class="stat-value" id="val-zhuce">12</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">充值人数</div>
+                    <div class="stat-value" id="val-chongzhi">3</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">团队人数</div>
+                    <div class="stat-value" id="val-tuandui">2</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">团队充值</div>
+                    <div class="stat-value" id="val-tdchongzhi">500.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">团队提款</div>
+                    <div class="stat-value" id="val-tdtikuan">100.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">团队投注</div>
+                    <div class="stat-value" id="val-tdtouzhu">2000.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">团队输赢</div>
+                    <div class="stat-value" id="val-tdshuying">-150.00</div>
+                </div>
+            </div>
+        </div>
+
+        
+
+    </div>
+</div>
+
+<!-- 团队列表页面 (默认隐藏，点击后全屏覆盖) -->
+    <div id="team-page" style="display: none;">
+        <!-- 头部 -->
+        <div class="header" style="position: relative; justify-content: space-between;">
+            <i class="fas fa-chevron-left back-btn" style="cursor: pointer; width: 30px;" onclick="hideTeamPage()"></i>
+            <!-- 增加了绝对定位，确保四个字完美居中 -->
+            <div class="title" style="color: #fff; position: absolute; left: 50%; transform: translateX(-50%); width: max-content;">团队列表</div>
+            <i class="fas fa-search" style="color: #fff; cursor: pointer; font-size: 16px; width: 30px; text-align: right;" onclick="toggleSearch()"></i>
+        </div>
+        
+        <!-- 搜索框 (默认隐藏) -->
+        <div id="search-container" class="search-bar-container" style="display: none;">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="请输入下级代理ID">
+            </div>
+            <div class="search-btn" onclick="toggleSearch()">取消</div>
+        </div>
+
+        <!-- 切换直属/非直属 (增加了点击传参) -->
+        <div class="type-toggle-container">
+            <div class="type-tab active" onclick="switchType(this, 'direct')">直属</div>
+            <div class="type-tab" onclick="switchType(this, 'indirect')">非直属</div>
+        </div>
+
+        <!-- 团队卡片列表 -->
+        <div class="team-list">
+            
+            <!-- 直属列表区域 (默认显示) -->
+            <div id="list-direct">
+                <!-- 卡片 1 -->
+                <div class="team-card">
+                    <div class="team-card-header">
+                        <div class="team-name">南征北战一个浪H2m8</div>
+                        <div class="setting-btn" onclick="openSettingModal()">设置</div>
+                    </div>
+                    <div class="team-card-data">
+                        <div class="data-item">
+                            <div class="data-value val-red" style="cursor: pointer;" onclick="openDataModal('南征北战一个浪H2m8', 'ID100039968')">0.00</div>
+                            <div class="data-label">TA的贡献</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white">70%</div>
+                            <div class="data-label">游戏分红</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 2 -->
+                <div class="team-card">
+                    <div class="team-card-header">
+                        <div class="team-name">生命的起步h8</div>
+                        <div class="setting-btn" onclick="openSettingModal()">设置</div>
+                    </div>
+                    <div class="team-card-data">
+                        <div class="data-item">
+                            <div class="data-value val-red" style="cursor: pointer;" onclick="openDataModal('生命的起步h8', 'ID100039969')">6.07</div>
+                            <div class="data-label">TA的贡献</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white">70%</div>
+                            <div class="data-label">游戏分红</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 3 -->
+                <div class="team-card">
+                    <div class="team-card-header">
+                        <div class="team-name">快乐每一天a1</div>
+                        <div class="setting-btn" onclick="openSettingModal()">设置</div>
+                    </div>
+                    <div class="team-card-data">
+                        <div class="data-item">
+                            <div class="data-value val-red" style="cursor: pointer;" onclick="openDataModal('快乐每一天a1', 'ID100039970')">12.50</div>
+                            <div class="data-label">TA的贡献</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white">65%</div>
+                            <div class="data-label">游戏分红</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="no-more">没有更多了</div>
+            </div>
+
+            <!-- 非直属列表区域 (默认隐藏) -->
+            <div id="list-indirect" style="display: none;">
+                <!-- 非直属卡片 1 -->
+                <div class="team-card">
+                    <div class="team-card-header">
+                        <div class="team-name">星辰大海x9</div>
+                        <!-- 取消了设置按钮 -->
+                    </div>
+                    <div class="team-card-data">
+                        <div class="data-item">
+                            <!-- 第二个参数留空，以此来通知弹窗隐藏ID -->
+                            <div class="data-value val-red" style="cursor: pointer;" onclick="openDataModal('星辰大海x9', '')">35.00</div>
+                            <div class="data-label">TA的贡献</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white">下2级</div>
+                            <div class="data-label">层级</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 非直属卡片 2 -->
+                <div class="team-card">
+                    <div class="team-card-header">
+                        <div class="team-name">一路向北v3</div>
+                    </div>
+                    <div class="team-card-data">
+                        <div class="data-item">
+                            <div class="data-value val-red" style="cursor: pointer;" onclick="openDataModal('一路向北v3', '')">120.50</div>
+                            <div class="data-label">TA的贡献</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white">下3级</div>
+                            <div class="data-label">层级</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 非直属卡片 3 -->
+                <div class="team-card">
+                    <div class="team-card-header">
+                        <div class="team-name">追风筝的人k7</div>
+                    </div>
+                    <div class="team-card-data">
+                        <div class="data-item">
+                            <div class="data-value val-red" style="cursor: pointer;" onclick="openDataModal('追风筝的人k7', '')">8.20</div>
+                            <div class="data-label">TA的贡献</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white">下5级</div>
+                            <div class="data-label">层级</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="no-more">没有更多了</div>
+            </div>
+
+        </div>
+        <!-- 底部弹窗1：设置下级分成 -->
+        <div id="setting-modal-overlay" class="modal-overlay" onclick="closeSettingModal()">
+            <div class="bottom-sheet" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <span style="color: #fff; font-size: 14px; font-weight: bold;">下级分成</span>
+                </div>
+                <div style="background-color: #25252b; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <div style="color: #ccc; font-size: 12px; margin-bottom: 10px;">游戏佣金分成(%)</div>
+                    <!-- 输入框限制 30-100 -->
+                    <input type="number" value="70" min="30" max="100" style="background: transparent; border: none; color: #ff4757; font-size: 20px; outline: none; width: 100%;">
+                </div>
+                <div class="submit-btn" onclick="closeSettingModal()">确认绑定</div>
+            </div>
+        </div>
+
+        <!-- 底部弹窗2：下级数据面板 -->
+        <div id="data-modal-overlay" class="modal-overlay" onclick="closeDataModal()">
+            <div class="bottom-sheet" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <div style="color: #fff; font-size: 16px; font-weight: bold; display: flex; align-items: center;">
+                        <span id="modal-sub-name">生命的起步h8</span> 
+                        <span id="modal-sub-id" style="color: #ff4757; font-size: 10px; border: 1px solid #ff4757; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">ID100039969</span>
+                    </div>
+                    <i class="fas fa-times" style="color: #999; cursor: pointer; font-size: 18px;" onclick="closeDataModal()"></i>
+                </div>
+                <!-- 弹窗内部 Tab -->
+                <div class="tabs" style="border-bottom: none; margin-bottom: 10px;">
+                    <div class="tab active" onclick="changeSubData('today', this)">本日</div>
+                    <div class="tab" onclick="changeSubData('month', this)">本月</div>
+                    <div class="tab" onclick="changeSubData('lastMonth', this)">上月</div>
+                </div>
+                <!-- 弹窗内部 数据字段 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title" style="display: flex; justify-content: center; align-items: center;">
+                            贡献佣金
+                            <!-- 改用 showToast -->
+                            <i class="fas fa-circle-info" style="color: #666; margin-left: 4px; font-size: 12px; cursor: pointer;" onclick="showToast('该下级会员打码实际你获得的佣金'); event.stopPropagation();"></i>
+                        </div>
+                        <div class="stat-value val-red" id="sub-val-gongxian">0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">分成比例</div>
+                        <div class="stat-value val-red" id="sub-val-fencheng">70%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title" style="display: flex; justify-content: center; align-items: center;">
+                            总佣金
+                            <!-- 改用 showToast -->
+                            <i class="fas fa-circle-info" style="color: #666; margin-left: 4px; font-size: 12px; cursor: pointer;" onclick="showToast('该下级会员打码产生的总佣金'); event.stopPropagation();"></i>
+                        </div>
+                        <div class="stat-value val-red" id="sub-val-zong">0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">注册人数</div>
+                        <div class="stat-value val-red" id="sub-val-zhuce">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">充值人数</div>
+                        <div class="stat-value val-red" id="sub-val-chongzhi">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">团队人数</div>
+                        <div class="stat-value val-red" id="sub-val-tuandui">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">团队投注</div>
+                        <div class="stat-value val-red" id="sub-val-touzhu">0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">团队充值</div>
+                        <div class="stat-value val-red" id="sub-val-tdchongzhi">0.00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">团队提款</div>
+                        <div class="stat-value val-red" id="sub-val-tikuan">0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</div> <!-- 补上这个结束标签，把上面的团队列表关起来 -->
+
+<!-- 佣金报表页面 (默认隐藏) -->
+        <div id="commission-page" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 375px; height: 812px; background-color: #0d0d12; z-index: 100; overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+            <!-- 头部 -->
+            <div class="header" style="position: relative; justify-content: space-between;">
+                <i class="fas fa-chevron-left back-btn" style="cursor: pointer; width: 30px;" onclick="hideCommissionPage()"></i>
+                <div class="title" style="color: #fff; position: absolute; left: 50%; transform: translateX(-50%); width: max-content;">佣金报表</div>
+                <i class="fas fa-search" style="color: #fff; cursor: pointer; font-size: 16px; width: 30px; text-align: right;" onclick="toggleCommissionSearch()"></i>
+            </div>
+            
+            <!-- 搜索框 (默认隐藏) -->
+            <div id="commission-search-container" class="search-bar-container" style="display: none;">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="请输入下级代理ID">
+                </div>
+                <div class="search-btn" onclick="toggleCommissionSearch()">取消</div>
+            </div>
+
+            <!-- 日期筛选区 -->
+            <div class="date-filter-bar">
+                <div class="date-range">
+                    <i class="fas fa-clock-rotate-left date-range-icon"></i>
+                    <div class="date-texts">
+                        <!-- 点击 起时间 -->
+                        <div style="cursor: pointer;" onclick="openDatePickerModal('开始时间')">
+                            起 2026-06-01 <i class="fas fa-caret-down" style="color: #666; margin-left: 2px;"></i>
+                        </div>
+                        <!-- 点击 止时间 -->
+                        <div style="cursor: pointer;" onclick="openDatePickerModal('结束时间')">
+                            止 2026-06-30 <i class="fas fa-caret-down" style="color: #666; margin-left: 2px;"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- 点击 右侧快捷时间 -->
+                <div class="date-shortcut" style="cursor: pointer;" onclick="openShortcutPickerModal()">
+                    上月 <i class="fas fa-caret-down" style="margin-left: 5px;"></i>
+                </div>
+            </div>
+
+            <!-- 报表卡片列表 -->
+            <div class="team-list">
+                <!-- 报表卡片 1 -->
+                <div class="team-card">
+                    <div class="team-card-header" style="display: block; margin-bottom: 15px;">
+                        <div class="team-name" style="margin-bottom: 5px;">生命的起步h8</div>
+                        <div style="font-size: 12px; color: #aaa; display: flex; align-items: center;">
+                            100039969 <i class="far fa-copy" style="margin-left: 6px; cursor: pointer;" onclick="showToast('复制成功')"></i>
+                        </div>
+                    </div>
+                    <div class="commission-card-data">
+                        <div class="data-item">
+                            <div class="data-value val-red">3.50</div>
+                            <div class="data-label" style="display: flex; justify-content: center; align-items: center;">
+                                贡献佣金
+                                <i class="fas fa-circle-info" style="color: #666; margin-left: 4px; font-size: 11px; cursor: pointer;" onclick="showToast('该下级会员打码实际你获得的佣金'); event.stopPropagation();"></i>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-red">8.20</div>
+                            <div class="data-label" style="display: flex; justify-content: center; align-items: center;">
+                                总佣金
+                                <i class="fas fa-circle-info" style="color: #666; margin-left: 4px; font-size: 11px; cursor: pointer;" onclick="showToast('该下级会员打码产生的总佣金'); event.stopPropagation();"></i>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white" style="font-size: 13px;">2026-10-03</div>
+                            <div class="data-label">返佣时间</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 报表卡片 2 -->
+                <div class="team-card">
+                    <div class="team-card-header" style="display: block; margin-bottom: 15px;">
+                        <div class="team-name" style="margin-bottom: 5px;">生命的起步h8</div>
+                        <div style="font-size: 12px; color: #aaa; display: flex; align-items: center;">
+                            100039969 <i class="far fa-copy" style="margin-left: 6px; cursor: pointer;" onclick="showToast('复制成功')"></i>
+                        </div>
+                    </div>
+                    <div class="commission-card-data">
+                        <div class="data-item">
+                            <div class="data-value val-red">2.57</div>
+                            <div class="data-label" style="display: flex; justify-content: center; align-items: center;">
+                                贡献佣金
+                                <i class="fas fa-circle-info" style="color: #666; margin-left: 4px; font-size: 11px; cursor: pointer;" onclick="showToast('该下级会员打码实际你获得的佣金'); event.stopPropagation();"></i>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-red">5.10</div>
+                            <div class="data-label" style="display: flex; justify-content: center; align-items: center;">
+                                总佣金
+                                <i class="fas fa-circle-info" style="color: #666; margin-left: 4px; font-size: 11px; cursor: pointer;" onclick="showToast('该下级会员打码产生的总佣金'); event.stopPropagation();"></i>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value val-white" style="font-size: 13px;">2026-10-02</div>
+                            <div class="data-label">返佣时间</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="no-more">没有更多了</div>
+            </div>
+        </div>
+
+        <!-- 时间选择器弹窗 (年月日) -->
+            <div id="date-picker-overlay" class="modal-overlay" onclick="closeDatePickerModal()">
+                <div class="picker-bottom-sheet" onclick="event.stopPropagation()">
+                    <div class="picker-header">
+                        <span onclick="closeDatePickerModal()" style="color: #999; cursor: pointer;">取消</span>
+                        <span id="date-picker-title" style="font-weight: bold; color: #fff;">开始时间</span>
+                        <span onclick="closeDatePickerModal()" style="cursor: pointer; color: #fff;">确认</span>
+                    </div>
+                    <div class="picker-body">
+                        <div class="picker-highlight"></div>
+                        <div class="picker-col">
+                            <div class="picker-item fade-2">2024</div>
+                            <div class="picker-item fade-1">2025</div>
+                            <div class="picker-item">2026</div>
+                            <div class="picker-item fade-1"></div>
+                            <div class="picker-item fade-2"></div>
+                        </div>
+                        <div class="picker-col">
+                            <div class="picker-item fade-2">04</div>
+                            <div class="picker-item fade-1">05</div>
+                            <div class="picker-item">06</div>
+                            <div class="picker-item fade-1">07</div>
+                            <div class="picker-item fade-2">08</div>
+                        </div>
+                        <div class="picker-col">
+                            <div class="picker-item fade-2"></div>
+                            <div class="picker-item fade-1"></div>
+                            <div class="picker-item">01</div>
+                            <div class="picker-item fade-1">02</div>
+                            <div class="picker-item fade-2">03</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷时间选择器弹窗 (周/月) -->
+            <div id="shortcut-picker-overlay" class="modal-overlay" onclick="closeShortcutPickerModal()">
+                <div class="picker-bottom-sheet" onclick="event.stopPropagation()">
+                    <div class="picker-header">
+                        <span onclick="closeShortcutPickerModal()" style="color: #999; cursor: pointer;">取消</span>
+                        <span style="font-weight: bold; color: #fff;"></span>
+                        <span onclick="closeShortcutPickerModal()" style="cursor: pointer; color: #fff;">确认</span>
+                    </div>
+                    <div class="picker-body">
+                        <div class="picker-highlight"></div>
+                        <div class="picker-col">
+                            <div class="picker-item fade-2">昨日</div>
+                            <div class="picker-item fade-1">本周</div>
+                            <div class="picker-item">上周</div>
+                            <div class="picker-item fade-1">本月</div>
+                            <div class="picker-item fade-2">上月</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- APP内提示组件 (新增) -->
+        <div id="app-toast" class="app-toast"></div>
+
+<script>
+
+// 打开团队列表页
+    function showTeamPage() {
+        document.getElementById('team-page').style.display = 'block';
+    }
+
+    // 关闭团队列表页（返回上一页）
+    function hideTeamPage() {
+        document.getElementById('team-page').style.display = 'none';
+    }
+
+
+    // 搜索栏展开/收起切换
+    function toggleSearch() {
+        const searchBox = document.getElementById('search-container');
+        if(searchBox.style.display === 'none') {
+            searchBox.style.display = 'flex';
+        } else {
+            searchBox.style.display = 'none';
+        }
+    }
+
+    /// 直属/非直属 菜单切换样式和列表数据
+    function switchType(element, type) {
+        // 切换Tab高亮样式
+        document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+        
+        // 切换下方列表区域的显示与隐藏
+        if(type === 'direct') {
+            document.getElementById('list-direct').style.display = 'block';
+            document.getElementById('list-indirect').style.display = 'none';
+        } else {
+            document.getElementById('list-direct').style.display = 'none';
+            document.getElementById('list-indirect').style.display = 'block';
+        }
+    }
+
+    // 打开 设置下级分成 弹窗
+    function openSettingModal() {
+        const overlay = document.getElementById('setting-modal-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.querySelector('.bottom-sheet').style.transform = 'translateY(0)';
+        }, 10);
+    }
+    // 关闭 设置下级分成 弹窗
+    function closeSettingModal() {
+        const overlay = document.getElementById('setting-modal-overlay');
+        overlay.querySelector('.bottom-sheet').style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300); // 对应CSS的过渡时间
+    }
+
+    // 打开 下级数据 弹窗
+    function openDataModal(name, id) {
+        // 动态赋值弹窗标题名字
+        document.getElementById('modal-sub-name').innerText = name;
+        
+        // 判断：如果传了ID就显示（直属），如果没有传ID就隐藏（非直属）
+        const idElement = document.getElementById('modal-sub-id');
+        if(id) {
+            idElement.innerText = id;
+            idElement.style.display = 'inline-block';
+        } else {
+            idElement.style.display = 'none';
+        }
+        
+        const overlay = document.getElementById('data-modal-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.querySelector('.bottom-sheet').style.transform = 'translateY(0)';
+        }, 10);
+    }
+    
+    // 关闭 下级数据 弹窗
+    function closeDataModal() {
+        const overlay = document.getElementById('data-modal-overlay');
+        overlay.querySelector('.bottom-sheet').style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+
+    // 弹窗内部：模拟不同时间段的数据
+    const subMockData = {
+        'today': { gongxian: '6.07', fencheng: '70%', zong: '8.67', zhuce: '1', chongzhi: '0', tuandui: '2', touzhu: '200.00', tdchongzhi: '50.00', tikuan: '0.00' },
+        'month': { gongxian: '150.50', fencheng: '70%', zong: '215.00', zhuce: '12', chongzhi: '3', tuandui: '15', touzhu: '8500.00', tdchongzhi: '1200.00', tikuan: '500.00' },
+        'lastMonth': { gongxian: '420.00', fencheng: '70%', zong: '600.00', zhuce: '25', chongzhi: '8', tuandui: '32', touzhu: '45000.00', tdchongzhi: '8500.00', tikuan: '3200.00' }
+    };
+
+    // 弹窗内部：切换 本日/本月/上月 数据逻辑
+    function changeSubData(timeframe, element) {
+        // 1. 切换 Tab 样式
+        const tabs = element.parentElement.querySelectorAll('.tab');
+        tabs.forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+
+        // 2. 根据点击的 Tab 替换对应的下级数据
+        const data = subMockData[timeframe];
+        document.getElementById('sub-val-gongxian').innerText = data.gongxian;
+        document.getElementById('sub-val-fencheng').innerText = data.fencheng;
+        document.getElementById('sub-val-zong').innerText = data.zong;
+        document.getElementById('sub-val-zhuce').innerText = data.zhuce;
+        document.getElementById('sub-val-chongzhi').innerText = data.chongzhi;
+        document.getElementById('sub-val-tuandui').innerText = data.tuandui;
+        document.getElementById('sub-val-touzhu').innerText = data.touzhu;
+        document.getElementById('sub-val-tdchongzhi').innerText = data.tdchongzhi;
+        document.getElementById('sub-val-tikuan').innerText = data.tikuan;
+    }
+
+    // 模拟的占位数据（原型演示用）
+    const mockData = {
+        'today': { yongjin: '6.07', zhuce: '12', chongzhi: '3', tuandui: '2', tdchongzhi: '500.00', tdtikuan: '100.00', tdtouzhu: '2000.00', tdshuying: '-150.00' },
+        'month': { yongjin: '185.50', zhuce: '158', chongzhi: '42', tuandui: '15', tdchongzhi: '12500.00', tdtikuan: '4000.00', tdtouzhu: '56000.00', tdshuying: '3200.00' },
+        'lastMonth': { yongjin: '420.00', zhuce: '320', chongzhi: '95', tuandui: '45', tdchongzhi: '45000.00', tdtikuan: '12000.00', tdtouzhu: '125000.00', tdshuying: '-8500.00' }
+    };
+
+    function changeData(timeframe, element) {
+        // 1. 切换Tab选中样式
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+
+        // 2. 根据点击的Tab替换对应的数据
+        const data = mockData[timeframe];
+        document.getElementById('val-yongjin').innerText = data.yongjin;
+        document.getElementById('val-zhuce').innerText = data.zhuce;
+        document.getElementById('val-chongzhi').innerText = data.chongzhi;
+        document.getElementById('val-tuandui').innerText = data.tuandui;
+        document.getElementById('val-tdchongzhi').innerText = data.tdchongzhi;
+        document.getElementById('val-tdtikuan').innerText = data.tdtikuan;
+        document.getElementById('val-tdtouzhu').innerText = data.tdtouzhu;
+        document.getElementById('val-tdshuying').innerText = data.tdshuying;
+    }
+
+// APP内提示 (Toast) 控制逻辑
+    let toastTimeout;
+    function showToast(text) {
+        const toast = document.getElementById('app-toast');
+        toast.innerText = text;
+        toast.classList.add('show');
+        
+        // 如果连续点击，清除上一次的定时器重新计时
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000); // 提示框 2秒 后自动消失
+    }
+
+// 佣金报表 - 页面显示与隐藏
+    function showCommissionPage() {
+        document.getElementById('commission-page').style.display = 'block';
+    }
+    function hideCommissionPage() {
+        document.getElementById('commission-page').style.display = 'none';
+    }
+
+    // 佣金报表 - 搜索栏展开/收起切换
+    function toggleCommissionSearch() {
+        const searchBox = document.getElementById('commission-search-container');
+        if(searchBox.style.display === 'none') {
+            searchBox.style.display = 'flex';
+        } else {
+            searchBox.style.display = 'none';
+        }
+    }
+
+    // 日期选择器弹窗控制 (自动变换标题: 开始时间/结束时间)
+    function openDatePickerModal(title) {
+        document.getElementById('date-picker-title').innerText = title;
+        const overlay = document.getElementById('date-picker-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.querySelector('.picker-bottom-sheet').style.transform = 'translateY(0)';
+        }, 10);
+    }
+    function closeDatePickerModal() {
+        const overlay = document.getElementById('date-picker-overlay');
+        overlay.querySelector('.picker-bottom-sheet').style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+
+    // 快捷时间选择器弹窗控制
+    function openShortcutPickerModal() {
+        const overlay = document.getElementById('shortcut-picker-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.querySelector('.picker-bottom-sheet').style.transform = 'translateY(0)';
+        }, 10);
+    }
+    function closeShortcutPickerModal() {
+        const overlay = document.getElementById('shortcut-picker-overlay');
+        overlay.querySelector('.picker-bottom-sheet').style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+
+</script>
+
+</body>
+</html>

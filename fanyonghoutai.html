@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>返佣后台 - 原型</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #f0f2f5;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 256px;
+            background-color: #001529;
+            color: rgba(255, 255, 255, 0.65);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            cursor: pointer;
+        }
+
+        .menu-item-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            color: inherit;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .menu-item-link:hover,
+        .menu-item-link.active {
+            color: #fff;
+            background-color: #1890ff;
+        }
+
+        .menu-item-text {
+            flex-grow: 1;
+        }
+
+        /* 主体内容样式 */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 顶部栏样式 */
+        .header {
+            background-color: #fff;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            color: #595959;
+            cursor: pointer;
+        }
+
+        .header-tabs {
+            display: flex;
+            border-bottom: 1px solid #e8e8e8;
+            background-color: #fafafa;
+            padding-left: 24px;
+        }
+
+        .header-tab {
+            padding: 12px 20px;
+            color: #595959;
+            cursor: pointer;
+            border-right: 1px solid #e8e8e8;
+            transition: background-color 0.3s;
+        }
+
+        .header-tab.active {
+            background-color: #fff;
+            color: #1890ff;
+            border-top: 2px solid #1890ff;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-btn {
+            display: flex;
+            align-items: center;
+            padding: 6px 16px;
+            border: 1px solid #d9d9d9;
+            background-color: #fff;
+            border-radius: 4px;
+            color: #595959;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .header-btn:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .header-user {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 8px;
+        }
+
+        /* 页面内容区域样式 */
+        .page-content {
+            padding: 24px;
+            background-color: #fff;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        /* 以下为从附件引入的业务样式 */
+        
+        /* 顶部搜索/筛选区域样式 */
+        .filter-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #606266;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .filter-item label {
+            margin-right: 10px;
+        }
+        .filter-item input, .filter-item select {
+            height: 32px;
+            line-height: 32px;
+            padding: 0 10px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            outline: none;
+            color: #606266;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            display: inline-block;
+            line-height: 1;
+            white-space: nowrap;
+            cursor: pointer;
+            background: #fff;
+            border: 1px solid #dcdfe6;
+            color: #606266;
+            text-align: center;
+            box-sizing: border-box;
+            outline: none;
+            margin: 0;
+            transition: .1s;
+            font-weight: 500;
+            padding: 9px 15px;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        .btn-primary {
+            color: #fff;
+            background-color: #409eff;
+            border-color: #409eff;
+        }
+        .btn-primary:hover {
+            background: #66b1ff;
+            border-color: #66b1ff;
+        }
+        .right-btns {
+            margin-left: auto;
+        }
+        .right-btns .btn {
+            margin-left: 10px;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            border: 1px solid #ebeef5;
+            font-size: 13px;
+        }
+        thead {
+            background-color: #f5f7fa;
+            color: #909399;
+            font-weight: bold;
+        }
+        th, td {
+            padding: 12px 8px;
+            border: 1px solid #ebeef5;
+        }
+        tbody tr:hover {
+            background-color: #f5f7fa;
+        }
+        td {
+            color: #606266;
+        }
+        
+        /* 文本颜色辅助类 */
+        .text-success { color: #67c23a; }
+        .text-warning { color: #e6a23c; }
+        .text-danger { color: #f56c6c; }
+        
+        /* 表格操作栏蓝底白字按钮样式 */
+        .action-btn {
+            display: inline-block;
+            background-color: #409eff;
+            color: #ffffff !important; 
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            border: none;
+            transition: 0.2s;
+        }
+        .action-btn:hover {
+            background-color: #66b1ff;
+        }
+        
+        /* 日期范围选择器样式 */
+        .date-range-picker {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #409eff;
+            border-radius: 4px;
+            padding: 0 10px;
+            height: 32px;
+            background-color: #fff;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .date-range-picker i {
+            color: #c0c4cc;
+            margin-right: 8px;
+            font-size: 14px;
+            font-style: normal;
+        }
+        .date-range-picker input {
+            border: none !important;
+            outline: none;
+            text-align: center;
+            width: 120px;
+            padding: 0 !important;
+            color: #606266 !important;
+            height: 28px !important;
+            line-height: 28px !important;
+            background: transparent;
+            cursor: pointer; 
+            pointer-events: none;
+        }
+        .date-range-picker input::placeholder {
+            color: #c0c4cc;
+        }
+        .date-range-picker .separator {
+            margin: 0 10px;
+            color: #303133;
+        }
+    
+        /* 高级日期选择器弹窗样式 */
+        .date-picker-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .date-picker-panel {
+            display: none;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            background: #fff;
+            border: 1px solid #e4e7ed;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+            border-radius: 4px;
+            z-index: 1000;
+        }
+        .date-picker-sidebar {
+            width: 80px;
+            border-right: 1px solid #e4e7ed;
+            padding: 10px 0;
+            background: #fff;
+        }
+        .date-picker-sidebar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .date-picker-sidebar li {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #606266;
+            text-align: center;
+        }
+        .date-picker-sidebar li:hover { background-color: #f5f7fa; color: #409eff; }
+        .date-picker-sidebar li.active { color: #409eff; }
+        
+        .date-picker-body {
+            display: flex;
+            flex-direction: column;
+            width: 580px;
+        }
+        .date-picker-header-inputs {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e4e7ed;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mini-input {
+            width: 100px; height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; 
+            text-align: center; font-size: 13px; color: #606266; outline: none;
+        }
+        .date-picker-calendars {
+            display: flex; padding: 15px; border-bottom: 1px solid #e4e7ed;
+        }
+        .calendar-box { flex: 1; padding: 0 10px; }
+        .calendar-box:first-child { border-right: 1px solid #e4e7ed; }
+        .cal-header { text-align: center; margin-bottom: 15px; color: #606266; font-size: 14px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px 0; text-align: center; font-size: 13px; color:#606266; }
+        .cal-grid span { padding: 4px 0; cursor: pointer; }
+        .cal-grid span:hover { color: #409eff; }
+        .cal-grid .gray { color: #c0c4cc; }
+        .cal-grid .active { background-color: #409eff; color: #fff; border-radius: 3px; }
+        .cal-grid .active:hover { color: #fff; }
+        
+        .date-picker-footer { padding: 10px 15px; text-align: right; }
+        .btn-text { background: none; border: none; color: #606266; cursor: pointer; margin-right: 15px; font-size: 13px; }
+        .btn-text:hover { color: #409eff; }
+    
+        /* 代理树弹窗及树状图样式 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 2000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #fff; width: 750px; max-width: 90%;
+            border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 15px 20px; border-bottom: 1px solid #ebeef5;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { margin: 0; font-size: 16px; color: #303133; }
+        .modal-header .close-btn {
+            border: none; background: transparent; font-size: 20px;
+            cursor: pointer; color: #909399; padding: 0;
+        }
+        .modal-body { padding: 30px; overflow-x: auto; position: relative; }
+
+        .tree-layout {
+            position: relative; padding-left: 70px;
+            min-height: 200px;
+        }
+        .tree-axis {
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 50px; border-right: 2px dashed #ebeef5;
+        }
+        .axis-label {
+            position: absolute; left: 0; width: 45px; height: 32px;
+            background: #f0f9eb; border: 1px solid #e1f3d8; color: #67c23a;
+            border-radius: 4px; display: flex; align-items: center;
+            justify-content: center; font-size: 12px; font-weight: bold;
+        }
+
+        .css-tree ul {
+            padding-top: 20px; position: relative;
+            display: flex; justify-content: center;
+            padding-left: 0; margin: 0;
+        }
+        .css-tree > ul { padding-top: 0; }
+        .css-tree li {
+            text-align: center; list-style-type: none;
+            position: relative; padding: 20px 10px 0 10px;
+        }
+        .css-tree > ul > li { padding-top: 0; }
+
+        .tree-node {
+            border: 1px solid #dcdfe6; background-color: #fff; color: #606266;
+            padding: 0 15px; font-size: 13px; display: inline-block;
+            border-radius: 4px; height: 32px; line-height: 30px;
+            box-sizing: border-box; position: relative; z-index: 2;
+        }
+        .tree-node.root-node {
+            border-color: #409eff; background-color: #ecf5ff; color: #409eff; font-weight: bold;
+        }
+        .tree-node:hover { border-color: #409eff; color: #409eff; cursor: pointer; }
+
+        .css-tree ul ul::before {
+            content: ''; position: absolute; top: 0; left: 50%;
+            border-left: 1px solid #c0c4cc; width: 0; height: 20px; transform: translateX(-50%);
+        }
+        .css-tree li::before, .css-tree li::after {
+            content: ''; position: absolute; top: 0; right: 50%;
+            border-top: 1px solid #c0c4cc; width: 50%; height: 20px;
+        }
+        .css-tree li::after { right: auto; left: 50%; border-left: 1px solid #c0c4cc; }
+        .css-tree li:first-child::before, .css-tree li:last-child::after { border: 0 none; }
+        .css-tree li:last-child::before { border-right: 1px solid #c0c4cc; border-radius: 0 4px 0 0; }
+        .css-tree li:first-child::after { border-radius: 4px 0 0 0; }
+        
+        .css-tree li:only-child::before, .css-tree li:only-child::after { display: none; }
+        .css-tree li:only-child { padding-top: 20px; }
+        .css-tree li:only-child::after {
+            display: block; width: 0; border-left: 1px solid #c0c4cc; border-top: none;
+            height: 20px; left: 50%; transform: translateX(-50%);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- 👇 新增：全屏登录页面覆盖层 👇 -->
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2b3a4a; z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div style="background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); width: 320px; text-align: center;">
+            <h2 style="margin-top: 0; color: #303133; margin-bottom: 24px;">返佣后台系统</h2>
+            <div style="margin-bottom: 16px;">
+                <input type="text" id="login-username" placeholder="请输入账号" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; box-sizing: border-box; outline: none; font-size: 14px;">
+            </div>
+            <div style="margin-bottom: 24px;">
+                <input type="password" id="login-password" placeholder="请输入密码" style="width: 100%; height: 40px; padding: 0 12px; border: 1px solid #dcdfe6; border-radius: 4px; box-sizing: border-box; outline: none; font-size: 14px;">
+            </div>
+            <button onclick="doLogin()" style="width: 100%; height: 40px; background: #1890ff; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-bottom: 16px; transition: 0.3s;">登 录</button>
+            <div style="font-size: 13px; color: #606266; text-align: left; background: #f4f4f5; padding: 10px; border-radius: 4px; border: 1px dashed #c0c4cc;">
+                <span style="color: #909399; font-size: 12px;">测试账号提示：</span><br>
+                默认账号：<b style="color: #1890ff;">admin</b><br>
+                默认密码：<b style="color: #1890ff;">123456</b>
+            </div>
+        </div>
+    </div>
+    <!-- 👆 新增：登录页结束 👆 -->
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">返佣后台</div>
+        <ul class="menu">
+            <!-- 替换开始：左侧菜单交互ID -->
+            <li class="menu-item" id="menu-agent-query">
+                <a href="#" class="menu-item-link active">
+                    <span class="menu-item-text">代理查询</span>
+                </a>
+            </li>
+            <li class="menu-item" id="menu-daily-data">
+                <a href="#" class="menu-item-link">
+                    <span class="menu-item-text">每日数据</span>
+                </a>
+            </li>
+            <!-- 替换结束 -->
+            <!-- 替换开始：左侧菜单增加佣金明细交互ID -->
+            <li class="menu-item" id="menu-commission-details">
+                <a href="#" class="menu-item-link">
+                    <span class="menu-item-text">佣金明细</span>
+                </a>
+            </li>
+            <!-- 替换结束 -->
+        </ul>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="main-content">
+        <!-- 顶部栏 -->
+        <div class="header">
+            <div class="header-left">
+                <span class="header-menu-toggle">&#9776;</span>
+            </div>
+            <div class="header-right">
+                <div class="header-user">
+                    <div class="user-avatar"></div>
+                    <span class="user-name">admin</span>
+                </div>
+                <button class="header-btn" onclick="doLogout()">退出</button>
+            </div>
+        </div>
+
+        <!-- 面包屑和选项卡 -->
+        <div class="header-tabs">
+            <!-- 替换开始：面包屑交互ID -->
+            <div class="header-tab active" id="breadcrumb-text">代理查询 &times;</div>
+            <!-- 替换结束 -->
+        </div>
+
+        <!-- <!-- 页面内容区域 -->
+        <div class="page-content">
+            
+            <!-- 👇 代理查询页面 👇 -->
+            <div id="page-agent-query">
+                <!-- 顶部搜索条件区域 -->
+                <div class="filter-container">
+                    <div class="filter-item">
+                        <label>时间</label>
+                        <div class="date-picker-wrapper" id="datePickerWrapper">
+                            <div class="date-range-picker" id="datePickerTrigger">
+                                <i>🕒</i>
+                                <input type="text" placeholder="开始时间" value="2026-10-01" readonly />
+                                <span class="separator">-</span>
+                                <input type="text" placeholder="结束时间" value="2026-10-31" readonly />
+                            </div>
+                            <div class="date-picker-panel" id="datePickerPanel">
+                                <div class="date-picker-sidebar">
+                                    <ul>
+                                        <li>今天</li>
+                                        <li>昨天</li>
+                                        <li>本周</li>
+                                        <li>上周</li>
+                                        <li class="active">本月</li>
+                                        <li>上月</li>
+                                    </ul>
+                                </div>
+                                <div class="date-picker-body">
+                                    <div class="date-picker-header-inputs">
+                                       <input type="text" value="2026-10-01" class="mini-input">
+                                       <input type="text" value="00:00:00" class="mini-input">
+                                       <span style="color:#c0c4cc;">></span>
+                                       <input type="text" value="2026-10-31" class="mini-input">
+                                       <input type="text" value="23:59:59" class="mini-input">
+                                    </div>
+                                    <div class="date-picker-calendars">
+                                        <div class="calendar-box">
+                                           <div class="cal-header">&laquo; &lsaquo; 2026 年 10 月 &rsaquo; &raquo;</div>
+                                           <div class="cal-grid">
+                                               <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                               <span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span>1</span><span>2</span><span>3</span><span>4</span>
+                                               <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+                                               <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+                                               <span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+                                               <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span class="gray">1</span>
+                                           </div>
+                                        </div>
+                                        <div class="calendar-box">
+                                           <div class="cal-header">&laquo; &lsaquo; 2026 年 11 月 &rsaquo; &raquo;</div>
+                                           <div class="cal-grid">
+                                               <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                               <span class="gray">26</span><span class="gray">27</span><span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span class="gray">31</span><span>1</span>
+                                               <span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+                                               <span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+                                               <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span>
+                                               <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span>
+                                           </div>
+                                        </div>
+                                    </div>
+                                    <div class="date-picker-footer">
+                                        <button class="btn-text" id="clearBtn">清空</button>
+                                        <button class="btn btn-primary" style="padding: 6px 15px;" id="confirmBtn">确定</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>数据范围</label>
+                        <div style="display: flex; gap: 15px; align-items: center; border: 1px solid #dcdfe6; padding: 0 10px; height: 32px; border-radius: 4px; background: #fff;">
+                            <label style="display: flex; align-items: center; margin:0; cursor:pointer; color: #606266; font-size: 13px;">
+                                <input type="checkbox" checked value="me" style="margin: 0 5px 0 0;">我的数据
+                            </label>
+                            <label style="display: flex; align-items: center; margin:0; cursor:pointer; color: #606266; font-size: 13px;">
+                                <input type="checkbox" checked value="direct" style="margin: 0 5px 0 0;">直属下级数据
+                            </label>
+                            <label style="display: flex; align-items: center; margin:0; cursor:pointer; color: #606266; font-size: 13px;">
+                                <input type="checkbox" checked value="indirect" style="margin: 0 5px 0 0;">非直属下级数据
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>会员ID</label>
+                        <input type="text" value="" placeholder="请输入会员ID" />
+                    </div>
+                    <button class="btn btn-primary">查询</button>
+                    
+                    <div class="right-btns">
+                        <button class="btn btn-primary">重置</button>
+                        <button class="btn btn-primary">刷新</button>
+                    </div>
+                </div>
+
+                <!-- 代理查询 数据表格 -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="white-space: nowrap;">会员ID</th>
+                            <th style="white-space: nowrap;">上级ID</th>
+                            <th style="white-space: nowrap;">层级</th>
+                            <th style="white-space: nowrap;">直属下级/非直属下级/团队人数</th>
+                            <th style="white-space: nowrap;">直属流水/非直属流水/团队流水</th>
+                            <th style="white-space: nowrap;">团队输赢</th>
+                            <th style="white-space: nowrap;">待发佣金/已发佣金/累计佣金</th>
+                            <th style="white-space: nowrap;">
+                                综合返佣比例
+                                <span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; background-color: #c8c9cc; color: white; border-radius: 50%; padding: 0 5px; font-size: 12px; margin-left: 2px;">?</span>
+                            </th>
+                            <th style="white-space: nowrap;">注册时间</th>
+                            <th style="width: 250px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>100039429 <span style="background:#409eff; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">我</span></td>
+                            <td>-</td>
+                            <td>一级</td>
+                            <td>4 / 2 / 6</td>
+                            <td>2500.00 / 3000.00 / 5500.00</td>
+                            <td class="text-success">+450.00</td>
+                            <td><span class="text-warning">150.00</span> / <span class="text-success">300.00</span> / 450.00</td>
+                            <td><span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; border-bottom: 1px dashed #c0c4cc;">8.18%</span></td>
+                            <td>2026-01-10 10:00:00</td>
+                            <td style="text-align: left;">
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTreeModal('100039429')">查看代理树</a>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTeamDataModal('100039429', '一级')">查看团队数据</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>100039500 <span style="background:#67c23a; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">直属</span></td>
+                            <td>100039429</td>
+                            <td>二级</td>
+                            <td>2 / 0 / 2</td>
+                            <td>1110.00 / 2000.00 / 3110.00</td>
+                            <td class="text-success">+150.00</td>
+                            <td><span class="text-warning">50.00</span> / <span class="text-success">100.00</span> / 150.00</td>
+                            <td><span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; border-bottom: 1px dashed #c0c4cc;">4.82%</span></td>
+                            <td>2026-03-30 11:28:35</td>
+                            <td style="text-align: left;">
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTreeModal('100039500')">查看代理树</a>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTeamDataModal('100039500', '二级')">查看团队数据</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>100039501 <span style="background:#67c23a; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">直属</span></td>
+                            <td>100039429</td>
+                            <td>二级</td>
+                            <td>0 / 0 / 0</td>
+                            <td>500.00 / 0.00 / 500.00</td>
+                            <td class="text-danger">-100.00</td>
+                            <td><span class="text-warning">0.00</span> / <span class="text-success">20.00</span> / 20.00</td>
+                            <td><span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; border-bottom: 1px dashed #c0c4cc;">4.00%</span></td>
+                            <td>2026-04-01 14:20:10</td>
+                            <td style="text-align: left;">
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTreeModal('100039501')">查看代理树</a>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTeamDataModal('100039501', '二级')">查看团队数据</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>100039502 <span style="background:#67c23a; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">直属</span></td>
+                            <td>100039429</td>
+                            <td>二级</td>
+                            <td>0 / 0 / 0</td>
+                            <td>300.00 / 0.00 / 300.00</td>
+                            <td class="text-success">+50.00</td>
+                            <td><span class="text-warning">10.00</span> / <span class="text-success">5.00</span> / 15.00</td>
+                            <td><span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; border-bottom: 1px dashed #c0c4cc;">5.00%</span></td>
+                            <td>2026-04-05 09:15:00</td>
+                            <td style="text-align: left;">
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTreeModal('100039502')">查看代理树</a>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTeamDataModal('100039502', '二级')">查看团队数据</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>100039503 <span style="background:#67c23a; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">直属</span></td>
+                            <td>100039429</td>
+                            <td>二级</td>
+                            <td>0 / 0 / 0</td>
+                            <td>590.00 / 0.00 / 590.00</td>
+                            <td class="text-danger">-10.00</td>
+                            <td><span class="text-warning">0.00</span> / <span class="text-success">25.00</span> / 25.00</td>
+                            <td><span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; border-bottom: 1px dashed #c0c4cc;">4.23%</span></td>
+                            <td>2026-04-06 18:30:00</td>
+                            <td style="text-align: left;">
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTreeModal('100039503')">查看代理树</a>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTeamDataModal('100039503', '二级')">查看团队数据</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>100039601 <span style="background:#e6a23c; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">非直属</span></td>
+                            <td>100039500</td>
+                            <td>三级</td>
+                            <td>0 / 0 / 0</td>
+                            <td>1500.00 / 0.00 / 1500.00</td>
+                            <td class="text-danger">-300.00</td>
+                            <td><span class="text-warning">0.00</span> / <span class="text-success">58.00</span> / 58.00</td>
+                            <td><span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; border-bottom: 1px dashed #c0c4cc;">3.86%</span></td>
+                            <td>2026-04-15 09:10:22</td>
+                            <td style="text-align: left;">
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTreeModal('100039601')">查看代理树</a>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTeamDataModal('100039601', '三级')">查看团队数据</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>100039602 <span style="background:#e6a23c; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">非直属</span></td>
+                            <td>100039500</td>
+                            <td>三级</td>
+                            <td>0 / 0 / 0</td>
+                            <td>500.00 / 0.00 / 500.00</td>
+                            <td class="text-success">+120.00</td>
+                            <td><span class="text-warning">10.00</span> / <span class="text-success">15.00</span> / 25.00</td>
+                            <td><span title="综合返佣比例=累计佣金÷团队流水" style="cursor: help; border-bottom: 1px dashed #c0c4cc;">5.00%</span></td>
+                            <td>2026-04-16 11:45:00</td>
+                            <td style="text-align: left;">
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTreeModal('100039602')">查看代理树</a>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openTeamDataModal('100039602', '三级')">查看团队数据</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!-- 代理查询页面结束 -->
+
+            <!-- 👇 每日数据页面 👇 -->
+            <div id="page-daily-data" style="display: none;">
+                <!-- 顶部筛选区域 -->
+                <div class="filter-container">
+                    <div class="filter-item">
+                        <label>时间</label>
+                        <div class="date-picker-wrapper" id="dailyDatePickerWrapper">
+                            <div class="date-range-picker" id="dailyDatePickerTrigger">
+                                <i>🕒</i>
+                                <input type="text" value="2026-10-03" readonly />
+                                <span class="separator">-</span>
+                                <input type="text" value="2026-10-03" readonly />
+                            </div>
+                            <div class="date-picker-panel" id="dailyDatePickerPanel">
+                                <div class="date-picker-sidebar">
+                                    <ul>
+                                        <li class="active">今天</li>
+                                        <li>昨天</li>
+                                        <li>本周</li>
+                                        <li>上周</li>
+                                        <li>本月</li>
+                                        <li>上月</li>
+                                    </ul>
+                                </div>
+                                <div class="date-picker-body">
+                                    <div class="date-picker-header-inputs">
+                                       <input type="text" value="2026-10-03" class="mini-input">
+                                       <span style="color:#c0c4cc;">></span>
+                                       <input type="text" value="2026-10-03" class="mini-input">
+                                    </div>
+                                    <div class="date-picker-calendars">
+                                        <div class="calendar-box">
+                                           <div class="cal-header">&laquo; &lsaquo; 2026 年 10 月 &rsaquo; &raquo;</div>
+                                           <div class="cal-grid">
+                                               <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                               <span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span>1</span><span>2</span><span class="active">3</span><span>4</span>
+                                               <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+                                               <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+                                               <span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+                                               <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span class="gray">1</span>
+                                           </div>
+                                        </div>
+                                        <div class="calendar-box">
+                                           <div class="cal-header">&laquo; &lsaquo; 2026 年 11 月 &rsaquo; &raquo;</div>
+                                           <div class="cal-grid">
+                                               <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                               <span class="gray">26</span><span class="gray">27</span><span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span class="gray">31</span><span>1</span>
+                                               <span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+                                               <span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+                                               <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span>
+                                               <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span>
+                                           </div>
+                                        </div>
+                                    </div>
+                                    <div class="date-picker-footer">
+                                        <button class="btn-text" id="dailyClearBtn">清空</button>
+                                        <button class="btn btn-primary" style="padding: 6px 15px;" id="dailyConfirmBtn">确定</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>数据范围</label>
+                        <div style="display: flex; gap: 15px; align-items: center; border: 1px solid #dcdfe6; padding: 0 10px; height: 32px; border-radius: 4px; background: #fff;">
+                            <label style="display: flex; align-items: center; margin:0; cursor:pointer; color: #606266; font-size: 13px;">
+                                <input type="checkbox" checked value="me" style="margin: 0 5px 0 0;">我的数据
+                            </label>
+                            <label style="display: flex; align-items: center; margin:0; cursor:pointer; color: #606266; font-size: 13px;">
+                                <input type="checkbox" checked value="direct" style="margin: 0 5px 0 0;">直属下级数据
+                            </label>
+                            <label style="display: flex; align-items: center; margin:0; cursor:pointer; color: #606266; font-size: 13px;">
+                                <input type="checkbox" checked value="indirect" style="margin: 0 5px 0 0;">非直属下级数据
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>会员ID</label>
+                        <input type="text" value="" placeholder="请输入会员ID" />
+                    </div>
+                    <button class="btn btn-primary">查询</button>
+                    
+                    <div class="right-btns">
+                        <button class="btn btn-primary">重置</button>
+                        <button class="btn btn-primary">导出数据</button>
+                    </div>
+                </div>
+
+                <!-- 每日数据 主表格 -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="white-space: nowrap;">日期</th>
+                            <th style="white-space: nowrap;">会员ID</th>
+                            <th style="white-space: nowrap;">当日佣金 (直属贡献 / 非直属贡献 / 累计总额)</th>
+                            <th style="white-space: nowrap;">游戏流水 (直属 / 非直属 / 团队)</th>
+                            <th style="white-space: nowrap;">游戏输赢 (直属 / 非直属 / 团队)</th>
+                            <th style="width: 120px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2026-10-03</td>
+                            <td>100039429 <span style="background:#409eff; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">我</span></td>
+                            <td>30.00 / 120.00 / <span class="text-success">150.00</span></td>
+                            <td>2500.00 / 3000.00 / 5500.00</td>
+                            <td><span class="text-success">+200.00</span> / <span class="text-success">+250.00</span> / <span class="text-success">+450.00</span></td>
+                            <td>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openCommissionModal('2026-10-03', '100039429')">佣金详情</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2026-10-03</td>
+                            <td>100039500 <span style="background:#67c23a; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">直属</span></td>
+                            <td>20.00 / 80.00 / <span class="text-success">100.00</span></td>
+                            <td>1110.00 / 2000.00 / 3110.00</td>
+                            <td><span class="text-success">+50.00</span> / <span class="text-success">+100.00</span> / <span class="text-success">+150.00</span></td>
+                            <td>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openCommissionModal('2026-10-03', '100039500')">佣金详情</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!-- 每日数据页面结束 -->
+
+            <!-- 👇 新增：佣金明细页面的盒子开始 (默认隐藏) 👇 -->
+            <div id="page-commission-details" style="display: none;">
+                <!-- 顶部筛选区域 -->
+                <div class="filter-container">
+                    <div class="filter-item">
+                        <label>时间</label>
+                        <div class="date-picker-wrapper" id="commissionDatePickerWrapper">
+                            <div class="date-range-picker" id="commissionDatePickerTrigger">
+                                <i>🕒</i>
+                                <input type="text" value="2026-10-03" readonly />
+                                <span class="separator">-</span>
+                                <input type="text" value="2026-10-03" readonly />
+                            </div>
+                            <div class="date-picker-panel" id="commissionDatePickerPanel">
+                                <div class="date-picker-sidebar">
+                                    <ul>
+                                        <li class="active">今天</li>
+                                        <li>昨天</li>
+                                        <li>本周</li>
+                                        <li>上周</li>
+                                        <li>本月</li>
+                                        <li>上月</li>
+                                    </ul>
+                                </div>
+                                <div class="date-picker-body">
+                                    <div class="date-picker-header-inputs">
+                                       <input type="text" value="2026-10-03" class="mini-input">
+                                       <input type="text" value="00:00:00" class="mini-input">
+                                       <span style="color:#c0c4cc;">></span>
+                                       <input type="text" value="2026-10-03" class="mini-input">
+                                       <input type="text" value="23:59:59" class="mini-input">
+                                    </div>
+                                    <div class="date-picker-calendars">
+                                        <div class="calendar-box">
+                                           <div class="cal-header">&laquo; &lsaquo; 2026 年 10 月 &rsaquo; &raquo;</div>
+                                           <div class="cal-grid">
+                                               <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                               <span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span>1</span><span>2</span><span class="active">3</span><span>4</span>
+                                               <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span>
+                                               <span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span>
+                                               <span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span>
+                                               <span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span class="gray">1</span>
+                                           </div>
+                                        </div>
+                                        <div class="calendar-box">
+                                           <div class="cal-header">&laquo; &lsaquo; 2026 年 11 月 &rsaquo; &raquo;</div>
+                                           <div class="cal-grid">
+                                               <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+                                               <span class="gray">26</span><span class="gray">27</span><span class="gray">28</span><span class="gray">29</span><span class="gray">30</span><span class="gray">31</span><span>1</span>
+                                               <span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+                                               <span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+                                               <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span>
+                                               <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span>
+                                           </div>
+                                        </div>
+                                    </div>
+                                    <div class="date-picker-footer">
+                                        <button class="btn-text" id="commissionClearBtn">清空</button>
+                                        <button class="btn btn-primary" style="padding: 6px 15px;" id="commissionConfirmBtn">确定</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="filter-item">
+                        <label>佣金来源ID</label>
+                        <input type="text" placeholder="请输入打码用户ID" />
+                    </div>
+                    <div class="filter-item">
+                        <label>状态</label>
+                        <select>
+                            <option>全部</option>
+                            <option>已发放</option>
+                            <option>待发放</option>
+                            <option>发放失败</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-primary">查询</button>
+                    <button class="btn" style="margin-left: 10px;">重置</button>
+                    
+                    <div class="right-btns" style="margin-left: auto;">
+                        <button class="btn btn-primary">导出明细</button>
+                    </div>
+                </div>
+
+                <!-- 佣金明细 主表格 -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="white-space: nowrap;">日期</th>
+                            <th style="white-space: nowrap;">佣金来源ID<br>(打码用户)</th>
+                            <th style="white-space: nowrap;">层级</th>
+                            <th style="white-space: nowrap;">棋牌<br><span style="font-size:11px; font-weight:normal; color:#909399;">佣金/返佣比例/有效投注</span></th>
+                            <th style="white-space: nowrap;">电子<br><span style="font-size:11px; font-weight:normal; color:#909399;">佣金/返佣比例/有效投注</span></th>
+                            <th style="white-space: nowrap;">捕鱼<br><span style="font-size:11px; font-weight:normal; color:#909399;">佣金/返佣比例/有效投注</span></th>
+                            <th style="white-space: nowrap;">视讯<br><span style="font-size:11px; font-weight:normal; color:#909399;">佣金/返佣比例/有效投注</span></th>
+                            <th style="white-space: nowrap;">体育<br><span style="font-size:11px; font-weight:normal; color:#909399;">佣金/返佣比例/有效投注</span></th>
+                            <th style="white-space: nowrap;">彩票<br><span style="font-size:11px; font-weight:normal; color:#909399;">佣金/返佣比例/有效投注</span></th>
+                            <th style="white-space: nowrap;">产生总佣金</th>
+                            <th style="white-space: nowrap;">状态</th>
+                            <th style="width: 100px;">操作</th>
+                        </tr>
+                    </thead>
+                    <!-- 替换开始：带有直属/非直属标签的佣金明细表格数据 -->
+                    <tbody>
+                        <tr>
+                            <td>2026-10-03</td>
+                            <td>100039900 <span style="background:#67c23a; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">直属</span></td>
+                            <td>四级</td>
+                            <td><div style="color:#303133;">5.00</div><div style="font-size:11px; color:#909399;">1.0% / 500.00</div></td>
+                            <td><div style="color:#303133;">5.00</div><div style="font-size:11px; color:#909399;">1.0% / 500.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td style="font-weight: bold; color:#f56c6c; font-size: 14px;">10.00</td>
+                            <td><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; border:1px solid #e1f3d8; color:#67c23a; background-color:#f0f9eb;">已发放</span></td>
+                            <td>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openModal('modal1')">佣金详情</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2026-10-03</td>
+                            <td>100039788 <span style="background:#e6a23c; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">非直属</span></td>
+                            <td>六级</td>
+                            <td><div style="color:#303133;">20.00</div><div style="font-size:11px; color:#909399;">2.0% / 1000.00</div></td>
+                            <td><div style="color:#303133;">20.00</div><div style="font-size:11px; color:#909399;">2.0% / 1000.00</div></td>
+                            <td><div style="color:#303133;">40.00</div><div style="font-size:11px; color:#909399;">2.0% / 2000.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td style="font-weight: bold; color:#f56c6c; font-size: 14px;">80.00</td>
+                            <td><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; border:1px solid #faecd8; color:#e6a23c; background-color:#fdf6ec;">待发放</span></td>
+                            <td>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openModal('modal2')">佣金详情</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2026-10-03</td>
+                            <td>100039912 <span style="background:#e6a23c; color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; margin-left:4px;">非直属</span></td>
+                            <td>五级</td>
+                            <td><div style="color:#303133;">15.00</div><div style="font-size:11px; color:#909399;">1.5% / 1000.00</div></td>
+                            <td><div style="color:#303133;">15.00</div><div style="font-size:11px; color:#909399;">1.5% / 1000.00</div></td>
+                            <td><div style="color:#303133;">15.00</div><div style="font-size:11px; color:#909399;">1.5% / 1000.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td><div style="color:#303133;">0.00</div><div style="font-size:11px; color:#c0c4cc;">0.0% / 0.00</div></td>
+                            <td style="font-weight: bold; color:#f56c6c; font-size: 14px;">45.00</td>
+                            <td><span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; border:1px solid #fde2e2; color:#f56c6c; background-color:#fef0f0;">发放失败</span></td>
+                            <td>
+                                <a href="javascript:void(0);" class="action-btn" onclick="openModal('modal3')">佣金详情</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <!-- 替换结束 -->
+                </table>
+            </div> <!-- 👆 佣金明细页面结束 👆 -->
+
+        </div> <!-- page-content 结束 -->
+    </div> <!-- main-content 结束 -->
+
+    <!-- ================= 弹窗区域 ================= -->
+    <!-- 代理树弹窗 -->
+    <div class="modal-overlay" id="treeModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>代理层级树状图</h3>
+                <button class="close-btn" onclick="closeTreeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tree-layout">
+                    <div class="tree-axis">
+                        <div class="axis-label" style="top: 0px;">一级</div>
+                        <div class="axis-label" style="top: 72px;">二级</div>
+                        <div class="axis-label" style="top: 144px;">三级</div>
+                    </div>
+                    <div class="css-tree">
+                        <ul>
+                            <li>
+                                <div class="tree-node root-node" id="modalRootNode">ID: 100039429</div>
+                                <ul>
+                                    <li>
+                                        <div class="tree-node">ID: 100039500</div>
+                                        <ul>
+                                            <li><div class="tree-node">ID: 100039601</div></li>
+                                            <li><div class="tree-node">ID: 100039602</div></li>
+                                            <li><div class="tree-node">ID: 100039603</div></li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <div class="tree-node">ID: 100039501</div>
+                                        <ul>
+                                            <li><div class="tree-node">ID: 100039604</div></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 团队数据弹窗 -->
+    <div class="modal-overlay" id="teamDataModalOverlay">
+        <div class="modal-content" style="width: 1000px; max-width: 95%;">
+            <div class="modal-header">
+                <h3>团队数据详情</h3>
+                <button class="close-btn" onclick="closeTeamDataModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; background: #f5f7fa; padding: 15px; border-radius: 4px; border: 1px solid #ebeef5;">
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">时间</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;">2026-10-01~2026-10-31</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">会员ID</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;" id="modalMemberId">100039500</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">层级</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;" id="modalLevel">二级</div>
+                    </div>
+                    <div style="flex: 2;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">直属下级 (人数/流水/佣金)</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;">2 / 1110.00 / 50.00</div>
+                    </div>
+                    <div style="flex: 2;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">非直属下级 (人数/流水/佣金)</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;">1 / 3000.00 / 100.00</div>
+                    </div>
+                    <div style="flex: 2;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">团队 (人数/流水/佣金)</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;">3 / 4110.00 / 150.00</div>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="white-space: nowrap;">用户ID</th>
+                            <th style="white-space: nowrap;">层级</th>
+                            <th style="white-space: nowrap;">上级ID</th>
+                            <th style="white-space: nowrap;">有效投注</th>
+                            <th style="white-space: nowrap;">会员佣金</th>
+                            <th style="white-space: nowrap;">总佣金</th>
+                            <th style="white-space: nowrap;">
+                                综合返佣比例
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>100039601</td>
+                            <td>三级</td>
+                            <td>100039500</td>
+                            <td>1000.00</td>
+                            <td class="text-success">30.00</td>
+                            <td>50.00</td>
+                            <td><span style="border-bottom: 1px dashed #c0c4cc;">60.00%</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 佣金构成弹窗 -->
+    <div class="modal-overlay" id="commissionModalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>佣金构成详情</h3>
+                <button class="close-btn" onclick="closeCommissionModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; background: #f5f7fa; padding: 15px; border-radius: 4px; border: 1px solid #ebeef5;">
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">日期</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;" id="modalDate">2026-10-03</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">会员ID</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #303133;" id="modalMemberId">100039500</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">直属贡献佣金</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #67c23a;">20.00</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">非直属贡献佣金</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #67c23a;">80.00</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">当日总佣金</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #f56c6c;">100.00</div>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="white-space: nowrap;">贡献用户ID</th>
+                            <th style="white-space: nowrap;">层级</th>
+                            <th style="white-space: nowrap;">关系</th>
+                            <th style="white-space: nowrap;">当日游戏流水</th>
+                            <th style="white-space: nowrap;">贡献佣金</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>100039501</td>
+                            <td>二级</td>
+                            <td><span style="color: #409eff;">直属下级</span></td>
+                            <td>1110.00</td>
+                            <td class="text-success">20.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 👇 新增：佣金明细专属弹窗 👇 -->
+    <!-- 弹窗 1 -->
+    <div class="modal-overlay" id="modal1">
+        <div class="modal-content" style="width: 850px;">
+            <div class="modal-header">
+                <h3>佣金详情</h3>
+                <button class="close-btn" onclick="closeModal('modal1')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; background: #f0f9eb; border: 1px solid #e1f3d8; padding: 15px; border-radius: 4px;">
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">佣金来源ID(打码用户)</div><div style="font-size: 14px; font-weight: bold; color: #67c23a;">100039900</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">会员层级</div><div style="font-size: 14px; font-weight: bold; color: #303133;">四级</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">当日有效流水</div><div style="font-size: 14px; font-weight: bold; color: #303133;">1000.00</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">产生总佣金</div><div style="font-size: 16px; font-weight: bold; color: #67c23a;">10.00</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">状态</div><div style="font-size: 14px; font-weight: bold; color: #67c23a;">已发放</div></div>
+                </div>
+                <div style="margin-bottom: 10px; font-size: 13px; color: #606266; font-weight: bold;">该笔佣金向上级分配明细：</div>
+                <table>
+                    <thead>
+                        <tr><th style="white-space: nowrap;">获佣会员ID</th><th style="white-space: nowrap;">会员层级</th><th style="white-space: nowrap;">距来源级数</th><th style="white-space: nowrap;">级差分配比例</th><th style="white-space: nowrap;">实际分得金额</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>100039501</td><td>一级</td><td>上三级</td><td><span style="color:#67c23a;">40%</span></td><td style="color: #f56c6c; font-weight: bold;">1.96</td></tr>
+                        <tr><td>100039555</td><td>二级</td><td>上两级</td><td><span style="color:#67c23a;">30%</span></td><td style="color: #f56c6c; font-weight: bold;">2.10</td></tr>
+                        <tr><td>100039580</td><td>三级</td><td>直属上级</td><td><span style="color:#67c23a;">30%</span></td><td style="color: #f56c6c; font-weight: bold;">3.00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗 2 -->
+    <div class="modal-overlay" id="modal2">
+        <div class="modal-content" style="width: 850px;">
+            <div class="modal-header">
+                <h3>佣金详情</h3>
+                <button class="close-btn" onclick="closeModal('modal2')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; background: #fdf6ec; border: 1px solid #faecd8; padding: 15px; border-radius: 4px;">
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">佣金来源ID(打码用户)</div><div style="font-size: 14px; font-weight: bold; color: #e6a23c;">100039788</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">会员层级</div><div style="font-size: 14px; font-weight: bold; color: #303133;">六级</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">当日有效流水</div><div style="font-size: 14px; font-weight: bold; color: #303133;">1600.00</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">产生总佣金</div><div style="font-size: 16px; font-weight: bold; color: #e6a23c;">80.00</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">状态</div><div style="font-size: 14px; font-weight: bold; color: #e6a23c;">待发放</div></div>
+                </div>
+                <div style="margin-bottom: 10px; font-size: 13px; color: #606266; font-weight: bold;">该笔佣金向上级分配明细：</div>
+                <table>
+                    <thead>
+                        <tr><th style="white-space: nowrap;">获佣会员ID</th><th style="white-space: nowrap;">会员层级</th><th style="white-space: nowrap;">距来源级数</th><th style="white-space: nowrap;">级差分配比例</th><th style="white-space: nowrap;">实际分得金额</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>100039501</td><td>一级</td><td>上五级</td><td><span style="color:#67c23a;">100%</span></td><td style="color: #f56c6c; font-weight: bold;">0.96</td></tr>
+                        <tr><td>100039555</td><td>二级</td><td>上四级</td><td><span style="color:#67c23a;">80%</span></td><td style="color: #f56c6c; font-weight: bold;">3.84</td></tr>
+                        <tr><td>100039580</td><td>三级</td><td>上三级</td><td><span style="color:#67c23a;">70%</span></td><td style="color: #f56c6c; font-weight: bold;">11.20</td></tr>
+                        <tr><td>100039624</td><td>四级</td><td>上两级</td><td><span style="color:#67c23a;">60%</span></td><td style="color: #f56c6c; font-weight: bold;">24.00</td></tr>
+                        <tr><td>100039663</td><td>五级</td><td>直属上级</td><td><span style="color:#67c23a;">50%</span></td><td style="color: #f56c6c; font-weight: bold;">40.00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗 3 -->
+    <div class="modal-overlay" id="modal3">
+        <div class="modal-content" style="width: 850px;">
+            <div class="modal-header">
+                <h3>佣金详情</h3>
+                <button class="close-btn" onclick="closeModal('modal3')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; background: #fef0f0; border: 1px solid #fde2e2; padding: 15px; border-radius: 4px;">
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">佣金来源ID(打码用户)</div><div style="font-size: 14px; font-weight: bold; color: #f56c6c;">100039912</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">会员层级</div><div style="font-size: 14px; font-weight: bold; color: #303133;">五级</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">当日有效流水</div><div style="font-size: 14px; font-weight: bold; color: #303133;">900.00</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">产生总佣金</div><div style="font-size: 16px; font-weight: bold; color: #f56c6c;">45.00</div></div>
+                    <div style="flex: 1;"><div style="color: #909399; font-size: 12px; margin-bottom: 5px;">状态</div><div style="font-size: 14px; font-weight: bold; color: #f56c6c;">发放失败</div></div>
+                </div>
+                <div style="margin-bottom: 10px; font-size: 13px; color: #606266; font-weight: bold;">该笔佣金向上级分配明细：</div>
+                <table>
+                    <thead>
+                        <tr><th style="white-space: nowrap;">获佣会员ID</th><th style="white-space: nowrap;">会员层级</th><th style="white-space: nowrap;">距来源级数</th><th style="white-space: nowrap;">级差分配比例</th><th style="white-space: nowrap;">实际分得金额</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>100039501</td><td>一级</td><td>上四级</td><td><span style="color:#67c23a;">100%</span></td><td style="color: #f56c6c; font-weight: bold;">1.08</td></tr>
+                        <tr><td>100039555</td><td>二级</td><td>上三级</td><td><span style="color:#67c23a;">80%</span></td><td style="color: #f56c6c; font-weight: bold;">4.32</td></tr>
+                        <tr><td>100039580</td><td>三级</td><td>上两级</td><td><span style="color:#67c23a;">70%</span></td><td style="color: #f56c6c; font-weight: bold;">12.60</td></tr>
+                        <tr><td>100039581</td><td>四级</td><td>直属上级</td><td><span style="color:#67c23a;">60%</span></td><td style="color: #f56c6c; font-weight: bold;">27.00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- 👆 新增：佣金明细专属弹窗结束 👆 -->
+    
+    <!-- 替换开始：最终合并版的统一脚本 -->
+    <script>
+        // --- 1. 日历组件交互逻辑 (合并三个页面) ---
+        window.onload = function() {
+            // 代理查询页面的日历
+            const trigger1 = document.getElementById('datePickerTrigger');
+            const panel1 = document.getElementById('datePickerPanel');
+            const wrapper1 = document.getElementById('datePickerWrapper');
+            const clearBtn1 = document.getElementById('clearBtn');
+            const confirmBtn1 = document.getElementById('confirmBtn');
+
+            if (trigger1) {
+                trigger1.onclick = function(e) { e.stopPropagation(); panel1.style.display = (panel1.style.display === 'flex') ? 'none' : 'flex'; };
+                panel1.onclick = function(e) { e.stopPropagation(); };
+                clearBtn1.onclick = function() { panel1.style.display = 'none'; };
+                confirmBtn1.onclick = function() { panel1.style.display = 'none'; };
+            }
+
+            // 每日数据页面的日历
+            const trigger2 = document.getElementById('dailyDatePickerTrigger');
+            const panel2 = document.getElementById('dailyDatePickerPanel');
+            const wrapper2 = document.getElementById('dailyDatePickerWrapper');
+            const clearBtn2 = document.getElementById('dailyClearBtn');
+            const confirmBtn2 = document.getElementById('dailyConfirmBtn');
+
+            if (trigger2) {
+                trigger2.onclick = function(e) { e.stopPropagation(); panel2.style.display = (panel2.style.display === 'flex') ? 'none' : 'flex'; };
+                panel2.onclick = function(e) { e.stopPropagation(); };
+                clearBtn2.onclick = function() { panel2.style.display = 'none'; };
+                confirmBtn2.onclick = function() { panel2.style.display = 'none'; };
+            }
+
+            // 佣金明细页面的日历
+            const trigger3 = document.getElementById('commissionDatePickerTrigger');
+            const panel3 = document.getElementById('commissionDatePickerPanel');
+            const wrapper3 = document.getElementById('commissionDatePickerWrapper');
+            const clearBtn3 = document.getElementById('commissionClearBtn');
+            const confirmBtn3 = document.getElementById('commissionConfirmBtn');
+
+            if (trigger3) {
+                trigger3.onclick = function(e) { e.stopPropagation(); panel3.style.display = (panel3.style.display === 'flex') ? 'none' : 'flex'; };
+                panel3.onclick = function(e) { e.stopPropagation(); };
+                clearBtn3.onclick = function() { panel3.style.display = 'none'; };
+                confirmBtn3.onclick = function() { panel3.style.display = 'none'; };
+            }
+
+            // 全局点击，关闭所有展开的日历
+            document.onclick = function(e) {
+                if (wrapper1 && !wrapper1.contains(e.target)) panel1.style.display = 'none';
+                if (wrapper2 && !wrapper2.contains(e.target)) panel2.style.display = 'none';
+                if (wrapper3 && !wrapper3.contains(e.target)) panel3.style.display = 'none';
+            };
+        };
+
+        // --- 2. 弹窗控制逻辑 ---
+        function openTreeModal(agentId) {
+            document.getElementById('modalRootNode').innerText = 'ID: ' + agentId;
+            document.getElementById('treeModalOverlay').style.display = 'flex';
+        }
+        function closeTreeModal() { document.getElementById('treeModalOverlay').style.display = 'none'; }
+        
+        function openTeamDataModal(memberId, level) {
+            const teamModal = document.getElementById('teamDataModalOverlay');
+            teamModal.querySelector('#modalMemberId').innerText = memberId;
+            document.getElementById('modalLevel').innerText = level || '--';
+            teamModal.style.display = 'flex';
+        }
+        function closeTeamDataModal() { document.getElementById('teamDataModalOverlay').style.display = 'none'; }
+        
+        function openCommissionModal(date, memberId) {
+            document.getElementById('modalDate').innerText = date;
+            const commissionModal = document.getElementById('commissionModalOverlay');
+            commissionModal.querySelector('#modalMemberId').innerText = memberId;
+            commissionModal.style.display = 'flex';
+        }
+        function closeCommissionModal() { document.getElementById('commissionModalOverlay').style.display = 'none'; }
+
+        // 新增通用弹窗开关 (供佣金明细使用)
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // --- 3. 左侧菜单页面切换逻辑 ---
+        const menuAgentQuery = document.getElementById('menu-agent-query');
+        const menuDailyData = document.getElementById('menu-daily-data');
+        const menuCommissionDetails = document.getElementById('menu-commission-details');
+        
+        const pageAgentQuery = document.getElementById('page-agent-query');
+        const pageDailyData = document.getElementById('page-daily-data');
+        const pageCommissionDetails = document.getElementById('page-commission-details');
+        const breadcrumbText = document.getElementById('breadcrumb-text');
+
+        function switchPage(pageName) {
+            // 清除菜单激活样式
+            menuAgentQuery.querySelector('.menu-item-link').classList.remove('active');
+            menuDailyData.querySelector('.menu-item-link').classList.remove('active');
+            menuCommissionDetails.querySelector('.menu-item-link').classList.remove('active');
+            
+            // 隐藏所有页面
+            pageAgentQuery.style.display = 'none';
+            pageDailyData.style.display = 'none';
+            pageCommissionDetails.style.display = 'none';
+
+            // 根据点击展示页面并修改面包屑
+            if (pageName === 'agent') {
+                menuAgentQuery.querySelector('.menu-item-link').classList.add('active');
+                pageAgentQuery.style.display = 'block';
+                breadcrumbText.innerHTML = '代理查询 &times;';
+            } else if (pageName === 'daily') {
+                menuDailyData.querySelector('.menu-item-link').classList.add('active');
+                pageDailyData.style.display = 'block';
+                breadcrumbText.innerHTML = '每日数据 &times;';
+            } else if (pageName === 'commission') {
+                menuCommissionDetails.querySelector('.menu-item-link').classList.add('active');
+                pageCommissionDetails.style.display = 'block';
+                breadcrumbText.innerHTML = '佣金明细 &times;';
+            }
+        }
+        
+        // 绑定所有点击事件
+        menuAgentQuery.addEventListener('click', (e) => { e.preventDefault(); switchPage('agent'); });
+        menuDailyData.addEventListener('click', (e) => { e.preventDefault(); switchPage('daily'); });
+        menuCommissionDetails.addEventListener('click', (e) => { e.preventDefault(); switchPage('commission'); });
+    // --- 👇 新增：登录与退出逻辑 👇 ---
+        function doLogin() {
+            const un = document.getElementById('login-username').value;
+            const pw = document.getElementById('login-password').value;
+            
+            if (un === 'admin' && pw === '123456') {
+                // 账号密码正确，隐藏登录弹窗，进入系统
+                document.getElementById('login-overlay').style.display = 'none';
+                
+                // 顺便清空输入框，防止退出后密码还留在上面
+                document.getElementById('login-username').value = '';
+                document.getElementById('login-password').value = '';
+            } else {
+                alert('账号或密码错误！请使用默认账号: admin  密码: 123456');
+            }
+        }
+
+        function doLogout() {
+            // 退出时，重新显示全屏登录页
+            document.getElementById('login-overlay').style.display = 'flex';
+            // 为了体验更好，退出后把系统重置回默认的“代理查询”页面
+            switchPage('agent'); 
+        }
+        // --- 👆 新增逻辑结束 👆 ---
+    </script>
+    <!-- 替换结束 -->
+</body>
+</html>
