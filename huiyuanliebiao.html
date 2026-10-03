@@ -391,7 +391,9 @@
                             <td>喜欢123<br><span class="text-gray">18707594013</span><br><span class="text-gray">绑: 2026-04-30 14:20</span></td>
                             <td>上级ID:0<br>团队:8<br>邀请码:4dq3o</td>
                             <td>余额:1890<br><span class="text-gray">充值等级:0</span></td>
-                            <td>充值:1858 | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td>
+                            <!-- 替换开始：第一行金流 -->
+                            <td>充值:1858+200(划转) | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td>
+                            <!-- 替换结束 -->
                             <td class="remark-display">这是一个大客户，请多关注。</td>
                             <td>启用</td>
                             <td>
@@ -417,6 +419,8 @@
                                         <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
                                         <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
                                         <button class="btn-small">解锁IM</button>
+                                        <!-- 新增返佣后台按钮 (此处演示第一个用户传状态 0 为未开通，第二个用户传 1 为已开通) -->
+                                        <button class="btn-small btn-green" onclick="openRebateModal(100039991, '无家可归aegp', 0)">返佣后台</button>
                                     </div>
                                 </div>
                             </td>
@@ -430,7 +434,9 @@
                             <td>未填<br><span class="text-gray">13800138000</span><br><span class="text-gray">绑: 2026-02-15 09:35</span></td>
                             <td>上级ID:102<br>团队:12<br>邀请码:8abc9</td>
                             <td>余额:5200<br><span class="text-gray">充值等级:3</span></td>
-                            <td>充值:5000 | 提现:200<br>客损:4800<br>总打赏:100 | 总消费:200</td>
+                            <!-- 替换开始：第二行金流 -->
+                            <td>充值:5000+500(划转) | 提现:200<br>客损:4800<br>总打赏:100 | 总消费:200</td>
+                            <!-- 替换结束 -->
                             <td class="remark-display">此用户最近比较活跃。</td>
                             <td>启用</td>
                             <td>
@@ -449,6 +455,7 @@
                                     <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">
                                         操作 <i class="fa-solid fa-chevron-down"></i>
                                     </button>
+                                    <!-- 替换开始：第二行用户的操作下拉菜单 -->
                                     <div class="action-dropdown-menu">
                                         <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                         <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
@@ -456,7 +463,10 @@
                                         <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
                                         <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
                                         <button class="btn-small">解锁IM</button>
+                                        <!-- 修改点：传入用户ID、昵称，并将最后的状态参数改为 1 (代表已开通) -->
+                                        <button class="btn-small btn-green" onclick="openRebateModal(100039992, '风行者', 1)">返佣后台</button>
                                     </div>
+                                    <!-- 替换结束 -->
                                 </div>
                             </td>
                         </tr>
@@ -466,11 +476,13 @@
                             <td style="text-align: center;">小计</td>
                             <td colspan="5"></td>
                             <td style="color: #d4380d;">余额: 7090</td>
+                            <!-- 替换开始：小计行金流 -->
                             <td style="color: #d4380d; line-height: 1.6;">
-                                充值: 6858 | 提现: 200<br>
+                                充值: 6858+700(划转) | 提现: 200<br>
                                 客损: 6658<br>
                                 总打赏: 600 | 总消费: 1200
                             </td>
+                            <!-- 替换结束 -->
                             <td colspan="6"></td>
                         </tr>
                         <!-- 新增的小计行 结束 -->
@@ -589,6 +601,7 @@
                                 <td class="stats-label">游戏盈亏</td>
                                 <td class="stats-value">17480</td>
                             </tr>
+                            <!-- 替换开始：充值行以及新增的划转行 -->
                             <tr>
                                 <td class="stats-label">充值</td>
                                 <td class="stats-value">
@@ -599,6 +612,18 @@
                                     </div>
                                 </td>
                             </tr>
+                            <!-- 替换开始：带有明细悬浮提示的划转行 -->
+                            <tr>
+                                <td class="stats-label">划转</td>
+                                <td class="stats-value">
+                                    3次/5000 
+                                    <div class="tooltip-box">
+                                        <a href="javascript:void(0);" style="color:#1890ff; text-decoration:none;">明细</a>
+                                        <span class="tooltip-text">跳转划转记录页面，并筛选该会员、该时段</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- 替换结束 -->
                             <tr>
                                 <td class="stats-label">提现</td>
                                 <td class="stats-value">
@@ -611,7 +636,7 @@
                             </tr>
                             <tr>
                                 <td class="stats-label">提充客损</td>
-                                <td class="stats-value">5000</td>
+                                <td class="stats-value">10000</td>
                             </tr>
 
                             <tr>
@@ -896,6 +921,168 @@
             }
         });
 
+
+    // --- 👇 新增：返佣后台专属交互逻辑 👇 ---
+        
+        // 1. 点击列表菜单按钮，打开管理主面板
+        function openRebateModal(memberId, memberName, isOpened) {
+            // 保存当前点击的用户信息
+            document.getElementById('currentMemberId').value = memberId;
+            document.getElementById('currentMemberName').value = memberName;
+            document.getElementById('currentRebateState').value = isOpened;
+            
+            const statusText = document.getElementById('rebateStatusText');
+            const accountInput = document.getElementById('rebateAccountInput');
+            const actionBtn = document.getElementById('rebateActionBtn');
+            
+            if (isOpened === 1) {
+                // 已开通状态
+                statusText.innerText = "已开通";
+                statusText.style.color = "#52c41a";
+                accountInput.value = "admin_" + memberId; // 模拟已绑定的账号
+                accountInput.disabled = true;
+                actionBtn.innerText = "重置密码";
+                actionBtn.style.backgroundColor = "#fa8c16"; // 警告色
+            } else {
+                // 未开通状态
+                statusText.innerText = "未开通";
+                statusText.style.color = "#f5222d";
+                accountInput.value = "";
+                accountInput.disabled = false;
+                actionBtn.innerText = "确认开通";
+                actionBtn.style.backgroundColor = "#4096ff"; // 正常蓝色
+            }
+            
+            openTargetModal('rebateManageModal');
+        }
+
+        // 2. 点击面板上的按钮（开通或重置），弹出谷歌验证
+        function openRebateAuthModal() {
+            // 如果是未开通状态，必须输入账号
+            const isOpened = parseInt(document.getElementById('currentRebateState').value);
+            const accountVal = document.getElementById('rebateAccountInput').value;
+            
+            if (isOpened === 0 && accountVal.trim() === '') {
+                alert("请先输入要绑定的返佣后台账号！");
+                return;
+            }
+            openTargetModal('rebateAuthModal');
+        }
+
+        // 3. 验证通过，弹出生成结果
+        function submitRebateAuth() {
+            // 真实环境这里要校验验证码是否正确，原型直接算通过
+            closeTargetModal('rebateAuthModal');
+            
+            // 获取数据
+            const memberId = document.getElementById('currentMemberId').value;
+            const memberName = document.getElementById('currentMemberName').value;
+            const account = document.getElementById('rebateAccountInput').value;
+            const isOpened = parseInt(document.getElementById('currentRebateState').value);
+            
+            // 渲染结果弹窗
+            document.getElementById('resMemberId').innerText = memberId;
+            document.getElementById('resMemberName').innerText = memberName;
+            document.getElementById('resAccount').innerText = account;
+            
+            if (isOpened === 1) {
+                document.getElementById('rebateResultTitle').innerText = "密码重置成功";
+                document.getElementById('resPwdLabel').innerText = "新随机密码：";
+                // 模拟生成随机密码
+                document.getElementById('resPwd').innerText = Math.random().toString(36).slice(-8) + "Aa1"; 
+            } else {
+                document.getElementById('rebateResultTitle').innerText = "账号开通成功";
+                document.getElementById('resPwdLabel').innerText = "初始默认密码：";
+                document.getElementById('resPwd').innerText = "123456";
+            }
+            
+            openTargetModal('rebateResultModal');
+        }
+
+        // 4. 关闭整个返佣逻辑线上的所有弹窗
+        function closeAllRebateModals() {
+            closeTargetModal('rebateResultModal');
+            closeTargetModal('rebateManageModal');
+        }
+        
+        // --- 👆 返佣后台逻辑结束 👆 ---
+
     </script>
+
+<!-- 👇 新增弹窗区域开始：返佣后台管理 👇 -->
+    
+    <!-- 1. 返佣后台主管理弹窗 -->
+    <div class="modal-overlay" id="rebateManageModal">
+        <div class="modal-content modal-sm" style="width: 450px !important;">
+            <div class="modal-header"><span>管理返佣后台账号</span><span style="cursor:pointer" onclick="closeTargetModal('rebateManageModal')">✕</span></div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="width: 120px;">是否开通：</label>
+                    <span id="rebateStatusText" style="font-weight: bold; color: #f5222d;">未开通</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="width: 120px;">返佣后台地址：</label>
+                    <div style="display: flex; flex: 1;">
+                        <input type="text" class="modal-input" id="rebateUrl" value="https://admin.rebate-system.com" disabled style="border-radius: 2px 0 0 2px;">
+                        <button class="btn-inline" style="margin-left: 0; border-radius: 0 2px 2px 0; background-color: #f0f0f0; color: #333; border: 1px solid #d9d9d9; border-left: none;" onclick="alert('复制成功')">复制</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="width: 120px;">返佣后台账号：</label>
+                    <input type="text" class="modal-input" id="rebateAccountInput" placeholder="请输入要绑定的后台账号">
+                </div>
+                
+                <!-- 隐藏域保存当前操作的会员信息 -->
+                <input type="hidden" id="currentMemberId">
+                <input type="hidden" id="currentMemberName">
+                <input type="hidden" id="currentRebateState">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-reset" onclick="closeTargetModal('rebateManageModal')" style="margin-right: 10px;">取消</button>
+                <button class="btn-submit" id="rebateActionBtn" onclick="openRebateAuthModal()">开通</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 谷歌验证弹窗 (公用) -->
+    <div class="modal-overlay" id="rebateAuthModal" style="z-index: 2010;">
+        <div class="modal-content modal-sm" style="width: 400px !important;">
+            <div class="modal-header"><span>安全验证</span><span style="cursor:pointer" onclick="closeTargetModal('rebateAuthModal')">✕</span></div>
+            <div class="modal-body">
+                <div style="margin-bottom: 15px; font-size: 13px;">敏感操作，请进行谷歌身份验证：</div>
+                <div class="form-group">
+                    <label class="form-label" style="color:red; width:auto; margin-right:10px;">* 谷歌验证码：</label>
+                    <input type="text" class="modal-input" placeholder="输入6位验证码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-reset" onclick="closeTargetModal('rebateAuthModal')" style="margin-right: 10px;">取消</button>
+                <button class="btn-submit" onclick="submitRebateAuth()">验证通过</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 结果展示弹窗 -->
+    <div class="modal-overlay" id="rebateResultModal" style="z-index: 2020;">
+        <div class="modal-content modal-sm" style="width: 400px !important;">
+            <div class="modal-header"><span id="rebateResultTitle">开通成功</span><span style="cursor:pointer" onclick="closeAllRebateModals()">✕</span></div>
+            <div class="modal-body">
+                <div style="padding: 15px; background: #f0f9eb; border: 1px solid #e1f3d8; border-radius: 4px;">
+                    <div style="margin-bottom: 10px; font-size: 13px;"><span style="color: #666;">会员ID：</span><span style="font-weight: bold;" id="resMemberId"></span></div>
+                    <div style="margin-bottom: 10px; font-size: 13px;"><span style="color: #666;">会员昵称：</span><span style="font-weight: bold;" id="resMemberName"></span></div>
+                    <div style="margin-bottom: 10px; font-size: 13px;"><span style="color: #666;">返佣后台账号：</span><span style="font-weight: bold; color: #1890ff;" id="resAccount"></span></div>
+                    <div style="margin-bottom: 5px; font-size: 13px;"><span style="color: #666;" id="resPwdLabel">初始密码：</span><span style="font-weight: bold; color: #f5222d; font-size: 16px;" id="resPwd"></span></div>
+                </div>
+                <div style="margin-top: 15px; color: #fa8c16; font-size: 12px; text-align: center;"><i class="fa-solid fa-circle-exclamation"></i> 请妥善保管此密码，关闭后不可二次查看。</div>
+            </div>
+            <div class="modal-footer" style="text-align: center;">
+                <button class="btn-submit" onclick="closeAllRebateModals()">我知道了</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 👆 新增弹窗区域结束 👆 -->
+
+
 </body>
 </html>
