@@ -422,6 +422,7 @@
                                         <!-- 新增返佣后台按钮 (此处演示第一个用户传状态 0 为未开通，第二个用户传 1 为已开通) -->
                                         <button class="btn-small btn-green" onclick="openRebateModal(100039991, '无家可归aegp', 0)">返佣后台</button>
                                         <button class="btn-small btn-blue" onclick="openTargetModal('hedgeModal')">对冲查询</button>
+                                        <button class="btn-small" style="background-color: #f5222d; color: white;" onclick="openTargetModal('riskModal')">风控查询</button>
                                     </div>
                                 </div>
                             </td>
@@ -467,6 +468,7 @@
                                         <!-- 修改点：传入用户ID、昵称，并将最后的状态参数改为 1 (代表已开通) -->
                                         <button class="btn-small btn-green" onclick="openRebateModal(100039992, '风行者', 1)">返佣后台</button>
                                         <button class="btn-small btn-blue" onclick="openTargetModal('hedgeModal')">对冲查询</button>
+                                        <button class="btn-small" style="background-color: #f5222d; color: white;" onclick="openTargetModal('riskModal')">风控查询</button>
                                     </div>
                                     <!-- 替换结束 -->
                                 </div>
@@ -660,7 +662,10 @@
             </div>
             
             <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-                <button class="btn-submit" onclick="openTargetModal('hedgeModal')" style="background-color: #fa8c16;">对冲查询</button>
+                <div>
+                    <button class="btn-submit" onclick="openTargetModal('hedgeModal')" style="background-color: #fa8c16;">对冲查询</button>
+                    <button class="btn-submit" onclick="openTargetModal('riskModal')" style="background-color: #f5222d; margin-left: 10px;">风控查询</button>
+                </div>
                 <div>
                     <button class="btn-submit" onclick="closeTargetModal('detailModal')" style="margin-right: 10px; background-color: #f0f0f0; color: #333;">刷新</button>
                     <button class="btn-reset" onclick="closeTargetModal('detailModal')">关闭</button>
@@ -1102,6 +1107,122 @@
         </div>
     </div>
     <!-- 👆 对冲查询弹窗结束 👆 -->
+
+<!-- 👇 新增：风控查询专属弹窗 👇 -->
+    <div class="modal-overlay" id="riskModal" style="z-index: 3000;">
+        <div class="modal-content" style="width: 800px; background-color: #fff; border-radius: 8px;">
+            <div class="modal-header">
+                <span style="font-weight: bold; font-size: 16px;">风控查询</span>
+                <span style="cursor:pointer; font-size: 18px; color: #999;" onclick="closeTargetModal('riskModal')">✕</span>
+            </div>
+            
+            <div class="modal-body" style="padding: 20px 30px; max-height: 750px; overflow-y: auto; background-color: #fafafa;">
+                
+                <!-- 顶部用户信息区 -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 15px 20px; background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+                    <div style="font-size: 14px; color: #666;">
+                        游戏ID：<span style="color: #333;">1123836699 (瓜分法冠_vglavm)</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                        <span style="font-size: 13px; color: #666;">用户状态</span>
+                        <span style="color: #52c41a; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                            <i class="fa-solid fa-circle" style="font-size: 8px;"></i> 正常
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 基础信息区 -->
+                <div style="margin-bottom: 25px;">
+                    <div style="font-size: 15px; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #333;">
+                        <i class="fa-solid fa-circle-check" style="color: #52c41a; font-size: 16px;"></i> 基础信息
+                    </div>
+                    <div style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                            <thead>
+                                <tr style="background-color: #ebecf3; color: #555;">
+                                    <th style="padding: 12px 20px; font-weight: 500; width: 60%;">扫描项</th>
+                                    <th style="padding: 12px 20px; font-weight: 500; width: 40%;">说明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">用户绑定的手机号注册多少账户</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">同手机 &nbsp;&nbsp;1</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">用户绑定的银行卡有多少账户</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">绑定此手机号的其他账号被拉黑数量</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; color: #666;">绑定此银行卡的其他账号被拉黑数量</td>
+                                    <td style="padding: 14px 20px; color: #333;">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 概况信息区 -->
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size: 15px; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #333;">
+                        <i class="fa-solid fa-circle-check" style="color: #52c41a; font-size: 16px;"></i> 概况信息
+                    </div>
+                    <div style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; width: 60%; color: #666;">累计消费</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; width: 40%; color: #333;">0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">近7日游戏损益</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">¥0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">近7日总充值次数</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">0次/0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">近7日有效下注金额</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">¥0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">近7天提现次数</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">0次/0</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">充提百分比</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">0%</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">团队总人数</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">1</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #666;">已注册天数</td>
+                                    <td style="padding: 14px 20px; border-bottom: 1px dashed #eee; color: #333;">0 天</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 14px 20px; color: #666;">领取活动次数</td>
+                                    <td style="padding: 14px 20px; color: #333;">0 次</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="modal-footer" style="padding: 15px 30px; text-align: right; background-color: #fff; border-top: 1px solid #f0f0f0;">
+                <button class="btn-reset" style="padding: 8px 24px; background-color: #f0f0f0; border-radius: 4px;" onclick="closeTargetModal('riskModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+    <!-- 👆 风控查询弹窗结束 👆 -->
 
 </body>
 </html>
