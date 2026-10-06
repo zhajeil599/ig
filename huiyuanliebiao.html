@@ -421,6 +421,7 @@
                                         <button class="btn-small">解锁IM</button>
                                         <!-- 新增返佣后台按钮 (此处演示第一个用户传状态 0 为未开通，第二个用户传 1 为已开通) -->
                                         <button class="btn-small btn-green" onclick="openRebateModal(100039991, '无家可归aegp', 0)">返佣后台</button>
+                                        <button class="btn-small btn-blue" onclick="openTargetModal('hedgeModal')">对冲查询</button>
                                     </div>
                                 </div>
                             </td>
@@ -465,6 +466,7 @@
                                         <button class="btn-small">解锁IM</button>
                                         <!-- 修改点：传入用户ID、昵称，并将最后的状态参数改为 1 (代表已开通) -->
                                         <button class="btn-small btn-green" onclick="openRebateModal(100039992, '风行者', 1)">返佣后台</button>
+                                        <button class="btn-small btn-blue" onclick="openTargetModal('hedgeModal')">对冲查询</button>
                                     </div>
                                     <!-- 替换结束 -->
                                 </div>
@@ -657,9 +659,12 @@
                 </div>
             </div>
             
-            <div class="modal-footer" style="text-align: right;">
-                <button class="btn-submit" onclick="closeTargetModal('detailModal')" style="margin-right: 10px; background-color: #f0f0f0; color: #333;">刷新</button>
-                <button class="btn-reset" onclick="closeTargetModal('detailModal')">关闭</button>
+            <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn-submit" onclick="openTargetModal('hedgeModal')" style="background-color: #fa8c16;">对冲查询</button>
+                <div>
+                    <button class="btn-submit" onclick="closeTargetModal('detailModal')" style="margin-right: 10px; background-color: #f0f0f0; color: #333;">刷新</button>
+                    <button class="btn-reset" onclick="closeTargetModal('detailModal')">关闭</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1083,6 +1088,20 @@
     
     <!-- 👆 新增弹窗区域结束 👆 -->
 
+    <!-- 👇 新增：对冲查询专属弹窗 👇 -->
+    <div class="modal-overlay" id="hedgeModal" style="z-index: 3000;">
+        <div class="modal-content" style="width: 1060px; height: 950px; background-color: #f0f2f5; overflow: hidden;">
+            <div class="modal-header">
+                <span style="font-weight: bold;">对冲注单分析监控</span>
+                <span style="cursor:pointer; font-size: 16px; color: #999;" onclick="closeTargetModal('hedgeModal')">✕</span>
+            </div>
+            <!-- 使用 iframe 嵌入线上网页 -->
+            <div class="modal-body" style="padding: 0; height: 880px;">
+                <iframe src="https://zhajeil599.github.io/ig/duichongchaxun" style="width: 100%; height: 100%; border: none; display: block;"></iframe>
+            </div>
+        </div>
+    </div>
+    <!-- 👆 对冲查询弹窗结束 👆 -->
 
 </body>
 </html>
