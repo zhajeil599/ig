@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直播间天降红包弹窗</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* 弹窗入场动画 */
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-pop {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* 红包光晕旋转效果 */
+        @keyframes rotateGlow {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .bg-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(255, 215, 0, 0.2) 90deg, transparent 180deg, rgba(255, 215, 0, 0.2) 270deg, transparent 360deg);
+            animation: rotateGlow 10s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 模拟手机屏幕 375x812 -->
+    <div class="relative w-[375px] h-[812px] bg-gray-900 rounded-[40px] shadow-2xl overflow-hidden border-8 border-gray-800">
+        
+        <!-- 模拟App背景 (可以是首页或当前页面) -->
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1616469829581-73993eb86b02?ixlib=rb-1.2.1&auto=format&fit=crop&w=375&q=80')] bg-cover bg-center opacity-40"></div>
+
+        <!-- 弹窗遮罩层 -->
+        <div id="modalOverlay" class="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col justify-center items-center z-50 transition-opacity duration-300">
+            
+            <!-- 红包弹窗主体 -->
+            <div class="relative w-[290px] bg-gradient-to-b from-[#e62117] to-[#b4100c] rounded-3xl p-6 flex flex-col items-center animate-pop shadow-[0_10px_40px_rgba(230,33,23,0.6)] border border-[#ff4a4a]">
+                
+                <!-- 旋转光效背景 -->
+                <div class="bg-glow rounded-3xl overflow-hidden mix-blend-screen"></div>
+
+                <!-- 顶部装饰 / 头像 -->
+                <div class="relative z-10 -mt-14 mb-2 flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-full border-4 border-[#ffd700] p-1 bg-white shadow-lg overflow-hidden">
+                        <img src="https://placehold.co/100x100/3b82f6/ffffff?text=TOP" alt="主播头像" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <span class="mt-2 bg-[#ffd700] text-[#b4100c] text-xs font-bold px-3 py-1 rounded-full shadow">全平台广播</span>
+                </div>
+
+                <!-- 文本信息 -->
+                <div class="relative z-10 text-center w-full">
+                    <h2 class="text-white text-lg font-semibold tracking-wide">超级大V直播间</h2>
+                    <p class="text-[#ffedb3] text-sm mt-1 mb-4">刚刚发出了现金大红包！</p>
+                    
+                    <!-- 金额展示 -->
+                    <div class="bg-[#990a07] rounded-2xl py-4 border border-[#cc1612] shadow-inner mb-4 relative overflow-hidden">
+                        <div class="text-[#ffd700] font-extrabold flex justify-center items-baseline">
+                            <span class="text-2xl mr-1">¥</span>
+                            <span class="text-5xl tracking-tighter">10,000</span>
+                        </div>
+                        <p class="text-[#ffedb3] text-xs mt-1 opacity-80">海量现金，人人有份</p>
+                    </div>
+
+                    <!-- 倒计时区域 -->
+                    <div class="flex items-center justify-center space-x-2 text-white mb-6">
+                        <span class="text-sm text-gray-200">距离开抢仅剩</span>
+                        <div class="bg-black/30 px-3 py-1 rounded-md text-[#ffd700] font-mono text-lg tracking-widest font-bold" id="countdownTimer">
+                            03:00
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮区域 -->
+                <div class="relative z-10 w-full">
+                    <button onclick="goToRoom()" class="w-full bg-gradient-to-r from-[#ffe066] via-[#ffd700] to-[#ffb800] text-[#a62b00] font-bold text-lg py-3.5 rounded-full shadow-[0_4px_15px_rgba(255,215,0,0.5)] transform transition-transform hover:scale-105 active:scale-95 animate-pulse">
+                        立即前往直播间
+                    </button>
+                </div>
+
+                <!-- 红包底部装饰图案 (SVG弧线) -->
+                <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none rounded-b-3xl opacity-20 pointer-events-none">
+                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-8 block">
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="#ffffff"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 关闭按钮 (弹窗外部正下方) -->
+            <button onclick="closeModal()" class="mt-8 text-white/60 hover:text-white transition-colors p-2 border-2 border-white/40 hover:border-white rounded-full bg-black/20 backdrop-blur-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- 模拟应用内 Toast 提示 (替代 Alert) -->
+        <div id="toast" class="absolute bottom-1/4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-full text-sm opacity-0 pointer-events-none transition-opacity duration-300 z-[60]">
+            正在跳转到直播间...
+        </div>
+
+    </div>
+
+    <script>
+        // 倒计时逻辑：3分钟 (180秒)
+        let totalSeconds = 180;
+        const timerElement = document.getElementById('countdownTimer');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const toast = document.getElementById('toast');
+        let timerInterval;
+
+        function updateTimer() {
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                timerElement.innerHTML = "可以抢啦!";
+                timerElement.classList.add('animate-pulse', 'text-green-400');
+                return;
+            }
+
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            // 格式化为 MM:SS
+            const formattedTime = 
+                String(minutes).padStart(2, '0') + ':' + 
+                String(seconds).padStart(2, '0');
+                
+            timerElement.textContent = formattedTime;
+            totalSeconds--;
+        }
+
+        // 初始化倒计时
+        updateTimer(); // 立即执行一次避免延迟
+        timerInterval = setInterval(updateTimer, 1000);
+
+        // 关闭弹窗逻辑
+        function closeModal() {
+            modalOverlay.style.opacity = '0';
+            setTimeout(() => {
+                modalOverlay.style.display = 'none';
+            }, 300); // 等待淡出动画完成
+        }
+
+        // 去直播间逻辑
+        function goToRoom() {
+            // 显示自定义的 Toast 提示
+            toast.style.opacity = '1';
+            
+            // 同时关闭弹窗
+            closeModal();
+            
+            // 2秒后隐藏 Toast
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
