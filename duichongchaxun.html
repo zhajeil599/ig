@@ -203,6 +203,92 @@
         .detail-table th, .detail-table td { font-size: 12px; padding: 10px 5px; word-break: break-all; }
         .bet-detail-text { color: #e6a23c; font-size: 12px; line-height: 1.6; }
     
+/* 提示图标与浮层样式 */
+        .help-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #c0c4cc;
+            color: #fff;
+            font-size: 11px;
+            margin-left: 5px;
+            cursor: help;
+            position: relative;
+            font-style: normal;
+            font-weight: normal;
+        }
+
+        .help-icon:hover {
+            background-color: #909399;
+        }
+
+        .help-icon .tooltip-text {
+            visibility: hidden;
+            width: 240px;
+            background-color: #303133;
+            color: #fff;
+            text-align: left;
+            border-radius: 4px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 999;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: normal;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .help-icon .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #303133 transparent transparent transparent;
+        }
+
+        .help-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 需求文档说明样式 */
+        .prd-doc-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f4f4f5;
+            border-left: 4px solid #909399;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #606266;
+            line-height: 1.6;
+        }
+        
+        .prd-doc-section h4 {
+            margin: 0 0 10px 0;
+            color: #303133;
+            font-size: 14px;
+        }
+        
+        .prd-doc-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .prd-doc-section li {
+            margin-bottom: 6px;
+        }
+
     </style>
 </head>
 <body>
@@ -250,12 +336,22 @@
             </div>
             
             <div class="form-group">
-                <label>历史查询最大期数</label>
+                <label>
+                    追溯历史期数
+                    <i class="help-icon">?
+                        <span class="tooltip-text">设定系统从当前期数往前倒推检索的总期数范围。例如设为50，则比对过去50期的注单数据。</span>
+                    </i>
+                </label>
                 <input type="number" id="maxHistory" placeholder="输入N值" value="50">
             </div>
             
             <div class="form-group">
-                <label>对冲注单最小期数</label>
+                <label>
+                    命中对冲阈值
+                    <i class="help-icon">?
+                        <span class="tooltip-text">在设定的追溯历史期数检索范围内，若两名会员呈完全反向互斥投注（且金额一致）的期数累计达到或超过此数值，则判定为疑似对冲。</span>
+                    </i>
+                </label>
                 <input type="number" id="minHedge" placeholder="输入M值" value="10">
             </div>
 
@@ -291,6 +387,18 @@
             </table>
         </div>
     
+<!-- 研发需求说明文档区块 (全局展示) -->
+        <div class="prd-doc-section">
+            <h4>📝 研发需求说明文档，研发阅读实际前端页面不展示</h4>
+            <ul>
+                <li><strong>核心比对逻辑：</strong>系统需抓取目标会员在【当前期数】往前推N期的所有注单（N=追溯历史期数），与全平台同彩种注单进行交叉比对。</li>
+                <li><strong>对冲判定条件：</strong>在N期范围内，任意其他会员与目标会员在同一期出现“完全互斥的玩法”（如大/小、单/双），且“投注金额相等”的情形，累计达到【M期】，则输出至结果列表（M=命中对冲阈值）。</li>
+                <li><strong>详情展示要求：</strong>弹窗内的对比明细需按期数倒序排列（最新的一期在最上）；对冲金额和目标金额必须精准对应。</li>
+                <li><strong>性能与超时容灾：</strong>由于涉及跨库或全量注单扫描，若查询耗时预估超过3秒，需在底层开启异步任务处理。前端需保持Loading状态阻断重复点击，避免并发导致接口崩溃或页面卡死。</li>
+                <li><strong>跨站联防联控机制：</strong>列表底部的“全平台其他商户”统计，要求底层查询不仅检索当前站点，还需扫描全平台所有商户站点数据，以精准识别在不同商户站点之间进行AB对冲刷水套利的团伙。</li>
+            </ul>
+        </div>
+
     <!-- 详情弹窗 -->
         <div class="modal-overlay" id="detailModal">
             <div class="modal-content">
@@ -317,6 +425,9 @@
                         </tbody>
                     </table>
                 </div>
+                
+                
+                
             </div>
         </div>
     
