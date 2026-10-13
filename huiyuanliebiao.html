@@ -1097,7 +1097,7 @@
     <div class="modal-overlay" id="hedgeModal" style="z-index: 3000;">
         <div class="modal-content" style="width: 1060px; height: 950px; background-color: #f0f2f5; overflow: hidden;">
             <div class="modal-header">
-                <span style="font-weight: bold;">对冲注单分析监控</span>
+                <span style="font-weight: bold;">对冲查询</span>
                 <span style="cursor:pointer; font-size: 16px; color: #999;" onclick="closeTargetModal('hedgeModal')">✕</span>
             </div>
             <!-- 使用 iframe 嵌入线上网页 -->
@@ -1110,119 +1110,153 @@
 
 <!-- 👇 新增：风控查询专属弹窗 👇 -->
     <div class="modal-overlay" id="riskModal" style="z-index: 3000;">
-        <div class="modal-content" style="width: 800px; background-color: #fff; border-radius: 8px;">
-            <div class="modal-header">
-                <span style="font-weight: bold; font-size: 16px;">风控查询</span>
-                <span style="cursor:pointer; font-size: 18px; color: #999;" onclick="closeTargetModal('riskModal')">✕</span>
-            </div>
-            
-            <!-- 修改点：去掉滚动条，高度自适应，缩小外边距 -->
-            <div class="modal-body" style="padding: 20px 30px; overflow: hidden; background-color: #fafafa;">
+        <div style="display: flex; gap: 20px;">
+            <div class="modal-content" style="width: 800px; background-color: #fff; border-radius: 8px; flex-shrink: 0;">
+                <div class="modal-header">
+                    <span style="font-weight: bold; font-size: 16px;">风控查询</span>
+                    <span style="cursor:pointer; font-size: 18px; color: #999;" onclick="closeTargetModal('riskModal')">✕</span>
+                </div>
                 
-                <!-- 顶部用户信息区 -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px 20px; background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
-                    <div style="font-size: 14px; color: #666;">
-                        <!-- 修改点：更新姓名和ID -->
-                        游戏ID：<span style="color: #333; margin-right: 20px;">1123836699</span>
-                        姓名：<span style="color: #333;">韦东奕</span>
+                <!-- 修改点：去掉滚动条，高度自适应，缩小外边距 -->
+                <div class="modal-body" style="padding: 20px 30px; overflow: hidden; background-color: #fafafa;">
+                    
+                    <!-- 顶部用户信息区 -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 15px 20px; background: #fff; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+                        <div style="font-size: 14px; color: #666;">
+                            <!-- 修改点：更新姓名和ID -->
+                            游戏ID：<span style="color: #333; margin-right: 20px;">1123836699</span>
+                            姓名：<span style="color: #333;">韦东奕</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                            <span style="font-size: 13px; color: #666;">用户状态</span>
+                            <span style="color: #52c41a; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                                <i class="fa-solid fa-circle" style="font-size: 8px;"></i> 正常
+                            </span>
+                        </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
-                        <span style="font-size: 13px; color: #666;">用户状态</span>
-                        <span style="color: #52c41a; font-size: 14px; display: flex; align-items: center; gap: 5px;">
-                            <i class="fa-solid fa-circle" style="font-size: 8px;"></i> 正常
-                        </span>
-                    </div>
-                </div>
 
-                <!-- 基础信息区 -->
-                <div style="margin-bottom: 15px;">
-                    <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: #333;">
-                        <i class="fa-solid fa-circle-check" style="color: #52c41a; font-size: 16px;"></i> 基础信息
+                    <!-- 基础信息区 -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: #333;">
+                            <i class="fa-solid fa-circle-check" style="color: #52c41a; font-size: 16px;"></i> 基础信息
+                        </div>
+                        <div style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                                <thead>
+                                    <tr style="background-color: #ebecf3; color: #555;">
+                                        <th style="padding: 8px 20px; font-weight: 500; width: 60%;">扫描项</th>
+                                        <th style="padding: 8px 20px; font-weight: 500; width: 40%;">说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #666;">用户绑定的手机号注册多少账户</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">同手机 &nbsp;&nbsp;1</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #666;">用户绑定的银行卡有多少账户</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #666;">绑定此手机号的其他账号被拉黑数量</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; color: #666;">绑定此银行卡的其他账号被拉黑数量</td>
+                                        <td style="padding: 10px 20px; color: #333;">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-                            <thead>
-                                <tr style="background-color: #ebecf3; color: #555;">
-                                    <th style="padding: 8px 20px; font-weight: 500; width: 60%;">扫描项</th>
-                                    <th style="padding: 8px 20px; font-weight: 500; width: 40%;">说明</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #666;">用户绑定的手机号注册多少账户</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">同手机 &nbsp;&nbsp;1</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #666;">用户绑定的银行卡有多少账户</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">0</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #666;">绑定此手机号的其他账号被拉黑数量</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">0</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; color: #666;">绑定此银行卡的其他账号被拉黑数量</td>
-                                    <td style="padding: 10px 20px; color: #333;">0</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
-                <!-- 概况信息区 -->
-                <div style="margin-bottom: 10px;">
-                    <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: #333;">
-                        <i class="fa-solid fa-circle-check" style="color: #52c41a; font-size: 16px;"></i> 概况信息
+                    <!-- 概况信息区 -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: #333;">
+                            <i class="fa-solid fa-circle-check" style="color: #52c41a; font-size: 16px;"></i> 概况信息
+                        </div>
+                        <div style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+                            <!-- 修改点：为了在一屏内放下更多数据，将单列列表改为左右双列网格布局，并更新文案与数值 -->
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; width: 25%; color: #666;">累计消费+打赏</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; width: 25%; color: #333;">￥800</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; width: 25%; color: #666;">近7日游戏损益</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; width: 25%; color: #f5222d; font-weight: bold;">-￥283.34</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">近7日总充值次数/金额</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">3次/￥500</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">近7日有效下注金额</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">¥25,684.88</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">近7天提现次数/金额</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">2次/￥200</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">充提百分比</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">40%</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">累计领取佣金</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">￥13.87</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">累计领取彩金</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">￥982.53</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">团队总人数</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">1</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">已注册天数</td>
+                                        <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">0 天</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 20px; border-right: 1px dashed #eee; color: #666;">领取活动次数</td>
+                                        <td style="padding: 10px 20px; border-right: 1px solid #f0f0f0; color: #333;">0 次</td>
+                                        <td style="padding: 10px 20px; border-right: 1px dashed #eee; color: #666;"></td>
+                                        <td style="padding: 10px 20px; color: #333;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div style="background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
-                        <!-- 修改点：为了在一屏内放下更多数据，将单列列表改为左右双列网格布局，并更新文案与数值 -->
-                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-                            <tbody>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; width: 25%; color: #666;">累计消费+打赏</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; width: 25%; color: #333;">￥800</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; width: 25%; color: #666;">近7日游戏损益</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; width: 25%; color: #f5222d; font-weight: bold;">-￥283.34</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">近7日总充值次数/金额</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">3次/￥500</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">近7日有效下注金额</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">¥25,684.88</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">近7天提现次数/金额</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">2次/￥200</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">充提百分比</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">40%</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">累计领取佣金</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">￥13.87</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">累计领取彩金</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">￥982.53</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">团队总人数</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px solid #f0f0f0; color: #333;">1</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; border-right: 1px dashed #eee; color: #666;">已注册天数</td>
-                                    <td style="padding: 10px 20px; border-bottom: 1px dashed #eee; color: #333;">0 天</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px 20px; border-right: 1px dashed #eee; color: #666;">领取活动次数</td>
-                                    <td style="padding: 10px 20px; border-right: 1px solid #f0f0f0; color: #333;">0 次</td>
-                                    <td style="padding: 10px 20px; border-right: 1px dashed #eee; color: #666;"></td>
-                                    <td style="padding: 10px 20px; color: #333;"></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
+                </div>
+                
+                <div class="modal-footer" style="padding: 12px 30px; text-align: right; background-color: #fff; border-top: 1px solid #f0f0f0;">
+                    <button class="btn-reset" style="padding: 8px 24px; background-color: #f0f0f0; border-radius: 4px;" onclick="closeTargetModal('riskModal')">关闭</button>
+                </div>
             </div>
             
-            <div class="modal-footer" style="padding: 12px 30px; text-align: right; background-color: #fff; border-top: 1px solid #f0f0f0;">
-                <button class="btn-reset" style="padding: 8px 24px; background-color: #f0f0f0; border-radius: 4px;" onclick="closeTargetModal('riskModal')">关闭</button>
+            <!-- 新增：右侧阴影区域研发需求说明文档 -->
+            <div style="width: 350px; background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column;">
+                <div style="font-size: 16px; font-weight: bold; color: #f5222d; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px;">
+                    <i class="fa-solid fa-file-code"></i> 研发需求说明文档
+                    <div style="font-size: 12px; font-weight: normal; color: #888; margin-top: 4px;">注：实际前端页面不展示此模块，仅供研发阅读。</div>
+                </div>
+                
+                <div style="flex: 1; overflow-y: auto; font-size: 12px; line-height: 1.6; color: #555;">
+                    <div style="font-weight: bold; color: #333; margin-bottom: 5px;">【基础信息】</div>
+                    <ul style="padding-left: 15px; margin-bottom: 15px; color: #666;">
+                        <li><span style="color:#1890ff;">同手机注册数：</span>查询该用户绑定的手机号码在系统中所有站点关联的账户总数。</li>
+                        <li><span style="color:#1890ff;">同银行卡账户数：</span>查询该用户绑定的银行卡在系统中所有站点关联的账户总数。</li>
+                        <li><span style="color:#1890ff;">手机号关联拉黑：</span>同手机号关联的账户中，在“黑名单”中的账号数量汇总。</li>
+                        <li><span style="color:#1890ff;">银行卡关联拉黑：</span>同银行卡关联的账户中，在“黑名单”中的账号数量汇总。</li>
+                    </ul>
+
+                    <div style="font-weight: bold; color: #333; margin-bottom: 5px;">【概况信息】</div>
+                    <ul style="padding-left: 15px; margin-bottom: 15px; color: #666;">
+                        <li><span style="color:#1890ff;">累计消费+打赏：</span>统计历史至今，在站内消费总额 + 直播间打赏总额。</li>
+                        <li><span style="color:#1890ff;">近7日游戏损益：</span>当前时间倒推7天内的总派彩金额 - 7天内的总有效投注金额。负数表示客损，正数表示客赢。</li>
+                        <li><span style="color:#1890ff;">近7日充值：</span>近7日内的成功充值总次数和总金额。</li>
+                        <li><span style="color:#1890ff;">近7日有效下注：</span>近7日内在各三方游戏场馆产生的有效投注额度。</li>
+                        <li><span style="color:#1890ff;">近7天提现：</span>近7天内发起并成功的提现订单总数和总金额。</li>
+                        <li><span style="color:#1890ff;">充提百分比：</span>公式 = (历史总提现金额 / 历史总充值金额) * 100%。保留两位小数。若总充值为0则显示0%。</li>
+                        <li><span style="color:#1890ff;">累计领取佣金：</span>历史总计领取到的代理返佣金额。</li>
+                        <li><span style="color:#1890ff;">累计领取彩金：</span>历史总计系统派发或活动领取的福利彩金总额。</li>
+                        <li><span style="color:#1890ff;">团队总人数：</span>代理线下各级团队的裂变总人数。</li>
+                        <li><span style="color:#1890ff;">已注册天数：</span>当前日期减去注册日期的自然天数。</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
