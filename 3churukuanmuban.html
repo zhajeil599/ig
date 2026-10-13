@@ -621,6 +621,8 @@
             <div class="content-header">
                 <div>
                     <button class="btn-add" id="btnAdd">新增</button>
+                    <!-- 【新增】全部删除按钮 -->
+                    <button class="btn-cancel" id="btnDeleteAll" style="color: #ff4d4f; border-color: #ff4d4f; margin-left: 12px; background: #fff;">全部删除</button>
                 </div>
                 <div class="btn-refresh">&#8635;</div>
             </div>
@@ -1057,6 +1059,33 @@
     </div>
     <!-- 【新增】修改弹窗结束 -->
 
+    <!-- 【新增】全部删除二次确认弹窗开始 -->
+    <div class="modal" id="deleteConfirmModal">
+        <div class="modal-content" style="width: 450px;">
+            <div class="modal-header">
+                <span class="modal-title" style="color: #ff4d4f; font-weight: bold;">温馨提示</span>
+                <span class="modal-close-icon" id="deleteModalCloseIcon">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 24px; color: #595959; font-size: 14px; line-height: 1.5;">
+                    您确定要 <span style="color: #ff4d4f; font-weight: bold;">删除全部数据</span> 吗？<br>
+                    此操作不可逆，请输入您的 6 位谷歌验证码进行确认。
+                </div>
+                <div class="form-item" style="margin-bottom: 0;">
+                    <label class="form-label required" style="width: 100px; text-align: left;">谷歌验证码:</label>
+                    <div class="form-input-container">
+                        <input type="text" class="form-input" id="googleAuthCode" placeholder="请输入6位验证码" maxlength="6" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="deleteModalCloseBtn">取消</button>
+                <button class="btn-submit" id="deleteModalSubmitBtn" style="background-color: #ff4d4f;">确认删除</button>
+            </div>
+        </div>
+    </div>
+    <!-- 【新增】全部删除二次确认弹窗结束 -->
+
     <script>
         // 1. 侧边栏子菜单切换
         const menuItems = document.querySelectorAll('.menu-item.collapsed');
@@ -1240,6 +1269,7 @@
         window.addEventListener('click', (e) => {
             if (e.target === addModal) closeModal(addModal);
             if (e.target === editModal) closeModal(editModal);
+            if (e.target === deleteConfirmModal) closeModal(deleteConfirmModal); // 【新增】点击阴影关闭删除弹窗
         });
 
         // 👇这是专门为产品演示新增的层级联动交互逻辑👇
@@ -1271,6 +1301,36 @@
         setupLevelCheckboxLogic('editDefaultCb', 'edit-level-cb');
         // 👆联动逻辑结束👆
     
+        // 6. 【新增】全部删除弹窗逻辑控制
+        const btnDeleteAll = document.getElementById('btnDeleteAll');
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        const deleteModalCloseIcon = document.getElementById('deleteModalCloseIcon');
+        const deleteModalCloseBtn = document.getElementById('deleteModalCloseBtn');
+        const deleteModalSubmitBtn = document.getElementById('deleteModalSubmitBtn');
+        const googleAuthCodeInput = document.getElementById('googleAuthCode');
+
+        // 点击全部删除按钮打开弹窗
+        btnDeleteAll.addEventListener('click', () => {
+            googleAuthCodeInput.value = ''; // 每次打开清空上次输入的验证码
+            openModal(deleteConfirmModal);
+        });
+
+        // 关闭弹窗逻辑
+        deleteModalCloseIcon.addEventListener('click', () => closeModal(deleteConfirmModal));
+        deleteModalCloseBtn.addEventListener('click', () => closeModal(deleteConfirmModal));
+
+        // 点击确认删除按钮
+        deleteModalSubmitBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const code = googleAuthCodeInput.value.trim();
+            if(!code || code.length !== 6) {
+                alert('演示提示：请输入6位正确的谷歌验证码！');
+                return;
+            }
+            alert('演示提示：谷歌验证码校验通过，已成功执行全部删除操作！');
+            closeModal(deleteConfirmModal);
+        });
+
     </script>
 </body>
 </html>
