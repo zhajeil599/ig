@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>余额划转弹窗原型</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #1e1e20; /* 网页外围灰底，用于凸显 375*812 手机框 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        }
+        /* 手机容器 375*812，内部背景纯黑无内容 */
+        .app-container {
+            width: 375px;
+            height: 812px;
+            background-color: #000000;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+        }
+
+        /* 弹窗关闭后用于重新唤起的按钮 */
+        .reopen-btn {
+            background: linear-gradient(90deg, #ffca28, #ff6f00);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* ========== 余额划转模态框样式 ========== */
+        .modal-mask {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(3px);
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-mask.show {
+            display: flex;
+        }
+        .transfer-dialog {
+            width: 100%;
+            background: #181a2c;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 18px 16px;
+            color: #fff;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
+            animation: popIn 0.22s ease-out;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .dialog-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dialog-close {
+            font-size: 18px;
+            color: #888;
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+
+        /* 两个钱包余额展示卡 */
+        .wallet-cards {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #101223;
+            border-radius: 10px;
+            padding: 12px 10px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .wallet-box {
+            flex: 1;
+            text-align: center;
+        }
+        .wallet-label {
+            font-size: 11px;
+            color: #9fa8da;
+            margin-bottom: 4px;
+        }
+        .wallet-val {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffca28;
+        }
+        .wallet-arrow {
+            font-size: 18px;
+            color: #7986cb;
+            padding: 0 6px;
+            transition: transform 0.25s;
+        }
+
+        /* 转出 / 转入 Tab 切换 */
+        .transfer-tabs {
+            display: flex;
+            background: #101223;
+            border-radius: 8px;
+            padding: 3px;
+            margin-bottom: 14px;
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 12px;
+            color: #9fa8da;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .tab-item.active {
+            background: linear-gradient(90deg, #ff7a6b, #ff3b6b);
+            color: #fff;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(255, 59, 107, 0.35);
+        }
+
+        /* 金额输入框 */
+        .amount-input-box {
+            background: #23263d;
+            border: 1px solid #393e63;
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .amount-input-box .yen {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffca28;
+            margin-right: 8px;
+        }
+        .amount-input-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .amount-input-box input::placeholder {
+            color: #6c739e;
+            font-weight: normal;
+            font-size: 13px;
+        }
+        .all-in-btn {
+            font-size: 12px;
+            color: #ffca28;
+            cursor: pointer;
+            padding-left: 8px;
+            border-left: 1px solid #393e63;
+            font-weight: 600;
+        }
+
+        /* 快捷金额按钮组 */
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .quick-chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            padding: 6px 0;
+            text-align: center;
+            font-size: 12px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .quick-chip:hover, .quick-chip:active {
+            border-color: #ffca28;
+            color: #ffca28;
+            background: rgba(255, 202, 40, 0.12);
+        }
+
+        .confirm-transfer-btn {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 0;
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(90deg, #ffca28, #ff6f00);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 111, 0, 0.35);
+        }
+        .transfer-tip {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #8c93be;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        /* 轻提示 Toast */
+        .toast-msg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s;
+            border: 1px solid rgba(255,255,255,0.15);
+            white-space: nowrap;
+        }
+        .toast-msg.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="appContainer">
+    <!-- 弹窗关闭后显示的备用唤起按钮 -->
+    <button class="reopen-btn" id="reopenBtn">打开余额划转弹窗</button>
+
+    <!-- 余额转入/转出弹窗 -->
+    <div class="modal-mask show" id="transferModal">
+        <div class="transfer-dialog">
+            <div class="dialog-header">
+                <div class="dialog-title">
+                    <span>💱 余额划转</span>
+                </div>
+                <span class="dialog-close" id="closeTransferModal">✕</span>
+            </div>
+
+            <!-- 两个账户余额实时预览 -->
+            <div class="wallet-cards">
+                <div class="wallet-box">
+                    <div class="wallet-label">三方游戏余额</div>
+                    <div class="wallet-val">￥<span id="modalGameBal">1250.00</span></div>
+                </div>
+                <div class="wallet-arrow" id="directionArrow">➔</div>
+                <div class="wallet-box">
+                    <div class="wallet-label">平台主钱包</div>
+                    <div class="wallet-val">￥<span id="modalMainBal">80.00</span></div>
+                </div>
+            </div>
+
+            <!-- 转出 / 转入 模式切换 -->
+            <div class="transfer-tabs">
+                <div class="tab-item active" data-mode="out" id="tabOut">余额转出</div>
+                <div class="tab-item" data-mode="in" id="tabIn">余额转入</div>
+            </div>
+
+            <!-- 自定义金额输入 -->
+            <div class="amount-input-box">
+                <span class="yen">￥</span>
+                <input type="number" id="transferAmountInput" placeholder="请输入转出金额 (可转 ￥1250.00)" />
+                <span class="all-in-btn" id="allAmountBtn">全部</span>
+            </div>
+
+            <!-- 快捷金额档位 -->
+            <div class="quick-amounts">
+                <div class="quick-chip" data-val="100">100</div>
+                <div class="quick-chip" data-val="500">500</div>
+                <div class="quick-chip" data-val="1000">1000</div>
+                <div class="quick-chip" data-val="max">最大可转</div>
+            </div>
+
+            <button class="confirm-transfer-btn" id="confirmTransferBtn">确认转出到主钱包</button>
+            <div class="transfer-tip" id="transferTipText">
+                💡 提示：在三方游戏中时资金处于游戏内，转出至平台主钱包后即可在聊天室正常发红包。
+            </div>
+        </div>
+    </div>
+
+    <!-- 轻提示 Toast -->
+    <div class="toast-msg" id="toastMsg">操作成功</div>
+</div>
+
+<script>
+    let gameBalance = 1250.00; // 初始三方游戏余额
+    let mainBalance = 80.00;   // 初始平台主钱包余额
+    let transferMode = 'out';  // 'out': 游戏->主钱包, 'in': 主钱包->游戏
+
+    const transferModal = document.getElementById('transferModal');
+    const closeTransferModal = document.getElementById('closeTransferModal');
+    const reopenBtn = document.getElementById('reopenBtn');
+    const modalGameBal = document.getElementById('modalGameBal');
+    const modalMainBal = document.getElementById('modalMainBal');
+    const tabOut = document.getElementById('tabOut');
+    const tabIn = document.getElementById('tabIn');
+    const directionArrow = document.getElementById('directionArrow');
+    const transferAmountInput = document.getElementById('transferAmountInput');
+    const allAmountBtn = document.getElementById('allAmountBtn');
+    const confirmTransferBtn = document.getElementById('confirmTransferBtn');
+    const toastMsg = document.getElementById('toastMsg');
+
+    function showToast(text) {
+        toastMsg.textContent = text;
+        toastMsg.classList.add('show');
+        setTimeout(() => toastMsg.classList.remove('show'), 1800);
+    }
+
+    function updateBalanceUI() {
+        modalGameBal.textContent = gameBalance.toFixed(2);
+        modalMainBal.textContent = mainBalance.toFixed(2);
+        setTransferMode(transferMode);
+    }
+
+    function setTransferMode(mode) {
+        transferMode = mode;
+        transferAmountInput.value = '';
+        if (mode === 'out') {
+            tabOut.classList.add('active');
+            tabIn.classList.remove('active');
+            directionArrow.style.transform = 'rotate(0deg)';
+            transferAmountInput.placeholder = `请输入转出金额 (可转 ￥${gameBalance.toFixed(2)})`;
+            confirmTransferBtn.textContent = '确认转出到主钱包';
+        } else {
+            tabIn.classList.add('active');
+            tabOut.classList.remove('active');
+            directionArrow.style.transform = 'rotate(180deg)';
+            transferAmountInput.placeholder = `请输入转入金额 (可转 ￥${mainBalance.toFixed(2)})`;
+            confirmTransferBtn.textContent = '确认转入到三方游戏';
+        }
+    }
+
+    reopenBtn.addEventListener('click', () => {
+        setTransferMode('out');
+        transferModal.classList.add('show');
+    });
+
+    closeTransferModal.addEventListener('click', () => {
+        transferModal.classList.remove('show');
+    });
+
+    tabOut.addEventListener('click', () => setTransferMode('out'));
+    tabIn.addEventListener('click', () => setTransferMode('in'));
+
+    // 全部 & 快捷金额按钮
+    allAmountBtn.addEventListener('click', () => {
+        transferAmountInput.value = (transferMode === 'out' ? gameBalance : mainBalance).toFixed(2);
+    });
+
+    document.querySelectorAll('.quick-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const val = chip.getAttribute('data-val');
+            if (val === 'max') {
+                transferAmountInput.value = (transferMode === 'out' ? gameBalance : mainBalance).toFixed(2);
+            } else {
+                transferAmountInput.value = val;
+            }
+        });
+    });
+
+    // 执行转入 / 转出
+    confirmTransferBtn.addEventListener('click', () => {
+        const amount = parseFloat(transferAmountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            showToast('请输入有效的划转金额');
+            return;
+        }
+        if (transferMode === 'out') {
+            if (amount > gameBalance) {
+                showToast('三方游戏可转出余额不足');
+                return;
+            }
+            gameBalance -= amount;
+            mainBalance += amount;
+            updateBalanceUI();
+            showToast(`成功转出 ￥${amount.toFixed(2)} 至主钱包，现在去发红包吧！`);
+        } else {
+            if (amount > mainBalance) {
+                showToast('平台主钱包余额不足');
+                return;
+            }
+            mainBalance -= amount;
+            gameBalance += amount;
+            updateBalanceUI();
+            showToast(`成功转入 ￥${amount.toFixed(2)} 至三方游戏！`);
+        }
+    });
+</script>
+
+</body>
+</html>
