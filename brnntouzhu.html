@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>投注区域交互原型 - 牛牛发牌版</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #1a1a24;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        /* 投注区域容器 375*350 */
+        .betting-area {
+            width: 375px;
+            height: 350px;
+            background: linear-gradient(135deg, #1b1625 0%, #201e38 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+        }
+
+        /* === 修改点：牛牛开奖结果展示区域 === */
+        .result-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 0;
+            background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 20%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0) 100%);
+            border-radius: 8px;
+            position: relative;
+        }
+        .result-bar.show {
+            height: 50px;
+            opacity: 1;
+            margin-bottom: 12px;
+            padding: 0 10px;
+        }
+        
+        .card-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            position: relative;
+        }
+
+        /* 5张牌的手牌组 */
+        .hand-group {
+            display: flex;
+            position: relative;
+            align-items: center;
+        }
+        .hand-cards {
+            display: flex;
+            position: relative;
+        }
+        
+        /* 迷你扑克牌样式 (相互重叠) */
+        .mini-card {
+            width: 24px;
+            height: 36px;
+            background: #fff;
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 2px;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: -1px 2px 4px rgba(0,0,0,0.4);
+            margin-left: -8px; /* 实现卡牌重叠效果 */
+            position: relative;
+        }
+        .mini-card:first-child { margin-left: 0; }
+        .mini-card.red { color: #d32f2f; }
+        .mini-card.black { color: #212121; }
+        .mini-suit { font-size: 10px; margin-top: -3px; }
+        
+        /* 手牌底部的半透明点数遮罩 */
+        .hand-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 2px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 10;
+            border-radius: 0 0 2px 2px;
+        }
+        .text-orange { color: #ff9800; }
+        
+        /* 中间的 VS 图标 */
+        .vs-icon {
+            font-size: 18px;
+            font-weight: 900;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            margin: 0 5px;
+        }
+        .vs-v { color: #2196f3; }
+        .vs-s { color: #f44336; margin-left: -4px; }
+        
+        /* 赢家标记 (胜) */
+        .win-badge {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            background: #ff7043;
+            color: #fff;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            transform: rotate(-15deg);
+            z-index: 15;
+        }
+
+        /* 导航选项卡 */
+        .nav-tabs {
+            display: flex;
+            gap: 15px;
+            padding: 0 5px 10px;
+            font-size: 12px;
+            color: #a0a0a0;
+            align-items: center;
+            position: relative;
+        }
+        .tab-item { cursor: pointer; }
+        .tab-item.active {
+            color: #fff;
+            background: linear-gradient(90deg, #ffca28, #ff8f00);
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        /* === 修改点：牛牛双列盘口布局 === */
+        .bet-layout {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            position: relative;
+        }
+        
+        /* 左侧蓝方胜 和 右侧红方胜 大按钮 */
+        .side-btn {
+            flex: 1;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.3), 0 4px 8px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.1s;
+        }
+        .side-btn:active { transform: scale(0.97); }
+        .side-btn.blue { background: linear-gradient(180deg, #4766f5, #112bb3); }
+        .side-btn.red { background: linear-gradient(180deg, #f25555, #b81c1c); }
+        
+        /* 选中高亮边框 */
+        .bet-target.selected::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border: 2px solid #ffca28;
+            border-radius: 10px;
+            pointer-events: none;
+            box-shadow: 0 0 10px #ffca28;
+            z-index: 5;
+        }
+
+        .bet-name { color: #fff; font-size: 22px; font-weight: bold; margin-bottom: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        .bet-odds { color: #fff; font-size: 14px; opacity: 0.9; font-weight: bold; }
+
+        /* 投注确认飞入动画元素 (垂直排列) */
+        .confirm-actions {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transition: all 0.2s;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .confirm-actions.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .action-btn-row {
+            display: flex;
+            gap: 28px;
+        }
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .action-cancel { background: #f5222d; }
+        .action-ok { background: #52c41a; }
+        
+        .temp-amount-tag {
+            background: radial-gradient(circle, #ffffff, #e6ee9c);
+            color: #33691e;
+            font-size: 11px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px dashed #7cb342;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        /* 盘口上已确认下注的筹码展示 */
+        .placed-chip {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+            width: 26px;
+            height: 26px;
+            background: radial-gradient(circle, #fff, #ffcc80);
+            border: 2px dashed #f57c00;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #e65100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
+        .placed-chip.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+        /* 立即开奖区域 */
+        .draw-btn-container {
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .draw-btn {
+            background: linear-gradient(180deg, #ffea00, #ff8f00);
+            color: #5d4037;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 10px rgba(255, 143, 0, 0.6);
+            transition: all 0.1s;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+        .draw-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+            animation: pulse 1.5s infinite;
+        }
+        .draw-btn:active { transform: scale(0.95); animation: none; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 143, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 143, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 143, 0, 0); }
+        }
+
+        /* 底部筹码及余额栏 */
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 50px;
+            margin-top: 5px;
+            position: relative;
+        }
+        .balance-box {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 4px 10px;
+            color: #fff;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+        .chips-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .chip {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .chip::before { content: ''; position: absolute; inset: 2px; border-radius: 50%; border: 2px dashed rgba(0,0,0,0.2); }
+        .chip.c-10 { background: radial-gradient(circle, #fff, #c8e6c9); color: #1b5e20; }
+        .chip.c-50 { background: radial-gradient(circle, #fff, #d1c4e9); color: #311b92; }
+        .chip.c-100 { background: radial-gradient(circle, #fff, #e1bee7); color: #4a148c; }
+        .chip.c-500 { background: radial-gradient(circle, #fff, #b2ebf2); color: #006064; }
+        .chip.c-custom { background: radial-gradient(circle, #fff, #e0e0e0); color: #424242; font-size: 10px; }
+        
+        .chip.active { transform: translateY(-5px); }
+        .chip.active::after {
+            content: ''; position: absolute; inset: -4px; border: 2px solid #ffca28;
+            border-radius: 50%; border-top-color: transparent; border-bottom-color: transparent;
+            animation: rotate 2s linear infinite;
+        }
+
+        .btn-action {
+            background: linear-gradient(180deg, #cfd8dc, #90a4ae);
+            color: #fff; border: none; padding: 6px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.5); transition: all 0.2s;
+        }
+        .btn-action.x2 { background: linear-gradient(180deg, #ff8f00, #e65100); box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 8px rgba(230, 81, 0, 0.6); }
+
+        /* 顶部提示 Toast */
+        .toast {
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            background: #ff4d4f; color: white; padding: 6px 16px; border-radius: 4px;
+            font-size: 12px; transition: top 0.3s; z-index: 10; white-space: nowrap;
+        }
+        .toast.show { top: 10px; }
+
+        /* 居中大字提示 */
+        .center-bet-hint {
+            position: absolute; top: 50%; left: 0; width: 100%; text-align: center;
+            color: #ffca28; font-size: 18px; font-weight: bold; text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+            opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; z-index: 5;
+        }
+        .center-bet-hint.show { opacity: 1; transform: translateY(0); }
+
+        /* 发牌动效遮罩 */
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-overlay.animating { display: flex; }
+        
+        .deal-animation-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .fly-card {
+            width: 50px;
+            height: 70px;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            position: relative;
+            transform-style: preserve-3d;
+            animation: dealCard 1.2s ease-out forwards;
+            opacity: 0;
+        }
+        .fly-card.delay-1 { animation-delay: 0.3s; }
+        .fly-card.delay-2 { animation-delay: 0.6s; }
+        
+        .fly-card::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: repeating-linear-gradient(45deg, #b71c1c, #b71c1c 5px, #112bb3 5px, #112bb3 10px); /* 蓝红交替牌背 */
+            border-radius: 2px;
+            backface-visibility: hidden;
+        }
+        
+        @keyframes dealCard {
+            0% { transform: translateY(-150px) scale(0.2) rotateY(0deg); opacity: 0; }
+            40% { transform: translateY(0) scale(1.2) rotateY(0deg); opacity: 1; }
+            70% { transform: translateY(0) scale(1) rotateY(180deg); opacity: 1; }
+            100% { transform: translateY(0) scale(1) rotateY(180deg); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="betting-area" id="betArea">
+    <!-- 顶部Toast提示 -->
+    <div class="toast" id="toastMsg">下注成功</div>
+
+    <!-- 发牌动效遮罩 -->
+    <div class="card-overlay" id="cardOverlay">
+        <div class="deal-animation-container">
+            <div class="fly-card delay-1"></div>
+            <div class="vs-icon" style="font-size: 30px; opacity: 0; animation: fadeIn 0.5s 1s forwards;">
+                <span class="vs-v">V</span><span class="vs-s">S</span>
+            </div>
+            <div class="fly-card delay-2"></div>
+        </div>
+    </div>
+    <style>@keyframes fadeIn { to { opacity: 1; } }</style>
+
+    <!-- 阶段4：开奖结果展示区 (牛牛手牌样式) -->
+    <div class="result-bar" id="resultBar">
+        <div class="card-group">
+            <!-- 左方：蓝方手牌 (无牛) -->
+            <div class="hand-group">
+                <div class="hand-cards">
+                    <div class="mini-card black"><div>8</div><div class="mini-suit">♠</div></div>
+                    <div class="mini-card red"><div>3</div><div class="mini-suit">♦</div></div>
+                    <div class="mini-card red"><div>Q</div><div class="mini-suit">♦</div></div>
+                    <div class="mini-card red"><div>J</div><div class="mini-suit">♦</div></div>
+                    <div class="mini-card black"><div>6</div><div class="mini-suit">♠</div></div>
+                </div>
+                <div class="hand-overlay">无牛</div>
+            </div>
+            
+            <!-- VS 图标 -->
+            <div class="vs-icon">
+                <span class="vs-v">V</span><span class="vs-s">S</span>
+            </div>
+            
+            <!-- 右方：红方手牌 (牛三 胜) -->
+            <div class="hand-group">
+                <div class="win-badge">胜</div>
+                <div class="hand-cards">
+                    <div class="mini-card black"><div>5</div><div class="mini-suit">♣</div></div>
+                    <div class="mini-card black"><div>7</div><div class="mini-suit">♠</div></div>
+                    <div class="mini-card red"><div>9</div><div class="mini-suit">♦</div></div>
+                    <div class="mini-card red"><div>10</div><div class="mini-suit">♥</div></div>
+                    <div class="mini-card red"><div>4</div><div class="mini-suit">♥</div></div>
+                </div>
+                <div class="hand-overlay text-orange">牛三</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航选项卡 -->
+    <div class="nav-tabs">
+        <div class="tab-item active">胜负</div>
+        <div class="tab-item">龙虎牌1VS牌5</div>
+        <div class="tab-item">蓝方牛</div>
+        <div class="tab-item">红方牛</div>
+    </div>
+
+    <!-- 确认操作浮层 (动态附加到点击的按钮内) -->
+    <div class="confirm-actions" id="confirmBox">
+        <div class="action-btn-row">
+            <div class="action-icon action-cancel" onclick="cancelBet(event)">✖</div>
+            <div class="action-icon action-ok" onclick="confirmBet(event)">✔</div>
+        </div>
+        <div class="temp-amount-tag" id="confirmAmount">10</div>
+    </div>
+
+    <!-- 投注盘口 (蓝方/红方) -->
+    <div class="bet-layout">
+        <!-- 蓝方胜 -->
+        <div class="side-btn blue bet-target" onclick="handleBetClick(this)">
+            <div class="bet-name">蓝方胜</div>
+            <div class="bet-odds">1.97</div>
+            <div class="placed-chip">BL</div>
+        </div>
+        
+        <!-- 红方胜 -->
+        <div class="side-btn red bet-target" onclick="handleBetClick(this)">
+            <div class="bet-name">红方胜</div>
+            <div class="bet-odds">1.97</div>
+            <div class="placed-chip">BL</div>
+        </div>
+    </div>
+
+    <!-- 居中横向的投注金额提示条 -->
+    <div class="center-bet-hint" id="centerHint">本期投注 ￥10</div>
+
+    <!-- 开奖按钮区域 -->
+    <div class="draw-btn-container">
+        <button class="draw-btn" id="drawBtn" onclick="startDraw()">立即开奖</button>
+    </div>
+
+    <!-- 底部筹码及余额栏 -->
+    <div class="bottom-bar">
+        <div class="balance-box">￥<span id="balanceText">5,538.13</span> ></div>
+        <div class="chips-container">
+            <div class="chip c-10 active" onclick="selectChip(this, 10)">10</div>
+            <div class="chip c-50" onclick="selectChip(this, 50)">50</div>
+            <div class="chip c-100" onclick="selectChip(this, 100)">100</div>
+            <div class="chip c-500" onclick="selectChip(this, 500)">500</div>
+            <div class="chip c-custom">自定</div>
+        </div>
+        <button class="btn-action" id="actionBtn" onclick="handleActionBtnClick()">续投</button>
+    </div>
+</div>
+
+<script>
+    let currentPhase = 0; 
+    let currentChipValue = 10;
+    let balance = 5538.13;
+    let betAmount = 0;
+    let activeBetBtn = null;
+    let hintTimer = null;
+
+    const confirmBox = document.getElementById('confirmBox');
+    const actionBtn = document.getElementById('actionBtn');
+    const centerHint = document.getElementById('centerHint');
+    const toastMsg = document.getElementById('toastMsg');
+    const balanceText = document.getElementById('balanceText');
+    const resultBar = document.getElementById('resultBar');
+    const drawBtn = document.getElementById('drawBtn');
+    const cardOverlay = document.getElementById('cardOverlay');
+    const confirmAmount = document.getElementById('confirmAmount');
+
+    function selectChip(element, value) {
+        if(currentPhase === 1) return;
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        element.classList.add('active');
+        currentChipValue = value;
+    }
+
+    function handleBetClick(btn) {
+        if(currentPhase === 3) resetToInitial();
+        
+        currentPhase = 1;
+        activeBetBtn = btn;
+        
+        document.querySelectorAll('.bet-target').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        
+        btn.appendChild(confirmBox);
+        confirmAmount.innerText = currentChipValue;
+        confirmBox.classList.add('show');
+        
+        centerHint.classList.remove('show');
+        drawBtn.classList.remove('show');
+        
+        actionBtn.classList.add('x2');
+        actionBtn.innerText = 'x2';
+    }
+
+    function cancelBet(e) {
+        e.stopPropagation();
+        confirmBox.classList.remove('show');
+        if (activeBetBtn) activeBetBtn.classList.remove('selected');
+
+        if (betAmount > 0) {
+            currentPhase = 2;
+            drawBtn.classList.add('show');
+        } else {
+            currentPhase = 0;
+        }
+        actionBtn.classList.remove('x2');
+        actionBtn.innerText = '续投';
+    }
+
+    function confirmBet(e) {
+        e.stopPropagation();
+        currentPhase = 2;
+        betAmount += currentChipValue;
+        
+        confirmBox.classList.remove('show');
+        activeBetBtn.classList.remove('selected');
+        activeBetBtn.classList.add('has-bet');
+        activeBetBtn.querySelector('.placed-chip').classList.add('show');
+        
+        toastMsg.innerText = "下注成功";
+        toastMsg.classList.add('show');
+        setTimeout(() => toastMsg.classList.remove('show'), 2000);
+        
+        centerHint.innerText = `本期投注 ￥${betAmount}`;
+        centerHint.classList.add('show');
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => centerHint.classList.remove('show'), 2000);
+        
+        balance -= currentChipValue;
+        balanceText.innerText = balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        
+        actionBtn.classList.remove('x2');
+        actionBtn.innerText = '续投';
+        drawBtn.classList.add('show');
+    }
+
+    function handleActionBtnClick() {
+        if(currentPhase === 1) {
+            currentChipValue *= 2;
+            confirmAmount.innerText = currentChipValue;
+        }
+    }
+
+    function startDraw() {
+        drawBtn.classList.remove('show');
+        centerHint.classList.remove('show');
+        
+        // 弹出发牌动画遮罩
+        cardOverlay.classList.add('animating');
+        
+        // 动画持续 2 秒后展示最终结果
+        setTimeout(() => {
+            cardOverlay.classList.remove('animating');
+            triggerResult();
+            
+            // 简单重置发牌动画元素
+            const oldContainer = document.querySelector('.deal-animation-container');
+            const newContainer = oldContainer.cloneNode(true);
+            oldContainer.parentNode.replaceChild(newContainer, oldContainer);
+            
+        }, 2000);
+    }
+
+    function triggerResult() {
+        currentPhase = 3;
+        
+        document.querySelectorAll('.bet-target').forEach(b => {
+            b.classList.remove('selected', 'has-bet');
+            b.querySelector('.placed-chip').classList.remove('show');
+        });
+        
+        balance += (betAmount * 1.97); // 赢回金额
+        balanceText.innerText = balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        betAmount = 0;
+        
+        resultBar.classList.add('show');
+    }
+
+    function resetToInitial() {
+        currentPhase = 0;
+        betAmount = 0;
+        
+        document.querySelectorAll('.bet-target').forEach(b => {
+            b.classList.remove('selected', 'has-bet');
+            b.querySelector('.placed-chip').classList.remove('show');
+        });
+        
+        confirmBox.classList.remove('show');
+        document.body.appendChild(confirmBox);
+        
+        drawBtn.classList.remove('show');
+        resultBar.classList.remove('show');
+        centerHint.classList.remove('show');
+        actionBtn.classList.remove('x2');
+        actionBtn.innerText = '续投';
+    }
+</script>
+</body>
+</html>
