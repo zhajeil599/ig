@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>投注区域交互原型 - 龙虎斗发牌版</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #1a1a24;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        /* 投注区域容器 375*350 */
+        .betting-area {
+            width: 375px;
+            height: 350px;
+            background: linear-gradient(135deg, #1b1625 0%, #201e38 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+        }
+
+        /* === 修改点：顶部开奖结果展示区域 (扑克牌VS样式) === */
+        .result-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 0;
+            background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%);
+            border-radius: 8px;
+            position: relative;
+        }
+        .result-bar.show {
+            height: 50px;
+            opacity: 1;
+            margin-bottom: 8px;
+            padding: 0 20px;
+        }
+        
+        /* 扑克牌展示组 */
+        .card-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+        
+        /* 扑克牌样式 */
+        .poker-card {
+            width: 30px;
+            height: 42px;
+            background: #fff;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 2px 4px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .poker-card.red { color: #d32f2f; }
+        .poker-card.black { color: #212121; }
+        
+        .poker-suit {
+            font-size: 10px;
+            margin-top: -2px;
+        }
+        
+        /* 牌上的半透明遮罩与点数提示 */
+        .card-overlay-text {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 2px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        /* 中间的 VS 图标 */
+        .vs-icon {
+            font-size: 20px;
+            font-weight: 900;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        .vs-v { color: #2196f3; }
+        .vs-s { color: #f44336; margin-left: -4px; }
+        
+        /* 赢家标记 (胜) */
+        .win-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ff7043;
+            color: #fff;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            transform: rotate(15deg);
+            z-index: 2;
+        }
+
+        /* 导航选项卡 */
+        .nav-tabs {
+            display: flex;
+            gap: 15px;
+            padding: 0 5px 10px;
+            font-size: 13px;
+            color: #a0a0a0;
+            align-items: center;
+            position: relative;
+        }
+        .tab-item { cursor: pointer; }
+        .tab-item.active {
+            color: #fff;
+            background: linear-gradient(90deg, #ffca28, #ff8f00);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        /* === 修改点：龙虎斗投注盘口布局 === */
+        .bet-layout {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            position: relative;
+        }
+        
+        /* 左侧闲（蓝）和右侧庄（红） */
+        .side-btn {
+            flex: 1;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.2), 0 2px 5px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.1s;
+        }
+        .side-btn:active { transform: scale(0.98); }
+        .side-btn.blue { background: linear-gradient(180deg, #5c6bc0, #283593); }
+        .side-btn.red { background: linear-gradient(180deg, #ef5350, #c62828); }
+        
+        /* 中间部分容器 */
+        .center-bets {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        /* 和局（绿） */
+        .bet-tie {
+            flex: 1;
+            background: linear-gradient(180deg, #66bb6a, #2e7d32);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.2), 0 2px 5px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.1s;
+        }
+        .bet-tie:active { transform: scale(0.98); }
+        
+        /* 大小老虎（红底） */
+        .tiger-bets {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+        }
+        .tiger-btn {
+            flex: 1;
+            background: linear-gradient(180deg, #e53935, #b71c1c);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.2), 0 2px 5px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: transform 0.1s;
+        }
+        .tiger-btn:active { transform: scale(0.96); }
+        
+        /* 选中高亮边框 */
+        .bet-target.selected::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border: 2px solid #ffca28;
+            border-radius: 8px;
+            pointer-events: none;
+            box-shadow: 0 0 8px #ffca28;
+            z-index: 5;
+        }
+
+        .bet-name { color: #fff; font-size: 16px; font-weight: bold; margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+        .bet-odds { color: #fff; font-size: 11px; opacity: 0.9; }
+        
+        /* 盘口小图标 */
+        .icon-tiger {
+            width: 14px;
+            height: 14px;
+            background: #ffb300;
+            border-radius: 50%;
+            display: inline-block;
+            font-size: 8px;
+            text-align: center;
+            line-height: 14px;
+            color: #000;
+        }
+        .icon-tiger.red { background: #d32f2f; color: #fff; }
+
+        /* 投注确认飞入动画元素 */
+        .confirm-actions {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transition: all 0.2s;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .confirm-actions.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .action-btn-row {
+            display: flex;
+            gap: 28px;
+        }
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .action-cancel { background: #f5222d; }
+        .action-ok { background: #52c41a; }
+        
+        .temp-amount-tag {
+            background: radial-gradient(circle, #ffffff, #e6ee9c);
+            color: #33691e;
+            font-size: 11px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px dashed #7cb342;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        /* 盘口上已确认下注的筹码展示 */
+        .placed-chip {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.5);
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle, #fff, #ffcc80);
+            border: 2px dashed #f57c00;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 9px;
+            font-weight: bold;
+            color: #e65100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 2;
+        }
+        .placed-chip.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+        /* 立即开奖区域 */
+        .draw-btn-container {
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .draw-btn {
+            background: linear-gradient(180deg, #ffea00, #ff8f00);
+            color: #5d4037;
+            border: none;
+            padding: 10px 40px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 4px 10px rgba(255, 143, 0, 0.6);
+            transition: all 0.1s;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+        .draw-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+            animation: pulse 1.5s infinite;
+        }
+        .draw-btn:active { transform: scale(0.95); animation: none; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 143, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 143, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 143, 0, 0); }
+        }
+
+        /* 底部筹码及余额栏 */
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 50px;
+            margin-top: 5px;
+            position: relative;
+        }
+        .balance-box {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 4px 10px;
+            color: #fff;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+        }
+        .chips-container {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .chip {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .chip::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 50%;
+            border: 2px dashed rgba(0,0,0,0.2);
+        }
+        .chip.c-10 { background: radial-gradient(circle, #fff, #c8e6c9); color: #1b5e20; }
+        .chip.c-50 { background: radial-gradient(circle, #fff, #d1c4e9); color: #311b92; }
+        .chip.c-100 { background: radial-gradient(circle, #fff, #e1bee7); color: #4a148c; }
+        .chip.c-500 { background: radial-gradient(circle, #fff, #b2ebf2); color: #006064; }
+        .chip.c-custom { background: radial-gradient(circle, #fff, #e0e0e0); color: #424242; font-size: 10px; }
+        
+        .chip.active { transform: translateY(-5px); }
+        .chip.active::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 2px solid #ffca28;
+            border-radius: 50%;
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+            animation: rotate 2s linear infinite;
+        }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        .btn-action {
+            background: linear-gradient(180deg, #cfd8dc, #90a4ae);
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+        }
+        .btn-action.x2 {
+            background: linear-gradient(180deg, #ff8f00, #e65100);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 2px 8px rgba(230, 81, 0, 0.6);
+        }
+
+        /* 顶部提示 Toast */
+        .toast {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff4d4f;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: top 0.3s;
+            z-index: 10;
+            white-space: nowrap;
+        }
+        .toast.show { top: 10px; }
+
+        /* 居中大字投注金额提示 */
+        .center-bet-hint {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #ffca28;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .center-bet-hint.show { opacity: 1; transform: translateY(0); }
+        .center-bet-hint::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 10%; right: 10%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,202,40,0.5), transparent);
+            z-index: -1;
+        }
+
+        /* === 修改点：发牌动效遮罩 === */
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-overlay.animating { display: flex; }
+        
+        .deal-animation-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        /* 飞出的扑克牌 */
+        .fly-card {
+            width: 50px;
+            height: 70px;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            position: relative;
+            transform-style: preserve-3d;
+            animation: dealCard 1.2s ease-out forwards;
+            opacity: 0;
+        }
+        .fly-card.delay-1 { animation-delay: 0.3s; }
+        .fly-card.delay-2 { animation-delay: 0.6s; }
+        
+        /* 牌背图案 */
+        .fly-card::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: repeating-linear-gradient(45deg, #b71c1c, #b71c1c 5px, #d32f2f 5px, #d32f2f 10px);
+            border-radius: 2px;
+            backface-visibility: hidden;
+        }
+        
+        @keyframes dealCard {
+            0% { transform: translateY(-150px) scale(0.2) rotateY(0deg); opacity: 0; }
+            40% { transform: translateY(0) scale(1.2) rotateY(0deg); opacity: 1; }
+            70% { transform: translateY(0) scale(1) rotateY(180deg); opacity: 1; } /* 翻面 */
+            100% { transform: translateY(0) scale(1) rotateY(180deg); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="betting-area" id="betArea">
+    <!-- 顶部Toast提示 -->
+    <div class="toast" id="toastMsg">下注成功</div>
+
+    <!-- 发牌动效遮罩 -->
+    <div class="card-overlay" id="cardOverlay">
+        <div class="deal-animation-container">
+            <div class="fly-card delay-1"></div>
+            <div class="vs-icon" style="font-size: 30px; opacity: 0; animation: fadeIn 0.5s 1s forwards;">
+                <span class="vs-v">V</span><span class="vs-s">S</span>
+            </div>
+            <div class="fly-card delay-2"></div>
+        </div>
+    </div>
+    <style>@keyframes fadeIn { to { opacity: 1; } }</style>
+
+    <!-- 阶段4：开奖结果展示区 (扑克牌样式) -->
+    <div class="result-bar" id="resultBar">
+        <div class="card-group">
+            <!-- 第一组：方块A 和 黑桃Q -->
+            <div class="poker-card red">
+                <div>A</div><div class="poker-suit">♦</div>
+                <div class="card-overlay-text">1点</div>
+            </div>
+            <div class="poker-card black">
+                <div>Q</div><div class="poker-suit">♠</div>
+            </div>
+            
+            <!-- VS 图标 -->
+            <div class="vs-icon">
+                <span class="vs-v">V</span><span class="vs-s">S</span>
+            </div>
+            
+            <!-- 第二组：红桃Q 和 红桃8 -->
+            <div class="poker-card red" style="position: relative;">
+                <!-- 胜 标记 -->
+                <div class="win-badge">胜</div>
+                <div>Q</div><div class="poker-suit">♥</div>
+            </div>
+            <div class="poker-card red">
+                <div>8</div><div class="poker-suit">♥</div>
+                <div class="card-overlay-text" style="color: #ffca28;">8点</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航选项卡 -->
+    <div class="nav-tabs">
+        <div class="tab-item active">庄闲</div>
+        <div class="tab-item">对子</div>
+    </div>
+
+    <!-- 确认操作浮层 (动态居中附加到点击的按钮内) -->
+    <div class="confirm-actions" id="confirmBox">
+        <div class="action-btn-row">
+            <div class="action-icon action-cancel" onclick="cancelBet(event)">✖</div>
+            <div class="action-icon action-ok" onclick="confirmBet(event)">✔</div>
+        </div>
+        <div class="temp-amount-tag" id="confirmAmount">10</div>
+    </div>
+
+    <!-- 龙虎斗盘口布局 -->
+    <div class="bet-layout">
+        <!-- 闲 -->
+        <div class="side-btn blue bet-target" onclick="handleBetClick(this)">
+            <div class="bet-name">闲</div>
+            <div class="bet-odds">2</div>
+            <div class="placed-chip">BL</div>
+        </div>
+        
+        <!-- 中间列 -->
+        <div class="center-bets">
+            <!-- 和 -->
+            <div class="bet-tie bet-target" onclick="handleBetClick(this)">
+                <div class="bet-name">和</div>
+                <div class="bet-odds">9</div>
+                <div class="placed-chip">BL</div>
+            </div>
+            
+            <div class="tiger-bets">
+                <!-- 大老虎 -->
+                <div class="tiger-btn bet-target" onclick="handleBetClick(this)">
+                    <div class="bet-name"><span class="icon-tiger">🐯</span> 大老虎</div>
+                    <div class="bet-odds">48</div>
+                    <div class="placed-chip">BL</div>
+                </div>
+                <!-- 小老虎 -->
+                <div class="tiger-btn bet-target" onclick="handleBetClick(this)">
+                    <div class="bet-name"><span class="icon-tiger red">🐯</span> 小老虎</div>
+                    <div class="bet-odds">19</div>
+                    <div class="placed-chip">BL</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 庄 -->
+        <div class="side-btn red bet-target" onclick="handleBetClick(this)">
+            <div class="bet-name">庄</div>
+            <div class="bet-odds">1.98</div>
+            <div class="placed-chip">BL</div>
+        </div>
+    </div>
+
+    <!-- 居中横向的投注金额提示条 -->
+    <div class="center-bet-hint" id="centerHint">本期投注 ￥10</div>
+
+    <!-- 开奖按钮区域 -->
+    <div class="draw-btn-container">
+        <button class="draw-btn" id="drawBtn" onclick="startDraw()">立即开奖</button>
+    </div>
+
+    <!-- 底部筹码及余额栏 -->
+    <div class="bottom-bar">
+        <div class="balance-box">￥<span id="balanceText">5,538.13</span> ></div>
+        <div class="chips-container">
+            <div class="chip c-10 active" onclick="selectChip(this, 10)">10</div>
+            <div class="chip c-50" onclick="selectChip(this, 50)">50</div>
+            <div class="chip c-100" onclick="selectChip(this, 100)">100</div>
+            <div class="chip c-500" onclick="selectChip(this, 500)">500</div>
+            <div class="chip c-custom">自定</div>
+        </div>
+        <button class="btn-action" id="actionBtn" onclick="handleActionBtnClick()">续投</button>
+    </div>
+</div>
+
+<script>
+    let currentPhase = 0; 
+    let currentChipValue = 10;
+    let balance = 5538.13;
+    let betAmount = 0;
+    let activeBetBtn = null;
+    let hintTimer = null;
+
+    const confirmBox = document.getElementById('confirmBox');
+    const actionBtn = document.getElementById('actionBtn');
+    const centerHint = document.getElementById('centerHint');
+    const toastMsg = document.getElementById('toastMsg');
+    const balanceText = document.getElementById('balanceText');
+    const resultBar = document.getElementById('resultBar');
+    const drawBtn = document.getElementById('drawBtn');
+    const cardOverlay = document.getElementById('cardOverlay');
+    const confirmAmount = document.getElementById('confirmAmount');
+
+    function selectChip(element, value) {
+        if(currentPhase === 1) return;
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        element.classList.add('active');
+        currentChipValue = value;
+    }
+
+    function handleBetClick(btn) {
+        if(currentPhase === 3) resetToInitial();
+        
+        currentPhase = 1;
+        activeBetBtn = btn;
+        
+        document.querySelectorAll('.bet-target').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        
+        btn.appendChild(confirmBox);
+        confirmAmount.innerText = currentChipValue;
+        confirmBox.classList.add('show');
+        
+        centerHint.classList.remove('show');
+        drawBtn.classList.remove('show');
+        
+        actionBtn.classList.add('x2');
+        actionBtn.innerText = 'x2';
+    }
+
+    function cancelBet(e) {
+        e.stopPropagation();
+        confirmBox.classList.remove('show');
+        if (activeBetBtn) activeBetBtn.classList.remove('selected');
+
+        if (betAmount > 0) {
+            currentPhase = 2;
+            drawBtn.classList.add('show');
+        } else {
+            currentPhase = 0;
+        }
+        actionBtn.classList.remove('x2');
+        actionBtn.innerText = '续投';
+    }
+
+    function confirmBet(e) {
+        e.stopPropagation();
+        currentPhase = 2;
+        betAmount += currentChipValue;
+        
+        confirmBox.classList.remove('show');
+        activeBetBtn.classList.remove('selected');
+        activeBetBtn.classList.add('has-bet');
+        activeBetBtn.querySelector('.placed-chip').classList.add('show');
+        
+        toastMsg.innerText = "下注成功";
+        toastMsg.classList.add('show');
+        setTimeout(() => toastMsg.classList.remove('show'), 2000);
+        
+        centerHint.innerText = `本期投注 ￥${betAmount}`;
+        centerHint.classList.add('show');
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => centerHint.classList.remove('show'), 2000);
+        
+        balance -= currentChipValue;
+        balanceText.innerText = balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        
+        actionBtn.classList.remove('x2');
+        actionBtn.innerText = '续投';
+        drawBtn.classList.add('show');
+    }
+
+    function handleActionBtnClick() {
+        if(currentPhase === 1) {
+            currentChipValue *= 2;
+            confirmAmount.innerText = currentChipValue;
+        }
+    }
+
+    // === 修改点：发牌动效逻辑 ===
+    function startDraw() {
+        drawBtn.classList.remove('show');
+        centerHint.classList.remove('show');
+        
+        // 弹出发牌动画遮罩
+        cardOverlay.classList.add('animating');
+        
+        // 动画持续 2 秒后展示最终结果
+        setTimeout(() => {
+            cardOverlay.classList.remove('animating');
+            triggerResult();
+            
+            // 简单重置发牌动画元素，以便下次还能播放
+            const oldContainer = document.querySelector('.deal-animation-container');
+            const newContainer = oldContainer.cloneNode(true);
+            oldContainer.parentNode.replaceChild(newContainer, oldContainer);
+            
+        }, 2000);
+    }
+
+    function triggerResult() {
+        currentPhase = 3;
+        
+        document.querySelectorAll('.bet-target').forEach(b => {
+            b.classList.remove('selected', 'has-bet');
+            b.querySelector('.placed-chip').classList.remove('show');
+        });
+        
+        balance += (betAmount * 1.98); // 假设赢了庄的赔率
+        balanceText.innerText = balance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        betAmount = 0;
+        
+        resultBar.classList.add('show');
+    }
+
+    function resetToInitial() {
+        currentPhase = 0;
+        betAmount = 0;
+        
+        document.querySelectorAll('.bet-target').forEach(b => {
+            b.classList.remove('selected', 'has-bet');
+            b.querySelector('.placed-chip').classList.remove('show');
+        });
+        
+        confirmBox.classList.remove('show');
+        document.body.appendChild(confirmBox);
+        
+        drawBtn.classList.remove('show');
+        resultBar.classList.remove('show');
+        centerHint.classList.remove('show');
+        actionBtn.classList.remove('x2');
+        actionBtn.innerText = '续投';
+    }
+</script>
+</body>
+</html>
