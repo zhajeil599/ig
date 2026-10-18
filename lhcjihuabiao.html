@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>六合彩聊天室</title>
+    <style>
+        /* 基础样式 reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        body { background-color: #f4f5f7; color: #333; }
+        
+        /* 顶部导航 */
+        .header { background: #6b66e4; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 10px 10px; }
+        .header h1 { font-size: 18px; margin: 0 auto; }
+        .skin-btn { background: rgba(0,0,0,0.2); color: #fff; border: none; padding: 5px 10px; border-radius: 15px; cursor: pointer; }
+
+        /* 功能控制区 */
+        .control-panel { display: flex; gap: 15px; padding: 15px; }
+        .btn-panel { background: #6b66e4; color: #fff; padding: 15px; border-radius: 8px; cursor: pointer; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center;}
+        .btn-ad { background: linear-gradient(90deg, #ff6b81, #ff4757); flex: 2; }
+
+        /* 主体内容区 */
+        .main-content { display: flex; gap: 15px; padding: 0 15px 15px; }
+        
+        /* 左侧计划表 */
+        .plan-table-container { flex: 3; background: #fff; border-radius: 8px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: 750px; overflow-y: auto; }
+        .plan-table-container::-webkit-scrollbar { width: 6px; }
+        .plan-table-container::-webkit-scrollbar-thumb { background: #c0c4cc; border-radius: 3px; }
+        .plan-table-container::-webkit-scrollbar-track { background: transparent; }
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        th, td { border: 1px solid #eee; padding: 10px; }
+        th { background: #1890ff; color: #fff; }
+        input.edit-input { width: 100%; border: 1px solid #ccc; padding: 5px; text-align: center; border-radius: 4px;}
+        .update-btn-wrap { text-align: center; margin-top: 15px; }
+        .update-btn { background: #00b894; color: #fff; border: none; padding: 10px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+
+        /* 右侧历史记录 */
+        .history-panel { flex: 1; background: #fff; border-radius: 8px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .history-header { display: flex; justify-content: space-between; background: #6b66e4; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .history-list { list-style: none; }
+        .history-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; }
+
+        /* 底部操作区 */
+        .footer { display: flex; justify-content: space-between; padding: 15px; background: #fff; position: fixed; bottom: 0; width: 100%; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .footer-left button, .footer-right button { background: #6b66e4; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-right: 10px;}
+        .footer-left .mic-on { background: #ff4757; }
+
+        /* 弹窗通用样式 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: #fff; width: 400px; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .modal-header { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #6b66e4; display: inline-block; padding-bottom: 5px; }
+        .modal-footer { display: flex; justify-content: space-between; margin-top: 20px; }
+        .modal-btn { padding: 10px 30px; border-radius: 5px; cursor: pointer; border: none; }
+        .btn-cancel { background: #f4f5f7; color: #666; }
+        .btn-confirm { background: #6b66e4; color: #fff; }
+
+        /* 弹窗特殊样式 */
+        .ad-tabs { display: flex; margin-bottom: 15px; gap: 15px;}
+        .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: #fff; padding: 10px 20px; border-radius: 5px; display: none; z-index: 2000; }
+    
+    /* 新增：中率单元格样式 */
+        .hit-rate-cell { cursor: pointer; color: #ff4757; font-weight: bold; padding: 5px; border-radius: 4px; user-select: none; }
+        .hit-rate-cell:hover { background: #f0f0f0; }
+
+        /* 新增：广告图片上传样式 */
+        .ad-image-upload { display: none; border: 2px dashed #ccc; padding: 40px 0; text-align: center; color: #999; cursor: pointer; border-radius: 8px; margin-bottom: 20px; }
+        .ad-image-upload:hover { border-color: #6b66e4; color: #6b66e4; }
+
+        /* 新增：顶部六合彩配置卡片样式 */
+        .card-config-container { display: flex; gap: 15px; margin-bottom: 15px; }
+        .lhc-card { flex: 1; border-radius: 10px; padding: 15px; color: #e0e0e0; font-size: 14px; }
+        .hk-card { background: #3b2a35; } /* 香港六合彩背景色 */
+        .mc-card { background: #2a3b3a; } /* 澳门六合彩背景色 */
+        .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 10px; }
+        .card-title { color: #fff; font-size: 16px; font-weight: bold; }
+        .card-title input { background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #fff; font-size: 16px; width: 50px; text-align: center; }
+        .streak-badge { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; color: #fff; }
+        .card-row { display: flex; align-items: center; margin-bottom: 8px; }
+        .card-label { width: 50px; color: #aaa; }
+        .card-input { background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #fff; flex: 1; padding: 2px 5px; }
+        .hit-badge { background: #ff0000; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-left: auto; cursor: pointer; }
+    
+    
+    /* 新增：下拉框与自定义输入框样式 */
+        .hit-select { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 2px 4px; border-radius: 4px; outline: none; margin-left: 10px; cursor: pointer; font-size: 13px;}
+        .hit-select option { color: #333; }
+        .hit-custom-input { background: transparent; border: 1px dashed #ff4757; color: #ff4757; width: 60px; padding: 2px; margin-left: 10px; border-radius: 3px; font-size: 13px; text-align: center;}
+        
+        /* 新增：统一下拉多选弹窗样式 */
+        .ms-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 10px; max-height: 250px; overflow-y: auto; padding: 5px; }
+        .ms-item { border: 1px solid #ddd; padding: 6px 0; text-align: center; border-radius: 4px; cursor: pointer; user-select: none; font-size: 14px;}
+        .ms-item.active { background: #6b66e4; color: #fff; border-color: #6b66e4; }
+        .ms-header-info { color: #666; font-size: 14px; text-align: center; margin-bottom: 5px; }
+    
+    /* 新增：卡片列排版与增删按钮样式 */
+        .card-config-container { align-items: flex-start; } /* 确保左右两列顶部对齐 */
+        /* 修改：卡片列排版，增加独立滚动条 */
+        .card-column { display: flex; flex-direction: column; gap: 15px; flex: 1; max-height: 750px; overflow-y: auto; padding-right: 8px; }
+        
+        /* 新增：美化滚动条样式，使其更贴合 UI */
+        .card-column::-webkit-scrollbar { width: 6px; }
+        .card-column::-webkit-scrollbar-thumb { background: #c0c4cc; border-radius: 3px; }
+        .card-column::-webkit-scrollbar-track { background: transparent; }
+        .card-desc-input { width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #ccc; font-size: 12px; margin-bottom: 10px; padding: 2px 5px; border-radius: 3px; }
+        .card-desc-input:focus { border-color: #6b66e4; color: #fff; background: rgba(0,0,0,0.2); outline: none; }
+        .card-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; }
+        .card-btn { background: rgba(255,255,255,0.1); color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .card-btn:hover { background: rgba(255,255,255,0.2); }
+        .card-btn.del-btn { color: #ff4757; background: rgba(255,71,87,0.1); }
+        .card-btn.del-btn:hover { background: rgba(255,71,87,0.3); }
+    
+    </style>
+</head>
+<body>
+
+    <!-- 顶部 -->
+    <div class="header" id="appHeader">
+        <div></div>
+        <h1>六合彩聊天室</h1>
+        <button class="skin-btn" onclick="openModal('skinModal')">切换皮肤 ⬇</button>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <div class="btn-panel" onclick="openModal('anchorModal')">在线主播：<span id="anchorName">王牌分析师</span> (点击编辑)</div>
+        <div class="btn-panel" onclick="openModal('clearModal')">清空一分六合彩历史数据</div>
+        <div class="btn-panel btn-ad" onclick="openModal('adModal')">这里是广告文案位置，点击弹窗编辑文案</div>
+    </div>
+
+    <!-- 主体 -->
+    <div class="main-content">
+        <!-- 计划表 -->
+        <!-- 新增：顶部配置卡片 (附件2) -->
+        <!-- 新增：顶部配置卡片 (附件2) -->
+        <!-- 新增：顶部配置卡片 (附件2) -->
+        <div class="card-config-container">
+            
+            <!-- 香港六合彩列 -->
+            <div class="card-column" id="hkColumn">
+                <div class="lhc-card hk-card">
+                    <div class="card-header">
+                        <div class="card-title">香港六合彩 第 <input type="text" value="109"> 期</div>
+                        <div class="streak-badge"><input type="text" value="连中4期" style="background:transparent;border:none;color:#fff;width:60px;text-align:center;"></div>
+                    </div>
+                    <!-- 修改：文案变更为输入框 -->
+                    <input type="text" class="card-desc-input" value="10月9日开奖 · 上下滑看往期">
+                    
+                    <div class="card-row">
+                        <span class="card-label">三码</span>
+                        <input type="text" class="card-input" placeholder="点击选择3个数字" readonly onclick="openMultiSelect(this, 'num', 3)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">五码</span>
+                        <input type="text" class="card-input" placeholder="点击选择5个数字" readonly onclick="openMultiSelect(this, 'num', 5)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">三肖</span>
+                        <input type="text" class="card-input" placeholder="点击选择3个生肖" readonly onclick="openMultiSelect(this, 'zodiac', 3)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">五肖</span>
+                        <input type="text" class="card-input" placeholder="点击选择5个生肖" readonly onclick="openMultiSelect(this, 'zodiac', 5)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">波色</span>
+                        <input type="text" class="card-input" placeholder="点击选择2个波色" readonly onclick="openMultiSelect(this, 'color', 2)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <!-- 新增：卡片操作按钮 -->
+                    <div class="card-actions">
+                        <button class="card-btn" onclick="addCard(this)">+ 添加卡片</button>
+                        <button class="card-btn del-btn" onclick="deleteCard(this)">- 删除卡片</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 澳门六合彩列 -->
+            <div class="card-column" id="mcColumn">
+                <div class="lhc-card mc-card">
+                    <div class="card-header">
+                        <div class="card-title">澳门六合彩 第 <input type="text" value="275"> 期</div>
+                        <div class="streak-badge"><input type="text" value="连中2期" style="background:transparent;border:none;color:#fff;width:60px;text-align:center;"></div>
+                    </div>
+                    <!-- 修改：文案变更为输入框 -->
+                    <input type="text" class="card-desc-input" value="10月9日开奖 · 上下滑看往期">
+                    
+                    <div class="card-row">
+                        <span class="card-label">八肖</span>
+                        <input type="text" class="card-input" placeholder="点击选择8个生肖" readonly onclick="openMultiSelect(this, 'zodiac', 8)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">五尾</span>
+                        <input type="text" class="card-input" placeholder="点击选择5个尾数" readonly onclick="openMultiSelect(this, 'tail', 5)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">双波</span>
+                        <input type="text" class="card-input" placeholder="点击选择2个波色" readonly onclick="openMultiSelect(this, 'color', 2)">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">家野</span>
+                        <input type="text" class="card-input" value="野兽 + 牛 羊">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">平特</span>
+                        <input type="text" class="card-input" value="沐猴而冠">
+                        <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
+                    </div>
+                    <!-- 新增：卡片操作按钮 -->
+                    <div class="card-actions">
+                        <button class="card-btn" onclick="addCard(this)">+ 添加卡片</button>
+                        <button class="card-btn del-btn" onclick="deleteCard(this)">- 删除卡片</button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- 计划表 -->
+        <div class="plan-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>单带</th><th>推荐</th><th>开奖</th><th>大小</th><th>单双</th><th>生肖</th><th>中率</th>
+                    </tr>
+                </thead>
+                <tbody id="planTableBody">
+                    <!-- 默认三条未填写的空白内容 -->
+                    <tr>
+                        <td><input type="text" class="edit-input"></td>
+                        <td><input type="text" class="edit-input"></td>
+                        <td><input type="number" class="edit-input num-input" max="49" min="1"></td>
+                        <td class="res-ds">-</td>
+                        <td class="res-dx">-</td>
+                        <td class="res-sx">-</td>
+                        <td><div class="hit-rate-cell" onclick="openHitRateModal(this)">中</div></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="edit-input"></td>
+                        <td><input type="text" class="edit-input"></td>
+                        <td><input type="number" class="edit-input num-input" max="49" min="1"></td>
+                        <td class="res-ds">-</td>
+                        <td class="res-dx">-</td>
+                        <td class="res-sx">-</td>
+                        <td><div class="hit-rate-cell" onclick="openHitRateModal(this)">中</div></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="edit-input"></td>
+                        <td><input type="text" class="edit-input"></td>
+                        <td><input type="number" class="edit-input num-input" max="49" min="1"></td>
+                        <td class="res-ds">-</td>
+                        <td class="res-dx">-</td>
+                        <td class="res-sx">-</td>
+                        <td><div class="hit-rate-cell" onclick="openHitRateModal(this)">中</div></td>
+                    </tr>
+                </tbody>
+        
+            </table>
+            <div class="update-btn-wrap">
+                <button class="update-btn" onclick="batchUpdate()">批量更新</button>
+            </div>
+        </div>
+
+        <!-- 历史记录 -->
+        <div class="history-panel">
+            <div class="history-header">
+                <span>期数</span><span>一分六合彩</span><span>00:23 ↺</span>
+            </div>
+            <ul class="history-list" id="historyList">
+                <li><span>1108</span><span>...等待开奖...</span></li>
+                <li><span>1107</span><span>1 小 单 红 马</span></li>
+                <li><span>1106</span><span>48 大 双 蓝 羊</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="footer">
+        <div class="footer-left">
+            <button id="micBtn" onclick="toggleMic()">上麦</button>
+            <button onclick="document.getElementById('bgmInput').click()">开启背景音乐</button>
+            <input type="file" id="bgmInput" accept="audio/*" style="display: none;" onchange="showToast('已加载本地音乐')">
+        </div>
+        <div class="footer-right">
+            <button onclick="openModal('liveSourceModal')">设置动画直播源</button>
+        </div>
+    </div>
+
+    <!-- 提示框 (Toast) -->
+    <div class="toast" id="toastBox">提示信息</div>
+
+    <!-- ================= 弹窗区 ================= -->
+    
+    <!-- 1. 编辑主播弹窗 -->
+    <div class="modal-overlay" id="anchorModal">
+        <div class="modal">
+            <div style="text-align: center;"><div class="modal-header">编辑在线主播</div></div>
+            <input type="text" id="anchorInput" class="edit-input" placeholder="请输入主播名称..." style="width: 100%; margin-bottom: 20px;">
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeModal('anchorModal')">取消</button>
+                <button class="modal-btn btn-confirm" onclick="saveAnchor()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 编辑广告弹窗 (更新：支持图文切换) -->
+    <div class="modal-overlay" id="adModal">
+        <div class="modal">
+            <div style="text-align: center;"><div class="modal-header">编辑广告文案</div></div>
+            <div class="ad-tabs">
+                <label><input type="radio" name="adType" value="text" checked onchange="toggleAdType('text')"> 文字</label>
+                <label><input type="radio" name="adType" value="image" onchange="toggleAdType('image')"> 图片</label>
+            </div>
+            <!-- 文字输入区 -->
+            <textarea id="adTextInput" class="edit-input" rows="4" placeholder="请输入广告文案内容..."></textarea>
+            <!-- 图片上传区 (默认隐藏) -->
+            <div id="adImageUpload" class="ad-image-upload">
+                <div style="font-size: 30px;">+</div>
+                <div>上传广告图片</div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeModal('adModal')">取消</button>
+                <button class="modal-btn btn-confirm" onclick="closeModal('adModal'); showToast('广告已更新')">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增：中率选择/自定义弹窗 -->
+    <div class="modal-overlay" id="hitRateModal">
+        <div class="modal" style="width: 300px;">
+            <div style="text-align: center;"><div class="modal-header">选择中率状态</div></div>
+            <div style="display: flex; flex-direction: column; gap: 10px; text-align: center;">
+                <div style="padding: 10px; border: 1px solid #eee; cursor: pointer; color: #ff4757; font-weight: bold;" onclick="selectHitRateOption('中')">中</div>
+                <div style="padding: 10px; border: 1px solid #eee; cursor: pointer;" onclick="selectHitRateOption('自定义')">自定义</div>
+                <input type="text" id="customHitRateInput" class="edit-input" placeholder="请输入自定义文字 (如：挂)" style="display: none; margin-top: 10px;">
+            </div>
+            <div class="modal-footer" id="customHitRateFooter" style="display: none;">
+                <button class="modal-btn btn-cancel" onclick="closeModal('hitRateModal')">取消</button>
+                <button class="modal-btn btn-confirm" onclick="saveCustomHitRate()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 清空确认弹窗 -->
+    <div class="modal-overlay" id="clearModal">
+        <div class="modal" style="text-align: center;">
+            <div class="modal-header">确认清空</div>
+            <p style="margin: 20px 0;">是否清空所有一分六合彩历史数据？</p>
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeModal('clearModal')">取消</button>
+                <button class="modal-btn btn-confirm" onclick="clearHistory()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 切换皮肤弹窗 -->
+    <div class="modal-overlay" id="skinModal">
+        <div class="modal" style="width: 600px;">
+            <div style="text-align: center;"><div class="modal-header">选择计划表皮肤</div></div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="border: 2px solid #6b66e4; padding: 10px; border-radius: 5px; cursor: pointer;">计划表样式(默认)</div>
+                <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer;">计划表样式2</div>
+                <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer;">计划表样式3</div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeModal('skinModal')">取消</button>
+                <button class="modal-btn btn-confirm" onclick="closeModal('skinModal'); showToast('皮肤已切换')">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 动画直播源弹窗 -->
+    <div class="modal-overlay" id="liveSourceModal">
+        <div class="modal" style="width: 500px;">
+            <div style="text-align: center;"><div class="modal-header">设置动画直播源</div></div>
+            <ul style="list-style: none; max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
+                <li style="padding: 10px; border-bottom: 1px solid #eee;"><input type="radio" name="liveSrc"> 印度尼西亚甲级联赛...</li>
+                <li style="padding: 10px; border-bottom: 1px solid #eee;"><input type="radio" name="liveSrc"> 泰国乙级联赛...</li>
+                <li style="padding: 10px; border-bottom: 1px solid #eee;"><input type="radio" name="liveSrc"> 澳大利亚足球...</li>
+            </ul>
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeModal('liveSourceModal')">取消</button>
+                <button class="modal-btn btn-confirm" onclick="closeModal('liveSourceModal'); showToast('直播源已设置')">确定</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- 新增：统一下拉多选弹窗 -->
+    <div class="modal-overlay" id="multiSelectModal">
+        <div class="modal" style="width: 380px;">
+            <div style="text-align: center;"><div class="modal-header">请点击多选</div></div>
+            <div class="ms-header-info" id="msInfo">已选 0/3</div>
+            <!-- 网格区将通过JS自动生成按钮 -->
+            <div class="ms-grid" id="msGrid"></div>
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeModal('multiSelectModal')">取消</button>
+                <button class="modal-btn btn-confirm" onclick="confirmMultiSelect()">确认并填入</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 脚本逻辑 -->
+    <script>
+        // 生肖对照表映射（根据附件7）
+        const zodiacMap = {
+            '兔': [1,13,25,37,49], '虎': [2,14,26,38], '牛': [3,15,27,39], '鼠': [4,16,28,40],
+            '猪': [5,17,29,41], '狗': [6,18,30,42], '鸡': [7,19,31,43], '猴': [8,20,32,44],
+            '羊': [9,21,33,45], '马': [10,22,34,46], '蛇': [11,23,35,47], '龙': [12,24,36,48]
+        };
+
+        // 弹窗控制
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        // 提示框 (Toast)
+        function showToast(msg) {
+            const toast = document.getElementById('toastBox');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
+        // 修改主播名
+        function saveAnchor() {
+            const newName = document.getElementById('anchorInput').value;
+            if(newName.trim()) {
+                document.getElementById('anchorName').innerText = newName;
+                closeModal('anchorModal');
+                showToast('主播名已修改');
+            }
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            document.getElementById('historyList').innerHTML = '';
+            closeModal('clearModal');
+            showToast('历史数据已清空');
+        }
+
+        // 上下麦切换
+        let isMicOn = false;
+        function toggleMic() {
+            const btn = document.getElementById('micBtn');
+            isMicOn = !isMicOn;
+            if (isMicOn) {
+                btn.innerText = '下麦';
+                btn.classList.add('mic-on');
+                showToast('已开启麦克风');
+            } else {
+                btn.innerText = '上麦';
+                btn.classList.remove('mic-on');
+                showToast('已关闭麦克风');
+            }
+        }
+
+        // 根据开奖号码自动计算大小、单双、生肖
+        function calculateResult(num) {
+            if (!num || num < 1 || num > 49) return { dx: '-', ds: '-', sx: '-' };
+            
+            // 大小 (<=24特小, 25~48特大, 49和)
+            let dx = num == 49 ? '和' : (num <= 24 ? '<span style="color:red">小</span>' : '大');
+            // 单双
+            let ds = num % 2 === 0 ? '<span style="color:red">双</span>' : '<span style="color:#1890ff">单</span>';
+            // 生肖
+            let sx = '-';
+            for (let [animal, nums] of Object.entries(zodiacMap)) {
+                if (nums.includes(parseInt(num))) {
+                    sx = `<span style="color:red">${animal}</span>`;
+                    break;
+                }
+            }
+            return { dx, ds, sx };
+        }
+
+        // 批量更新表格逻辑：更新数据 + 动态维持底部 3 行空白
+        function batchUpdate() {
+            const tbody = document.getElementById('planTableBody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            // 1. 遍历更新开奖结果
+            rows.forEach(row => {
+                const numInput = row.querySelector('.num-input');
+                const val = numInput.value;
+                if (val) {
+                    const res = calculateResult(val);
+                    row.querySelector('.res-dx').innerHTML = res.dx;
+                    row.querySelector('.res-ds').innerHTML = res.ds;
+                    row.querySelector('.res-sx').innerHTML = res.sx;
+                }
+            });
+
+            // 2. 从下往上统计，目前末尾有几个连续的“完全空白行”
+            let blankCount = 0;
+            const rowArray = Array.from(tbody.querySelectorAll('tr'));
+            for (let i = rowArray.length - 1; i >= 0; i--) {
+                const inputs = rowArray[i].querySelectorAll('input');
+                let isEmpty = true;
+                for(let input of inputs) {
+                    if(input.value.trim() !== '') {
+                        isEmpty = false; break;
+                    }
+                }
+                if(isEmpty) blankCount++;
+                else break;
+            }
+
+            // 3. 如果末尾空白行不足 3 行，自动补充
+            const rowsToAdd = 3 - blankCount;
+            for (let i = 0; i < rowsToAdd; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="edit-input"></td>
+                    <td><input type="text" class="edit-input"></td>
+                    <td><input type="number" class="edit-input num-input" max="49" min="1"></td>
+                    <td class="res-ds">-</td>
+                    <td class="res-dx">-</td>
+                    <td class="res-sx">-</td>
+                    <td><div class="hit-rate-cell" onclick="openHitRateModal(this)">中</div></td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            showToast('批量更新成功');
+            
+            // 自动将计划表滚动条滚到底部，方便继续填写
+            const container = document.querySelector('.plan-table-container');
+            container.scrollTop = container.scrollHeight;
+        }
+    
+    // ======= 新增逻辑：广告图文切换 =======
+        function toggleAdType(type) {
+            if(type === 'text') {
+                document.getElementById('adTextInput').style.display = 'block';
+                document.getElementById('adImageUpload').style.display = 'none';
+            } else {
+                document.getElementById('adTextInput').style.display = 'none';
+                document.getElementById('adImageUpload').style.display = 'block';
+            }
+        }
+
+        // ======= 新增逻辑：中率弹窗交互 =======
+        let currentHitRateCell = null;
+        
+        // 打开弹窗
+        function openHitRateModal(cell) {
+            currentHitRateCell = cell;
+            document.getElementById('customHitRateInput').style.display = 'none';
+            document.getElementById('customHitRateInput').value = '';
+            document.getElementById('customHitRateFooter').style.display = 'none';
+            openModal('hitRateModal');
+        }
+
+        // 选择选项
+        function selectHitRateOption(val) {
+            if(val === '自定义') {
+                // 显示输入框和确认按钮
+                document.getElementById('customHitRateInput').style.display = 'block';
+                document.getElementById('customHitRateFooter').style.display = 'flex';
+                document.getElementById('customHitRateInput').focus();
+            } else {
+                // 直接赋值并关闭弹窗
+                if(currentHitRateCell) currentHitRateCell.innerText = val;
+                closeModal('hitRateModal');
+            }
+        }
+
+        // 保存自定义文字
+        function saveCustomHitRate() {
+            const val = document.getElementById('customHitRateInput').value;
+            if(val.trim() !== '' && currentHitRateCell) {
+                currentHitRateCell.innerText = val;
+            }
+            closeModal('hitRateModal');
+        }    
+
+
+    // ======= 卡片下拉框【中/自定义】切换逻辑 =======
+        function handleHitChange(selectObj) {
+            const customInput = selectObj.nextElementSibling;
+            if (selectObj.value === 'custom') {
+                // 如果选择了自定义，隐藏下拉框，显示输入框
+                selectObj.style.display = 'none';
+                customInput.style.display = 'inline-block';
+                customInput.focus();
+                
+                // 输入框失去焦点时，如果没有输入文字，则退回空状态下拉框
+                customInput.onblur = function() {
+                    if(this.value.trim() === '') {
+                        this.style.display = 'none';
+                        selectObj.style.display = 'inline-block';
+                        selectObj.value = ''; 
+                    }
+                }
+            }
+        }
+
+        // ======= 统一下拉多选弹窗逻辑 =======
+        // 准备选项数据字典
+        const msData = {
+            'num': Array.from({length: 49}, (_, i) => (i + 1).toString().padStart(2, '0')), // 01~49
+            'zodiac': ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'], // 生肖
+            'color': ['红波', '绿波', '蓝波'], // 波色
+            'tail': ['0尾', '1尾', '2尾', '3尾', '4尾', '5尾', '6尾', '7尾', '8尾', '9尾'] // 尾数
+        };
+
+        let msCurrentInput = null; // 记录当前点击的输入框
+        let msMaxCount = 0; // 记录最大可选数
+        let msSelected = []; // 记录当前选中的数组
+
+        // 打开多选弹窗
+        function openMultiSelect(inputObj, type, maxCount) {
+            msCurrentInput = inputObj;
+            msMaxCount = maxCount;
+            // 获取已选中的值，并按空格拆分
+            msSelected = inputObj.value ? inputObj.value.split(' ') : []; 
+            
+            const grid = document.getElementById('msGrid');
+            grid.innerHTML = '';
+            
+            // 动态调整排版列数：波色3列，生肖/尾数4列，数字7列
+            if(type === 'color') grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            else if(type === 'zodiac' || type === 'tail') grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            else grid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+
+            // 渲染网格选项
+            msData[type].forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'ms-item ' + (msSelected.includes(item) ? 'active' : '');
+                div.innerText = item;
+                div.onclick = () => toggleSelect(div, item);
+                grid.appendChild(div);
+            });
+
+            updateMsInfo();
+            openModal('multiSelectModal');
+        }
+
+        // 点击某个选项进行选中/取消
+        function toggleSelect(div, item) {
+            const idx = msSelected.indexOf(item);
+            if (idx > -1) {
+                // 已经选中则取消
+                msSelected.splice(idx, 1);
+                div.classList.remove('active');
+            } else {
+                // 没选中则判断是否超出限制
+                if (msSelected.length >= msMaxCount) {
+                    showToast(`最多只能选择 ${msMaxCount} 个！`);
+                    return;
+                }
+                msSelected.push(item);
+                div.classList.add('active');
+            }
+            updateMsInfo();
+        }
+
+        // 更新弹窗提示文案
+        function updateMsInfo() {
+            document.getElementById('msInfo').innerText = `已选 ${msSelected.length}/${msMaxCount} 个`;
+        }
+
+        // 确认填入
+        function confirmMultiSelect() {
+            if (msCurrentInput) {
+                msCurrentInput.value = msSelected.join(' ');
+            }
+            closeModal('multiSelectModal');
+        }
+
+    // ======= 新增逻辑：卡片的添加与删除 =======
+        
+        // 添加卡片（深拷贝并同步输入框数值）
+        function addCard(btn) {
+            const column = btn.closest('.card-column');
+            const currentCard = btn.closest('.lhc-card');
+            
+            // 深度克隆节点
+            const newCard = currentCard.cloneNode(true);
+            
+            // 因为克隆 DOM 默认不拷贝用户动态输入的值，这里手动同步一下
+            const oldInputs = currentCard.querySelectorAll('input, select');
+            const newInputs = newCard.querySelectorAll('input, select');
+            
+            for(let i = 0; i < oldInputs.length; i++) {
+                if(oldInputs[i].tagName === 'INPUT' || oldInputs[i].tagName === 'SELECT') {
+                    newInputs[i].value = oldInputs[i].value;
+                    // 同步自定义输入框的显示状态
+                    if(oldInputs[i].style.display !== '') {
+                        newInputs[i].style.display = oldInputs[i].style.display;
+                    }
+                }
+            }
+            
+            // 将新卡片追加到这一列的末尾
+            column.appendChild(newCard);
+            showToast('卡片添加成功');
+        }
+
+        // 删除卡片（判断是否仅剩一张）
+        function deleteCard(btn) {
+            const column = btn.closest('.card-column');
+            const cards = column.querySelectorAll('.lhc-card');
+            
+            if (cards.length <= 1) {
+                showToast('不能删除，至少保留一个卡片！');
+                return;
+            }
+            
+            const cardToRemove = btn.closest('.lhc-card');
+            cardToRemove.remove();
+        }
+
+    </script>
+</body>
+</html>
