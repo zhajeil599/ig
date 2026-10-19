@@ -76,7 +76,15 @@
         .card-title input { background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #fff; font-size: 16px; width: 50px; text-align: center; }
         .streak-badge { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; color: #fff; }
         .card-row { display: flex; align-items: center; margin-bottom: 8px; }
-        .card-label { width: 50px; color: #aaa; }
+        /* 修改：玩法名称改为自定义输入框，增加类型下拉框和生肖中奖样式 */
+        .card-label-input { width: 55px; background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #aaa; margin-right: 5px; text-align: center; font-size: 13px; border-radius: 3px; outline: none; padding: 2px 0;}
+        .card-label-input:focus { color: #fff; border-color: #6b66e4; background: rgba(0,0,0,0.2); }
+        .type-select { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 2px; border-radius: 4px; outline: none; margin-right: 5px; font-size: 12px; cursor: pointer;}
+        .type-select option { color: #333; }
+        
+        /* 生肖中奖状态(红点标记) */
+        .ms-item.active-hit { background: #ff4757; color: #fff; border-color: #ff4757; position: relative; }
+        .ms-item.active-hit::after { content: '中'; position: absolute; top: -6px; right: -6px; background: #fff; color: #ff4757; font-size: 10px; font-weight: bold; border-radius: 50%; width: 16px; height: 16px; line-height: 16px; text-align: center; border: 1px solid #ff4757; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
         .card-input { background: transparent; border: 1px dashed rgba(255,255,255,0.3); color: #fff; flex: 1; padding: 2px 5px; }
         .hit-badge { background: #ff0000; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-left: auto; cursor: pointer; }
     
@@ -133,6 +141,7 @@
         <!-- 新增：顶部配置卡片 (附件2) -->
         <!-- 新增：顶部配置卡片 (附件2) -->
         <!-- 新增：顶部配置卡片 (附件2) -->
+        <!-- 新增：顶部配置卡片 (附件2) -->
         <div class="card-config-container">
             
             <!-- 香港六合彩列 -->
@@ -142,35 +151,38 @@
                         <div class="card-title">香港六合彩 第 <input type="text" value="109"> 期</div>
                         <div class="streak-badge"><input type="text" value="连中4期" style="background:transparent;border:none;color:#fff;width:60px;text-align:center;"></div>
                     </div>
-                    <!-- 修改：文案变更为输入框 -->
                     <input type="text" class="card-desc-input" value="10月9日开奖 · 上下滑看往期">
                     
                     <div class="card-row">
-                        <span class="card-label">三码</span>
-                        <input type="text" class="card-input" placeholder="点击选择3个数字" readonly onclick="openMultiSelect(this, 'num', 3)">
+                        <input type="text" class="card-label-input" value="三码">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num" selected>数字</option><option value="zodiac">生肖</option><option value="color">波色</option><option value="tail">尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择数字" value="22 46 05" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">五码</span>
-                        <input type="text" class="card-input" placeholder="点击选择5个数字" readonly onclick="openMultiSelect(this, 'num', 5)">
+                        <input type="text" class="card-label-input" value="五码">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num" selected>数字</option><option value="zodiac">生肖</option><option value="color">波色</option><option value="tail">尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择数字" value="22 46 05 07 23" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">三肖</span>
-                        <input type="text" class="card-input" placeholder="点击选择3个生肖" readonly onclick="openMultiSelect(this, 'zodiac', 3)">
+                        <input type="text" class="card-label-input" value="三肖">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac" selected>生肖</option><option value="color">波色</option><option value="tail">尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择生肖" value="鸡 虎 鼠" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">五肖</span>
-                        <input type="text" class="card-input" placeholder="点击选择5个生肖" readonly onclick="openMultiSelect(this, 'zodiac', 5)">
+                        <input type="text" class="card-label-input" value="五肖">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac" selected>生肖</option><option value="color">波色</option><option value="tail">尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择生肖" value="鸡 虎 鼠 狗 羊" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">波色</span>
-                        <input type="text" class="card-input" placeholder="点击选择2个波色" readonly onclick="openMultiSelect(this, 'color', 2)">
+                        <input type="text" class="card-label-input" value="波色">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac">生肖</option><option value="color" selected>波色</option><option value="tail">尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择波色" value="红波" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
-                    <!-- 新增：卡片操作按钮 -->
                     <div class="card-actions">
                         <button class="card-btn" onclick="addCard(this)">+ 添加卡片</button>
                         <button class="card-btn del-btn" onclick="deleteCard(this)">- 删除卡片</button>
@@ -185,35 +197,38 @@
                         <div class="card-title">澳门六合彩 第 <input type="text" value="275"> 期</div>
                         <div class="streak-badge"><input type="text" value="连中2期" style="background:transparent;border:none;color:#fff;width:60px;text-align:center;"></div>
                     </div>
-                    <!-- 修改：文案变更为输入框 -->
                     <input type="text" class="card-desc-input" value="10月9日开奖 · 上下滑看往期">
                     
                     <div class="card-row">
-                        <span class="card-label">八肖</span>
-                        <input type="text" class="card-input" placeholder="点击选择8个生肖" readonly onclick="openMultiSelect(this, 'zodiac', 8)">
+                        <input type="text" class="card-label-input" value="八肖">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac" selected>生肖</option><option value="color">波色</option><option value="tail">尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择生肖" value="马 龙 狗 猴 虎 羊 兔 鼠" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">五尾</span>
-                        <input type="text" class="card-input" placeholder="点击选择5个尾数" readonly onclick="openMultiSelect(this, 'tail', 5)">
+                        <input type="text" class="card-label-input" value="五尾">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac">生肖</option><option value="color">波色</option><option value="tail" selected>尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择尾数" value="0尾 4尾 5尾 6尾 3尾" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中" selected>中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">双波</span>
-                        <input type="text" class="card-input" placeholder="点击选择2个波色" readonly onclick="openMultiSelect(this, 'color', 2)">
+                        <input type="text" class="card-label-input" value="双波">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac">生肖</option><option value="color" selected>波色</option><option value="tail">尾数</option><option value="custom">自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="点击选择波色" value="绿波 蓝波" readonly onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">家野</span>
-                        <input type="text" class="card-input" value="野兽 + 牛 羊">
+                        <input type="text" class="card-label-input" value="家野">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac">生肖</option><option value="color">波色</option><option value="tail">尾数</option><option value="custom" selected>自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="请输入自定义内容..." value="野兽 + 牛 羊" onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
                     <div class="card-row">
-                        <span class="card-label">平特</span>
-                        <input type="text" class="card-input" value="沐猴而冠">
+                        <input type="text" class="card-label-input" value="平特">
+                        <select class="type-select" onchange="handleRowTypeChange(this)"><option value="num">数字</option><option value="zodiac">生肖</option><option value="color">波色</option><option value="tail">尾数</option><option value="custom" selected>自定义</option></select>
+                        <input type="text" class="card-input val-input" placeholder="请输入自定义内容..." value="沐猴而冠" onclick="handleClickValInput(this)">
                         <select class="hit-select" onchange="handleHitChange(this)"><option value="">空</option><option value="中">中</option><option value="custom">自定义</option></select><input type="text" class="hit-custom-input" style="display:none;" placeholder="输入文字">
                     </div>
-                    <!-- 新增：卡片操作按钮 -->
                     <div class="card-actions">
                         <button class="card-btn" onclick="addCard(this)">+ 添加卡片</button>
                         <button class="card-btn del-btn" onclick="deleteCard(this)">- 删除卡片</button>
@@ -602,40 +617,78 @@
             }
         }
 
-        // ======= 统一下拉多选弹窗逻辑 =======
-        // 准备选项数据字典
+        // ======= // ======= 玩法类型切换与点击事件 =======
+        function handleRowTypeChange(selectObj) {
+            const row = selectObj.closest('.card-row');
+            const valInput = row.querySelector('.val-input');
+            const type = selectObj.value;
+
+            valInput.value = ''; // 切换类型时清空已填内容
+            if(type === 'custom') {
+                valInput.removeAttribute('readonly');
+                valInput.placeholder = '请输入自定义内容...';
+            } else {
+                valInput.setAttribute('readonly', 'readonly');
+                if(type === 'num') valInput.placeholder = '点击选择数字';
+                else if(type === 'zodiac') valInput.placeholder = '点击生肖 (可标中奖)';
+                else if(type === 'color') valInput.placeholder = '点击选择波色';
+                else if(type === 'tail') valInput.placeholder = '点击选择尾数';
+            }
+        }
+
+        // 处理点击：仅在非自定义(readonly)状态下弹出多选框
+        function handleClickValInput(inputObj) {
+            if (inputObj.hasAttribute('readonly')) {
+                openDynamicMultiSelect(inputObj);
+            }
+        }
+
+        // ======= 统一下拉多选弹窗逻辑 (升级版：无限制多选 + 生肖中奖) =======
         const msData = {
-            'num': Array.from({length: 49}, (_, i) => (i + 1).toString().padStart(2, '0')), // 01~49
-            'zodiac': ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'], // 生肖
-            'color': ['红波', '绿波', '蓝波'], // 波色
-            'tail': ['0尾', '1尾', '2尾', '3尾', '4尾', '5尾', '6尾', '7尾', '8尾', '9尾'] // 尾数
+            'num': Array.from({length: 49}, (_, i) => (i + 1).toString().padStart(2, '0')),
+            'zodiac': ['鼠', '牛', '虎', '兔', '龙', '蛇', '马', '羊', '猴', '鸡', '狗', '猪'],
+            'color': ['红波', '绿波', '蓝波'],
+            'tail': ['0尾', '1尾', '2尾', '3尾', '4尾', '5尾', '6尾', '7尾', '8尾', '9尾']
         };
 
-        let msCurrentInput = null; // 记录当前点击的输入框
-        let msMaxCount = 0; // 记录最大可选数
-        let msSelected = []; // 记录当前选中的数组
+        let msCurrentInput = null; 
+        let msCurrentType = '';
+        let msSelected = []; 
 
-        // 打开多选弹窗
-        function openMultiSelect(inputObj, type, maxCount) {
+        function openDynamicMultiSelect(inputObj) {
             msCurrentInput = inputObj;
-            msMaxCount = maxCount;
-            // 获取已选中的值，并按空格拆分
+            const row = inputObj.closest('.card-row');
+            const typeSelect = row.querySelector('.type-select');
+            msCurrentType = typeSelect.value;
+            
+            // 解析输入框内已有的值（适配带"中"后缀的生肖）
             msSelected = inputObj.value ? inputObj.value.split(' ') : []; 
             
             const grid = document.getElementById('msGrid');
             grid.innerHTML = '';
             
-            // 动态调整排版列数：波色3列，生肖/尾数4列，数字7列
-            if(type === 'color') grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
-            else if(type === 'zodiac' || type === 'tail') grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            // 排版自适应
+            if(msCurrentType === 'color') grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+            else if(msCurrentType === 'zodiac' || msCurrentType === 'tail') grid.style.gridTemplateColumns = 'repeat(4, 1fr)';
             else grid.style.gridTemplateColumns = 'repeat(7, 1fr)';
 
-            // 渲染网格选项
-            msData[type].forEach(item => {
+            msData[msCurrentType].forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'ms-item ' + (msSelected.includes(item) ? 'active' : '');
+                
+                // 判断当前项的状态
+                let isActive = false;
+                let isHit = false;
+                
+                if (msSelected.includes(item)) {
+                    isActive = true;
+                } else if (msCurrentType === 'zodiac' && msSelected.includes(item + '(中)')) {
+                    isActive = true;
+                    isHit = true;
+                }
+
+                div.className = 'ms-item ' + (isActive ? (isHit ? 'active-hit' : 'active') : '');
                 div.innerText = item;
-                div.onclick = () => toggleSelect(div, item);
+                div.onclick = () => toggleDynamicSelect(div, item, msCurrentType);
                 grid.appendChild(div);
             });
 
@@ -643,31 +696,47 @@
             openModal('multiSelectModal');
         }
 
-        // 点击某个选项进行选中/取消
-        function toggleSelect(div, item) {
-            const idx = msSelected.indexOf(item);
-            if (idx > -1) {
-                // 已经选中则取消
-                msSelected.splice(idx, 1);
-                div.classList.remove('active');
-            } else {
-                // 没选中则判断是否超出限制
-                if (msSelected.length >= msMaxCount) {
-                    showToast(`最多只能选择 ${msMaxCount} 个！`);
-                    return;
+        function toggleDynamicSelect(div, item, type) {
+            if (type === 'zodiac') {
+                const idxNormal = msSelected.indexOf(item);
+                const idxHit = msSelected.indexOf(item + '(中)');
+
+                if (idxNormal > -1) {
+                    // 状态2：已选普通状态 -> 点击后切换为中奖状态 (红点)
+                    msSelected[idxNormal] = item + '(中)';
+                    div.classList.remove('active');
+                    div.classList.add('active-hit');
+                } else if (idxHit > -1) {
+                    // 状态3：已选中奖状态 -> 点击后取消选择
+                    msSelected.splice(idxHit, 1);
+                    div.classList.remove('active-hit');
+                } else {
+                    // 状态1：未选 -> 点击后选中普通状态
+                    msSelected.push(item);
+                    div.classList.add('active');
                 }
-                msSelected.push(item);
-                div.classList.add('active');
+            } else {
+                // 非生肖：普通点击选中/取消选中
+                const idx = msSelected.indexOf(item);
+                if (idx > -1) {
+                    msSelected.splice(idx, 1);
+                    div.classList.remove('active');
+                } else {
+                    msSelected.push(item);
+                    div.classList.add('active');
+                }
             }
             updateMsInfo();
         }
 
-        // 更新弹窗提示文案
         function updateMsInfo() {
-            document.getElementById('msInfo').innerText = `已选 ${msSelected.length}/${msMaxCount} 个`;
+            if (msCurrentType === 'zodiac') {
+                document.getElementById('msInfo').innerText = `已选 ${msSelected.length} 个 (连按两次可标红)`;
+            } else {
+                document.getElementById('msInfo').innerText = `已选 ${msSelected.length} 个`;
+            }
         }
 
-        // 确认填入
         function confirmMultiSelect() {
             if (msCurrentInput) {
                 msCurrentInput.value = msSelected.join(' ');
