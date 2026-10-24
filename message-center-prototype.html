@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>消息中心 · 通讯录原型</title>
+<style>
+:root{
+  --bg:#17161e;--card:#23222f;--card2:#2b2a39;--line:rgba(255,255,255,.07);
+  --txt:#ecebf3;--sub:#8f8da4;--dim:#5f5d72;--cy:#38e3ee;--cy2:#1fb8d6;--red:#ff4d6d;--gold:#f5c76a;--green:#2fd47f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;background:#0c0b11;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;display:flex;justify-content:center;align-items:flex-start;gap:36px;padding:28px 16px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,textarea{font:inherit;color:var(--txt)}
+.ic{flex:none;display:block}
+
+/* phone */
+.phone{width:375px;height:812px;border-radius:38px;overflow:hidden;position:relative;color:var(--txt);
+  background:linear-gradient(180deg,#2a2840 0%,#1b1a25 28%,#18171f 100%);
+  box-shadow:0 0 0 10px #26252f,0 0 0 11px #3a3946,0 30px 80px rgba(0,0,0,.7);display:flex;flex-direction:column;font-size:14px}
+.status{height:44px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-size:14px;font-weight:600;position:relative;z-index:30}
+.status .r{display:flex;gap:6px;align-items:center;font-size:12px}
+.batt{width:24px;height:11px;border:1.5px solid #fff;border-radius:3px;position:relative}
+.batt:after{content:"";position:absolute;inset:1.5px;right:5px;background:#fff;border-radius:1px}
+
+/* top tabs */
+.toptabs{flex:none;display:flex;justify-content:center;gap:28px;padding:4px 0 10px}
+.toptabs button{font-size:15px;color:var(--sub);position:relative;padding:4px 2px}
+.toptabs button.on{color:#fff;font-weight:700;font-size:17px}
+.toptabs button.on:after{content:"";position:absolute;left:50%;bottom:-4px;width:18px;height:3px;border-radius:2px;transform:translateX(-50%);background:var(--cy);box-shadow:0 0 8px var(--cy)}
+
+.main{flex:1;display:flex;flex-direction:column;min-height:0}
+.scroll{flex:1;overflow-y:auto;min-height:0;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+/* sub tabs */
+.subtabs{flex:none;display:flex;align-items:center;gap:8px;padding:0 12px 10px}
+.seg{flex:1;display:flex;gap:6px}
+.seg button{flex:1;height:30px;border-radius:15px;background:rgba(255,255,255,.05);color:var(--sub);font-size:13px;position:relative}
+.seg button.on{color:var(--cy);font-weight:700;background:rgba(56,227,238,.1);box-shadow:inset 0 0 0 1px rgba(56,227,238,.25)}
+.badge{position:absolute;top:-5px;right:8px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--red);color:#fff;font-size:10px;font-style:normal;line-height:16px;font-weight:600}
+.bcbtn{height:30px;padding:0 10px;border-radius:15px;display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:#12121a;background:linear-gradient(90deg,var(--cy),#6af2c8)}
+
+/* search bar */
+.sbar{margin:0 12px 6px;height:34px;border-radius:17px;background:rgba(255,255,255,.06);display:flex;align-items:center;gap:6px;padding:0 6px 0 12px;color:var(--sub);font-size:13px;cursor:text}
+.sbar span{flex:1}
+.sbar b{color:var(--red);font-size:14px;padding:0 6px}
+
+/* conversation list */
+.ci{display:flex;gap:10px;padding:10px 12px;align-items:center;cursor:pointer;position:relative}
+.ci:active,.ci:hover{background:rgba(255,255,255,.03)}
+.ci:after{content:"";position:absolute;left:66px;right:12px;bottom:0;height:1px;background:var(--line)}
+.ci .bd{flex:1;min-width:0}
+.ci .l1{display:flex;align-items:center;gap:6px}
+.ci .nm{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci .tm{margin-left:auto;font-size:11px;color:var(--sub);flex:none}
+.ci .l2{display:flex;align-items:center;gap:8px;margin-top:5px}
+.ci .pv{flex:1;font-size:12.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci .ub{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--red);font-size:11px;line-height:18px;text-align:center;font-weight:600;flex:none}
+.ci.flash{animation:flash 2s ease}
+@keyframes flash{0%,40%{background:rgba(56,227,238,.16)}100%{background:transparent}}
+.tag{font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.08);color:var(--sub);flex:none;font-weight:500}
+.tag.cy{background:rgba(56,227,238,.14);color:var(--cy)}
+.tag.gold{background:rgba(245,199,106,.14);color:var(--gold)}
+.mini{font-size:11px;color:var(--cy);border:1px solid rgba(56,227,238,.35);border-radius:10px;padding:2px 8px;flex:none}
+
+/* avatar */
+.av{border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;position:relative;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.av .on{position:absolute;right:0;bottom:0;width:28%;height:28%;border-radius:50%;background:var(--green);border:2px solid #1c1b25}
+.av.bc{background:linear-gradient(135deg,#38e3ee,#2a7bff);color:#fff}
+.av.grp{background:linear-gradient(135deg,#7a5cff,#c26bff)}
+.av.sys{background:linear-gradient(135deg,#ffb84d,#ff6b4d)}
+
+/* unread */
+.unhead{display:flex;align-items:center;justify-content:space-between;padding:4px 12px 8px;font-size:12px;color:var(--sub)}
+.unhead b{color:var(--red)}
+.unhead button{color:var(--cy);font-size:12px;display:flex;align-items:center;gap:3px}
+.empty{padding:90px 20px;text-align:center;color:var(--dim);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty .ei{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:var(--sub)}
+
+/* contacts */
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 12px 10px;padding:12px 4px;border-radius:14px;background:rgba(255,255,255,.04)}
+.quick button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--txt);position:relative}
+.quick .qi{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(56,227,238,.1);color:var(--cy)}
+.quick button:nth-child(2) .qi{background:rgba(155,115,255,.14);color:#b69bff}
+.quick button:nth-child(3) .qi{background:rgba(255,77,109,.12);color:#ff7d93}
+.quick button:nth-child(4) .qi{background:rgba(245,199,106,.12);color:var(--gold)}
+.quick .badge{right:14px;top:-4px}
+.sech{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 6px;font-size:12px;color:var(--sub)}
+.sech button{color:var(--cy);display:flex;align-items:center;gap:3px;font-size:12px}
+.gh{display:flex;align-items:center;gap:6px;padding:11px 12px;cursor:pointer;font-size:14.5px;font-weight:600}
+.gh:hover{background:rgba(255,255,255,.02)}
+.arr{color:var(--sub);transition:transform .2s;display:inline-flex}
+.arr.o{transform:rotate(90deg)}
+.gh em{margin-left:auto;font-style:normal;font-size:12px;color:var(--sub);font-weight:400}
+.fr{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 30px;cursor:pointer}
+.fr:hover{background:rgba(255,255,255,.03)}
+.fr .bd{flex:1;min-width:0}
+.fr .nm{font-size:14px;display:flex;align-items:center;gap:5px}
+.fr .nm span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr .sg{font-size:11.5px;color:var(--sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr .sg i{font-style:normal;color:var(--green);margin-right:4px}
+.fr .sg i.off{color:var(--dim)}
+.vip{font-size:9px;font-weight:800;padding:0 4px;border-radius:3px;background:linear-gradient(90deg,#f5c76a,#ff9f43);color:#3a2300;flex:none;line-height:14px}
+.morebtn{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--sub)}
+.morebtn:hover{background:rgba(255,255,255,.06)}
+
+/* placeholder */
+.ph{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--sub);font-size:13px}
+
+/* bottom nav */
+.bottom{flex:none;display:flex;height:64px;padding-bottom:8px;border-top:1px solid var(--line);background:rgba(18,17,24,.92);backdrop-filter:blur(10px)}
+.bottom button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10.5px;color:var(--dim);position:relative}
+.bottom button.on{color:var(--cy)}
+.bottom button.on .ic{filter:drop-shadow(0 0 6px rgba(56,227,238,.6))}
+.bottom .badge{top:4px;right:12px}
+
+/* pages */
+#layers{position:absolute;inset:0;pointer-events:none;z-index:20}
+.page{position:absolute;top:44px;left:0;right:0;bottom:0;background:#18171f;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;pointer-events:auto}
+.page.in{transform:none}
+.hdr{flex:none;height:46px;display:flex;align-items:center;padding:0 6px;position:relative;border-bottom:1px solid var(--line)}
+.hdr .back,.hdr .act{width:38px;height:38px;display:flex;align-items:center;justify-content:center;color:var(--txt);z-index:1}
+.hdr .act{margin-left:auto}
+.hdr .tt{position:absolute;left:50px;right:50px;text-align:center;font-size:16px;font-weight:600;line-height:1.15}
+.hdr .tt small{display:block;font-size:11px;color:var(--sub);font-weight:400;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr .txtact{margin-left:auto;padding:0 10px;color:var(--cy);font-size:14px;z-index:1}
+
+/* chat */
+.msgs{flex:1;overflow-y:auto;padding:12px 12px 16px;scrollbar-width:none}
+.tsep{text-align:center;font-size:11px;color:var(--dim);margin:12px 0}
+.sysnote{margin:4px auto 10px;max-width:86%;text-align:center;font-size:11.5px;color:var(--sub);background:rgba(255,255,255,.05);padding:6px 10px;border-radius:8px}
+.row{display:flex;gap:8px;margin:10px 0;align-items:flex-start}
+.row.me{justify-content:flex-end}
+.row .who{font-size:11px;color:var(--sub);margin:0 0 3px 2px}
+.bub{max-width:240px;padding:9px 12px;border-radius:4px 14px 14px 14px;background:var(--card2);font-size:14px;line-height:1.5;word-break:break-word;white-space:pre-wrap}
+.bub.me{border-radius:14px 4px 14px 14px;background:linear-gradient(135deg,var(--cy),#4fd9c4);color:#0e1c22}
+.mecol{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.bcnt{font-size:10.5px;color:var(--sub);display:flex;align-items:center;gap:3px}
+.sysbub{background:var(--card);border:1px solid var(--line)}
+.ibar{flex:none;display:flex;gap:8px;padding:8px 10px 14px;border-top:1px solid var(--line);background:#1c1b24;align-items:center}
+.ibar input{flex:1;height:38px;border-radius:19px;border:0;outline:0;background:rgba(255,255,255,.07);padding:0 14px}
+.ibar button.send{height:36px;padding:0 16px;border-radius:18px;background:linear-gradient(90deg,var(--cy),#6af2c8);color:#10131a;font-weight:700}
+.ronly{flex:none;text-align:center;font-size:12px;color:var(--dim);padding:14px;border-top:1px solid var(--line)}
+
+/* search page */
+.shdr{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.sbox{display:flex;align-items:center;gap:6px;height:34px;border-radius:17px;background:rgba(255,255,255,.07);padding:0 10px;color:var(--sub)}
+.sbox.grow{flex:1}
+.sbox input{flex:1;border:0;outline:0;background:none;font-size:13.5px;min-width:0}
+.sbox .clr{color:var(--sub);display:none}
+.sbox .clr.vis{display:block}
+.txtbtn{color:var(--cy);font-size:14px}
+.blk{padding:14px 12px 4px}
+.blk-h{font-size:12px;color:var(--sub);display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.blk-h button{color:var(--sub);display:flex}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:5px 12px;border-radius:14px;background:rgba(255,255,255,.06);font-size:12.5px;color:var(--txt)}
+.hint3{display:flex;justify-content:space-around;padding:30px 20px;color:var(--sub);font-size:12px;text-align:center}
+.hint3 div{display:flex;flex-direction:column;align-items:center;gap:8px}
+.hint3 .qi{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;color:var(--cy)}
+.rs-h{font-size:12px;color:var(--sub);padding:12px 12px 4px}
+.rs{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer}
+.rs:hover{background:rgba(255,255,255,.03)}
+.rs .bd{flex:1;min-width:0}
+.rs .t1{font-size:14px}
+.rs .t2{font-size:11.5px;color:var(--sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-more{font-size:12px;color:var(--cy);padding:6px 12px 10px;display:block}
+mark{background:none;color:var(--cy);font-weight:700}
+
+/* generic list page */
+.li{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line)}
+.li .bd{flex:1;min-width:0}
+.li .t1{font-size:14.5px}
+.li .t2{font-size:12px;color:var(--sub);margin-top:3px}
+.btn{height:28px;padding:0 12px;border-radius:14px;font-size:12px;font-weight:600}
+.btn.pri{background:linear-gradient(90deg,var(--cy),#6af2c8);color:#10131a}
+.btn.gho{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);color:var(--sub)}
+.btn.dan{box-shadow:inset 0 0 0 1px rgba(255,77,109,.5);color:var(--red)}
+.done{font-size:12px;color:var(--dim)}
+
+/* group manage */
+.gm-add{margin:12px;height:44px;border-radius:12px;border:1px dashed rgba(56,227,238,.45);color:var(--cy);display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;width:calc(100% - 24px)}
+.gm{display:flex;align-items:center;gap:8px;padding:12px;border-bottom:1px solid var(--line)}
+.gm .bd{flex:1;min-width:0}
+.gm .t1{font-size:15px;display:flex;align-items:center;gap:6px}
+.gm .t2{font-size:12px;color:var(--sub);margin-top:3px}
+.gm{flex-direction:column;align-items:stretch;gap:10px}
+.gm-top{display:flex;align-items:center;gap:8px}
+.gm-ops{display:flex;gap:8px}
+.gm-ops .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;height:30px}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.dan.solid{background:var(--red);color:#fff;box-shadow:none}
+.icb{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--sub);background:rgba(255,255,255,.05)}
+.icb.dan{color:var(--red)}
+.tip{font-size:11.5px;color:var(--dim);padding:12px;line-height:1.7}
+
+/* selection */
+.pad{padding:8px 12px 4px;flex:none}
+.allrow{flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
+.allrow span{font-size:14.5px;font-weight:600}
+.allrow em{font-style:normal;font-size:12px;color:var(--sub)}
+.allrow .lim{margin-left:auto;font-size:11px;color:var(--gold);background:rgba(245,199,106,.1);padding:2px 8px;border-radius:10px;font-weight:400}
+.cb{width:20px;height:20px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px var(--dim);display:flex;align-items:center;justify-content:center;font-style:normal;position:relative}
+.cb.on{background:var(--cy);box-shadow:none}
+.cb.on:after{content:"";width:9px;height:5px;border-left:2px solid #10131a;border-bottom:2px solid #10131a;transform:rotate(-45deg) translate(1px,-1px)}
+.cb.part{background:rgba(56,227,238,.25);box-shadow:inset 0 0 0 1.5px var(--cy)}
+.cb.part:after{content:"";width:9px;height:2px;background:var(--cy);border-radius:1px}
+.sgh{display:flex;align-items:center;gap:8px;padding:11px 12px;cursor:pointer;background:rgba(255,255,255,.02);border-bottom:1px solid var(--line)}
+.sgh .cbw{padding:2px}
+.sgh .gn{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;flex:1}
+.sgh em{font-style:normal;font-size:12px;color:var(--sub)}
+.srow{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 22px;cursor:pointer}
+.srow:hover{background:rgba(255,255,255,.03)}
+.srow .bd{flex:1;min-width:0;font-size:14px}
+.srow small{display:block;color:var(--sub);font-size:11px;margin-top:2px}
+.foot{flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px 16px;border-top:1px solid var(--line);background:#1c1b24}
+.foot .pk{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.foot .stack{display:flex}
+.foot .stack .av{margin-left:-8px;border:2px solid #1c1b24}
+.foot .stack .av:first-child{margin-left:0}
+.foot .cnt{font-size:12.5px;color:var(--sub);white-space:nowrap}
+.foot .cnt b{color:var(--cy);font-size:15px}
+.foot .clear{font-size:12px;color:var(--sub)}
+.bigbtn{height:40px;padding:0 20px;border-radius:20px;background:linear-gradient(90deg,var(--cy),#6af2c8);color:#10131a;font-weight:700;font-size:14px}
+.bigbtn:disabled{background:#33323f;color:var(--dim);cursor:not-allowed}
+.bigbtn.full{width:100%}
+
+/* compose */
+.rcpt{margin:12px;padding:12px;border-radius:12px;background:var(--card)}
+.rcpt-h{display:flex;align-items:center;font-size:13px;color:var(--sub);margin-bottom:10px}
+.rcpt-h b{color:var(--cy);margin:0 3px;font-size:15px}
+.rcpt-h button{margin-left:auto;color:var(--cy);font-size:12.5px}
+.rcpt .chip{font-size:12px;padding:4px 10px}
+.ta{margin:0 12px;border-radius:12px;background:var(--card);padding:12px}
+.ta textarea{width:100%;height:150px;border:0;outline:0;background:none;resize:none;font-size:14.5px;line-height:1.6}
+.ta .cn{text-align:right;font-size:11.5px;color:var(--dim)}
+.tpl{padding:14px 12px 0}
+.tpl .blk-h{margin-bottom:8px}
+.tpl .chip{cursor:pointer}
+.tpl .chip:hover{color:var(--cy)}
+
+/* overlay */
+#overlay{position:absolute;inset:0;z-index:50;display:none}
+#overlay.show{display:flex}
+#overlay.pos-bottom{align-items:flex-end}
+#overlay.pos-center{align-items:center;justify-content:center}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.55);animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+.sheet{position:relative;width:100%;background:#22212c;border-radius:18px 18px 0 0;padding-bottom:12px;animation:up .22s ease;max-height:75%;display:flex;flex-direction:column}
+@keyframes up{from{transform:translateY(100%)}}
+.sh-t{text-align:center;font-size:12.5px;color:var(--sub);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.sh-i{width:100%;height:50px;font-size:15px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:6px}
+.sh-i.on{color:var(--cy)}
+.sh-i.danger{color:var(--red)}
+.sh-i.cancel{border:0;border-top:6px solid #18171f;color:var(--sub)}
+.sh-scroll{overflow-y:auto;flex:1 1 auto;min-height:0}
+.sheet.tall{height:72%}
+.sheet .li{padding:10px 16px}
+.dlg{position:relative;width:290px;background:#262533;border-radius:16px;overflow:hidden;animation:pop .2s ease}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+.dlg-t{font-size:16px;font-weight:600;text-align:center;padding:20px 18px 8px}
+.dlg-x{font-size:13px;color:var(--sub);text-align:center;padding:0 20px 14px;line-height:1.6}
+.dlg input{display:block;width:calc(100% - 36px);margin:6px 18px 18px;height:40px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);outline:0;padding:0 12px}
+.dlg input:focus{border-color:rgba(56,227,238,.5)}
+.dlg-b{display:flex;border-top:1px solid var(--line)}
+.dlg-b button{flex:1;height:46px;font-size:15px;color:var(--sub)}
+.dlg-b button+button{border-left:1px solid var(--line)}
+.dlg-b .ok{color:var(--cy);font-weight:600}
+.dlg-b .danger{color:var(--red);font-weight:600}
+
+#toast{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%) scale(.9);background:rgba(10,10,14,.9);color:#fff;font-size:13px;padding:10px 16px;border-radius:10px;z-index:80;opacity:0;pointer-events:none;transition:.2s;max-width:260px;text-align:center;line-height:1.5}
+#toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* notes */
+.notes{width:380px;color:#c9c7d8;font-size:13px;line-height:1.7;padding-top:8px}
+.notes h2{font-size:18px;color:#fff;margin:0 0 4px}
+.notes p.s{color:#7d7b90;margin:0 0 16px;font-size:12px}
+.notes{max-height:840px;overflow-y:auto;padding-right:8px}
+.notes h3{font-size:14px;color:#fff;margin:18px 0 6px}
+.notes ul{padding-left:18px;margin:0}
+.notes ol{padding-left:18px;margin:0}
+.notes li{margin-bottom:6px}
+.notes li b{color:var(--cy);font-weight:600}
+.notes code{background:#22212c;padding:1px 5px;border-radius:4px;font-size:12px;color:#fff}
+@media(max-width:760px){.notes{display:none}}
+@media(max-width:480px){body{padding:0}.phone{width:100vw;height:100dvh;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="status"><span>9:41</span><span class="r">5G <span class="batt"></span></span></div>
+  <div class="toptabs" id="toptabs"></div>
+  <div class="main" id="main"></div>
+  <nav class="bottom" id="bottom"></nav>
+  <div id="layers"></div>
+  <div id="overlay"></div>
+  <div id="toast"></div>
+</div>
+
+<aside class="notes">
+  <h2>消息中心 · 交互说明</h2>
+  <p class="s">高保真可交互原型，数据为前端模拟，刷新后重置</p>
+
+  <h3>一、页面结构</h3>
+  <ul>
+    <li><b>二级标签</b>：消息 / 未读 / 通讯录，右侧固定「群发」入口，三个标签下都能直接发起群发。</li>
+  </ul>
+
+  <h3>二、红点与未读提示</h3>
+  <ul>
+    <li><b>会话红点</b>：会话右下角显示该会话的未读条数，超过 99 显示「99+」。</li>
+    <li><b>「未读」标签红点</b>：显示所有会话的未读总数。</li>
+    <li><b>「通讯录」标签红点</b>：显示待处理的好友申请数，与「新的联系人」入口的红点一致。处理（同意/拒绝）后递减。</li>
+    <li><b>清零规则</b>：进入会话即视为已读，该会话红点清零，未读总数同步减少。</li>
+    <li><b>新消息</b>：不在当前会话时收到的消息累加到该会话的未读数，会话按最新消息时间排到前面。</li>
+  </ul>
+
+  <h3>三、消息列表</h3>
+  <ul>
+    <li>按最后一条消息时间倒序排列。时间显示规则：1 分钟内「刚刚」，1 小时内「N 分钟前」，当天「HH:MM」，昨天「昨天」，更早「M-D」。</li>
+    <li>会话类型标签：<code>群发</code>（群发窗口）、<code>群</code>（群聊）、<code>官方</code>（系统/客服通知）。</li>
+    <li>官方/系统会话只读，底部提示「暂不支持回复」。</li>
+  </ul>
+
+  <h3>四、未读页</h3>
+  <ul>
+    <li>只展示有未读消息的会话，顶部汇总「共 N 条未读 · M 个会话」。</li>
+    <li><b>标为已读</b>：每个会话右侧有「标为已读」按钮，点击后只清除该会话红点，不进入会话，该会话从未读列表中消失。</li>
+    <li><b>全部已读</b>：弹出二次确认，确认后清空所有未读，页面显示「没有未读消息」空状态。</li>
+    <li>点击会话进入聊天，返回后该会话已不在未读列表中。</li>
+  </ul>
+
+  <h3>五、搜索</h3>
+  <ul>
+    <li>点击搜索框进入独立搜索页，输入框自动聚焦，右侧「取消」返回。</li>
+    <li>未输入时显示搜索历史（最多 8 条，可一键清空）和可搜索的范围。</li>
+    <li>输入即实时匹配，结果分三组：<b>联系人</b>（昵称/备注/用户ID）、<b>群聊</b>（群名/群ID）、<b>聊天记录</b>（消息内容，显示命中条数）。关键词青色高亮。</li>
+    <li>联系人超过 4 个时折叠，点「查看更多」展开。无结果时显示空状态。</li>
+    <li>按回车或点击结果会写入搜索历史。从通讯录进入的搜索只返回联系人。</li>
+  </ul>
+
+  <h3>六、通讯录与好友</h3>
+  <ul>
+    <li>快捷入口：新的联系人 / 我的群聊 / 黑名单 / 分组管理。</li>
+    <li>好友按分组折叠展示（类似 QQ），分组右侧显示「在线人数 / 总人数」，组内在线好友排在前面。</li>
+    <li>好友行「⋯」：发消息、移动到分组、设置备注、加入黑名单、删除好友（危险操作二次确认）。</li>
+    <li>黑名单好友不出现在分组列表和群发选择列表中，可在黑名单页移出。</li>
+  </ul>
+
+  <h3>七、分组管理</h3>
+  <ul>
+    <li><b>添加分组</b>：名称不能为空，最多 10 个字，不能重名，最多 30 个分组。</li>
+    <li><b>重命名 / 删除分组</b>：默认分组「我的好友」不可重命名、不可删除。删除分组需二次确认，组内好友自动移到「我的好友」。</li>
+    <li><b>添加成员</b>：进入选择页，只列出不在该分组中的好友，并显示每人当前所在分组。支持全选全部、按分组全选、搜索勾选，确定后移入。</li>
+    <li><b>成员不重复</b>：每位好友只属于一个分组，加入新分组即从原分组移出，因此同一个人不会同时出现在两个分组里。</li>
+    <li><b>删除成员</b>：进入分组成员页，可搜索、单选、全选。「移出分组」后好友不会被删除，而是归入「我的好友」（二次确认）；也可以「移动到…」其他分组。默认分组没有「移出分组」，只能移动到其他分组。</li>
+  </ul>
+
+  <h3>八、群发</h3>
+  <ul>
+    <li><b>选择对象</b>：好友按分组展示，头部显示「已选 N / 500」。</li>
+    <li><b>全选全部</b>：一次选中所有可选好友。超过 500 人时只选前 500 人，并提示有多少人未选中；已选满时再点即取消全选。</li>
+    <li><b>全选分组</b>：点分组左侧的勾选框选中整组，再点取消整组。部分选中时显示半选状态，分组右侧显示「已选 / 总数」。若剩余名额不够整组，按名额选入并提示。</li>
+    <li><b>单选</b>：已选满 500 人后不能再勾选，会提示上限。支持搜索后勾选，底部可「清空」。</li>
+    <li><b>编辑内容</b>：显示接收人（前 10 位 + 「等 N 人」），可点「修改」返回重选。文案必填，最多 500 字，带字数统计。点「确定群发」二次确认后发送。</li>
+  </ul>
+
+  <h3>九、群发聊天窗</h3>
+  <ul>
+    <li>群发成功后自动回到「消息」列表，顶部新增「群发 · N人」会话（青色喇叭头像 + <code>群发</code> 标签），并高亮闪烁提示。</li>
+    <li>进入后，标题下方显示部分接收人名字；聊天区顶部说明「对方以单聊形式收到，互相看不到其他接收人」。</li>
+    <li>每条群发消息下方标注「已发送给 N 人」。</li>
+    <li><b>补发</b>：底部输入框可以继续给同一批人发送内容，发送后提示「已补发给 N 人」。</li>
+    <li><b>查看人员</b>：右上角人员图标打开底部弹窗，列出全部接收人（昵称、ID、所在分组），可滚动查看。</li>
+    <li>每次群发都生成一个独立的群发窗口，接收名单固定不变。</li>
+  </ul>
+</aside>
+
+<script>
+/* ---------- icons ---------- */
+const IC={
+search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+back:'<path d="M15 18l-6-6 6-6"/>',
+chev:'<path d="M9 6l6 6-6 6"/>',
+more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+mega:'<path d="M3 10.5v3a1 1 0 001 1h3l6 4.5V5L7 9.5H4a1 1 0 00-1 1z"/><path d="M17 8.5a5 5 0 010 7M19.5 6a8.5 8.5 0 010 12"/>',
+users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14c2 .7 3.5 2.7 3.5 6"/>',
+ban:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
+uplus:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6"/>',
+check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+edit:'<path d="M4 20h4L19 9l-4-4L4 16v4z"/>',
+bell:'<path d="M6 16v-5a6 6 0 0112 0v5l2 2H4l2-2zM10 20a2 2 0 004 0"/>',
+close:'<path d="M6 6l12 12M18 6L6 18"/>',
+folder:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
+film:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',
+video:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/>',
+chat:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 10.5h.01M12 10.5h.01M16 10.5h.01"/>',
+gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-2-4-6-4-6-1.5S9 8 12 8zm0 0c2-4 6-4 6-1.5S15 8 12 8z"/>',
+game:'<rect x="2.5" y="7" width="19" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.5" r=".8"/><circle cx="18" cy="13.5" r=".8"/>',
+me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+room:'<path d="M3 20V9l9-5 9 5v11"/><path d="M9 20v-6h6v6"/>',
+history:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+msg:'<path d="M4 5h16v11H9l-5 4z"/>',
+dbl:'<path d="M2 12.5l4.5 4.5L15 8M10 16l1 1 9-9"/>'
+};
+function I(n,s=18,w=1.8){return `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${IC[n]}</svg>`}
+
+/* ---------- utils ---------- */
+const MIN=60000, NOW=Date.now();
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let seed=20261024;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function hash(s){let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))|0;return Math.abs(h)}
+const PAL=[['#ff8aa5','#ff4d6d'],['#79d0ff','#3a7bff'],['#ffd36e','#ff9f43'],['#8af5c0','#17b981'],['#c7a2ff','#7a5cff'],['#6ef2f7','#139fc4'],['#ffb38a','#f0603c']];
+function av(name,size=44,online){const p=PAL[hash(name)%PAL.length];return `<div class="av" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px;background:linear-gradient(135deg,${p[0]},${p[1]})">${esc(String(name).trim().charAt(0))}${online?'<i class="on"></i>':''}</div>`}
+function avIcon(icon,size,cls){return `<div class="av ${cls}" style="width:${size}px;height:${size}px">${I(icon,Math.round(size*.5),2)}</div>`}
+const pad=n=>String(n).padStart(2,'0');
+function sameDay(a,b){a=new Date(a);b=new Date(b);return a.toDateString()===b.toDateString()}
+function fmtList(t){const d=Date.now()-t;if(d<MIN)return'刚刚';if(d<60*MIN)return Math.floor(d/MIN)+'分钟前';const x=new Date(t);if(sameDay(t,Date.now()))return pad(x.getHours())+':'+pad(x.getMinutes());if(sameDay(t,Date.now()-864e5))return'昨天';return (x.getMonth()+1)+'-'+x.getDate()}
+function fmtFull(t){const x=new Date(t),hm=pad(x.getHours())+':'+pad(x.getMinutes());if(sameDay(t,Date.now()))return hm;if(sameDay(t,Date.now()-864e5))return'昨天 '+hm;return (x.getMonth()+1)+'月'+x.getDate()+'日 '+hm}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('show'),2000)}
+
+/* ---------- mock data ---------- */
+const S={top:'msg',sub:'msg',open:new Set(['g0','g1']),history:['小鹿','VIP交流群','8888'],hl:null,groups:[],friends:[],convs:[],requests:[],chats:[]};
+const NICK=['小鹿乱撞','阿杰','夜猫子','奶茶不加糖','风一样的男子','追梦人','柠檬精','大白','晴天','橘子汽水','老K','月半弯','星辰大海','飞鱼','七七','木子','可乐加冰','南风','阿狸','北极熊','暴走萝莉','一只猫','路人甲','锦鲤本鲤','咸鱼翻身','半糖','山海','阿宝','十一','小确幸'];
+const CH='子轩浩宇欣怡思雨梓涵俊杰雅婷佳琪航晨曦嘉安然一诺沐阳若溪辰逸可馨';
+const SIGN=['今天也要元气满满','忙，勿扰','佛系玩家','只聊有趣的','周末约起','签名还没想好','','',''];
+S.groups=[{id:'g0',name:'我的好友',fixed:true},{id:'g1',name:'VIP客户'},{id:'g2',name:'活跃玩家'},{id:'g3',name:'新注册用户'},{id:'g4',name:'沉睡用户'}];
+const SIZES={g0:14,g1:38,g2:176,g3:262,g4:138};
+let fi=0;
+for(const g of S.groups)for(let k=0;k<SIZES[g.id];k++){const i=fi++;
+  const name=i<NICK.length?NICK[i]:CH[Math.floor(rnd()*CH.length)]+CH[Math.floor(rnd()*CH.length)]+(rnd()<.45?'_'+Math.floor(rnd()*999):'');
+  S.friends.push({id:'u'+i,uid:String(10000000+Math.floor(rnd()*89999999)),name,remark:'',group:g.id,online:rnd()<.3,vip:Math.floor(rnd()*10),sign:SIGN[Math.floor(rnd()*SIGN.length)],black:false});}
+S.friends[0].uid='10086888';S.friends[0].online=true;S.friends[1].online=true;
+S.friends[40].black=true;S.friends[73].black=true;
+S.requests=[{id:'r1',name:'甜甜圈',uid:'52013140',msg:'我是在活动群里看到你的',st:0},{id:'r2',name:'大漠孤烟',uid:'66889911',msg:'加个好友一起玩',st:0},{id:'r3',name:'Momo',uid:'30217788',msg:'你好',st:1}];
+S.chats=[{id:'grp1',name:'VIP交流群',gid:'80012345',count:128},{id:'grp2',name:'周末开黑群',gid:'80023456',count:46},{id:'grp3',name:'新人互助群',gid:'80034567',count:312}];
+const m=(from,text,mins,who)=>({from,text,t:NOW-mins*MIN,who});
+S.convs=[
+ {id:'c_sys',type:'sys',name:'江湖人',letter:true,msgs:[m('them','【系统消息】不好意思，妹妹现在忙碌，没法接您的订单，请稍后再试～',2)],unread:0},
+ {id:'c_u0',type:'single',fid:'u0',msgs:[m('me','好的明天见',1500),m('them','在吗？',9),m('them','今晚的活动一起冲吗',8),m('them','[图片]',6)],unread:3},
+ {id:'c_grp1',type:'group',gid:'grp1',name:'VIP交流群',msgs:[m('them','大家晚上好',60,'七七'),m('them','今晚8点有抽奖，别忘了',14,'阿狸')],unread:12},
+ {id:'c_u1',type:'single',fid:'u1',msgs:[m('me','好的我找找',200),m('them','上次说的那个活动链接发我一下',25)],unread:1},
+ {id:'c_off',type:'sys',name:'官方通知',msgs:[m('them','双十一活动预告：11月1日起每日签到可领好礼，敬请期待！',45)],unread:1},
+ {id:'c_svc',type:'sys',name:'客服小助手',msgs:[m('them','您好，您申请的活动奖励已到账，请注意查收。',120),m('them','如有疑问可随时联系在线客服～',119)],unread:2},
+ {id:'c_u2',type:'single',fid:'u2',msgs:[m('them','今天先这样',260),m('me','好的晚安',255)],unread:0},
+ {id:'c_u9',type:'single',fid:'u9',msgs:[m('them','哈哈哈哈太逗了',1600)],unread:0},
+ {id:'c_grp2',type:'group',gid:'grp2',name:'周末开黑群',msgs:[m('them','周六晚上谁有空',2900,'老K')],unread:0}
+];
+const REPLY=['收到～','哈哈好的','稍等我看看','👍','晚点回你','可以可以'];
+
+const fr=id=>S.friends.find(f=>f.id===id);
+const grp=id=>S.groups.find(g=>g.id===id);
+const fname=f=>f.remark||f.name;
+const lastT=c=>c.msgs.length?c.msgs[c.msgs.length-1].t:0;
+function convName(c){if(c.type==='single'){const f=fr(c.fid);return f?fname(f):'已删除好友'}if(c.type==='bc')return `群发 · ${c.ids.length}人`;return c.name}
+function convAv(c,s=48){if(c.type==='single'){const f=fr(c.fid);return av(f?fname(f):'?',s,f&&f.online)}if(c.type==='bc')return avIcon('mega',s,'bc');if(c.type==='group')return avIcon('users',s,'grp');if(c.letter)return av(c.name,s);return avIcon('bell',s,'sys')}
+function convTag(c){if(c.type==='bc')return '<span class="tag cy">群发</span>';if(c.type==='group')return '<span class="tag">群</span>';if(c.type==='sys')return '<span class="tag gold">官方</span>';return ''}
+function preview(c){const x=c.msgs[c.msgs.length-1];if(!x)return'';if(c.type==='bc')return `[已发送${x.cnt||c.ids.length}人] `+x.text;if(x.who)return x.who+'：'+x.text;return x.text}
+const sortedConvs=()=>[...S.convs].sort((a,b)=>lastT(b)-lastT(a));
+const totalUnread=()=>S.convs.reduce((s,c)=>s+c.unread,0);
+const bnum=n=>n>99?'99+':n;
+
+/* ---------- main render ---------- */
+function renderTop(){
+  const T=[['room','聊天室'],['msg','消息中心'],['video','视频聊天']];
+  document.getElementById('toptabs').innerHTML=T.map(([k,t])=>`<button class="${S.top===k?'on':''}" onclick="S.top='${k}';renderAll()">${t}</button>`).join('');
+}
+function renderBottom(){
+  const B=[['film','短剧'],['video','视频'],['chat','聊天'],['gift','活动'],['game','游戏'],['me','我的']];
+  const u=totalUnread();
+  document.getElementById('bottom').innerHTML=B.map(([ic,t])=>`<button class="${t==='聊天'?'on':''}" onclick="${t==='聊天'?'':`toast('「${t}」不在本次原型范围')`}">${I(ic,22)}${t}${t==='聊天'&&u?`<i class="badge">${bnum(u)}</i>`:''}</button>`).join('');
+}
+const scrollMem={};
+function renderMain(){
+  const mainEl=document.getElementById('main');
+  const old=mainEl.querySelector('.scroll');if(old)scrollMem[mainEl.dataset.k]=old.scrollTop;
+  if(S.top!=='msg'){
+    const n=S.top==='room'?['room','聊天室']:['video','视频聊天'];
+    mainEl.dataset.k=S.top;
+    mainEl.innerHTML=`<div class="ph"><div class="empty" style="padding:0"><div class="ei">${I(n[0],28)}</div>「${n[1]}」不在本次改造范围<br>请切换至「消息中心」</div></div>`;return;
+  }
+  const u=totalUnread(),rq=S.requests.filter(r=>!r.st).length;
+  let body='';
+  if(S.sub==='msg')body=tabMsg();else if(S.sub==='unread')body=tabUnread();else body=tabContacts();
+  mainEl.dataset.k=S.sub;
+  mainEl.innerHTML=`<div class="subtabs"><div class="seg">
+      <button class="${S.sub==='msg'?'on':''}" onclick="setSub('msg')">消息</button>
+      <button class="${S.sub==='unread'?'on':''}" onclick="setSub('unread')">未读${u?`<i class="badge">${bnum(u)}</i>`:''}</button>
+      <button class="${S.sub==='contacts'?'on':''}" onclick="setSub('contacts')">通讯录${rq?`<i class="badge">${rq}</i>`:''}</button>
+    </div><button class="bcbtn" onclick="startBroadcast()">${I('mega',15,2.2)}群发</button></div>${body}`;
+  const sc=mainEl.querySelector('.scroll');if(sc&&scrollMem[S.sub])sc.scrollTop=scrollMem[S.sub];
+}
+function renderAll(){renderTop();renderMain();renderBottom()}
+function setSub(k){S.sub=k;renderMain()}
+
+function convItem(c,unreadMode){
+  return `<div class="ci ${S.hl===c.id?'flash':''}" onclick="openChat('${c.id}')">${convAv(c)}<div class="bd">
+    <div class="l1"><span class="nm">${esc(convName(c))}</span>${convTag(c)}<span class="tm">${fmtList(lastT(c))}</span></div>
+    <div class="l2"><span class="pv">${esc(preview(c))}</span>${unreadMode?`<button class="mini" onclick="event.stopPropagation();markRead('${c.id}')">标为已读</button>`:''}${c.unread?`<span class="ub">${bnum(c.unread)}</span>`:''}</div></div></div>`;
+}
+function tabMsg(){
+  return `<div class="sbar" onclick="openSearch()">${I('search',16)}<span>请输入昵称/备注/用户ID/群聊ID</span><b>搜索</b></div>
+  <div class="scroll">${sortedConvs().map(c=>convItem(c)).join('')||emptyH('msg','暂无消息')}</div>`;
+}
+function tabUnread(){
+  const list=sortedConvs().filter(c=>c.unread>0);
+  if(!list.length)return `<div class="scroll">${emptyH('check','太棒了，没有未读消息')}</div>`;
+  return `<div class="unhead"><span>共 <b>${totalUnread()}</b> 条未读 · ${list.length} 个会话</span><button onclick="readAll()">${I('dbl',15)}全部已读</button></div>
+  <div class="scroll">${list.map(c=>convItem(c,true)).join('')}</div>`;
+}
+function emptyH(ic,t){return `<div class="empty"><div class="ei">${I(ic,28)}</div>${t}</div>`}
+function tabContacts(){
+  const rq=S.requests.filter(r=>!r.st).length;
+  const vis=S.friends.filter(f=>!f.black);
+  let gs='';
+  for(const g of S.groups){
+    const ms=vis.filter(f=>f.group===g.id).sort((a,b)=>b.online-a.online);
+    const on=S.open.has(g.id);
+    gs+=`<div class="gh" onclick="toggleOpen('${g.id}')"><span class="arr ${on?'o':''}">${I('chev',14,2.2)}</span>${esc(g.name)}<em>${ms.filter(f=>f.online).length}/${ms.length}</em></div>`;
+    if(on)gs+=ms.map(friendRow).join('')||`<div class="fr" style="color:var(--dim);font-size:12px;cursor:default">暂无好友</div>`;
+  }
+  return `<div class="sbar" onclick="openSearch('contacts')">${I('search',16)}<span>搜索好友昵称/备注/用户ID</span><b>搜索</b></div>
+  <div class="scroll">
+    <div class="quick">
+      <button onclick="openPage('requests')"><span class="qi">${I('uplus',20)}</span>新的联系人${rq?`<i class="badge">${rq}</i>`:''}</button>
+      <button onclick="openPage('mygroups')"><span class="qi">${I('users',20)}</span>我的群聊</button>
+      <button onclick="openPage('black')"><span class="qi">${I('ban',20)}</span>黑名单</button>
+      <button onclick="openPage('gmanage')"><span class="qi">${I('folder',20)}</span>分组管理</button>
+    </div>
+    <div class="sech"><span>好友分组 · 共 ${vis.length} 人</span><button onclick="addFriend()">${I('plus',14,2.2)}添加好友/群聊</button></div>
+    ${gs}<div style="height:12px"></div>
+  </div>`;
+}
+function friendRow(f){
+  return `<div class="fr" onclick="openFriendChat('${f.id}')">${av(fname(f),40,f.online)}<div class="bd">
+   <div class="nm"><span>${esc(fname(f))}</span>${f.vip?`<span class="vip">V${f.vip}</span>`:''}${f.remark?`<span style="font-size:11px;color:var(--sub)">(${esc(f.name)})</span>`:''}</div>
+   <div class="sg"><i class="${f.online?'':'off'}">[${f.online?'在线':'离线'}]</i>${esc(f.sign||'ID '+f.uid)}</div></div>
+   <button class="morebtn" onclick="event.stopPropagation();friendSheet('${f.id}')">${I('more',18,2.5)}</button></div>`;
+}
+function toggleOpen(id){S.open.has(id)?S.open.delete(id):S.open.add(id);renderMain()}
+function markRead(id){const c=S.convs.find(x=>x.id===id);c.unread=0;renderMain();renderBottom()}
+function readAll(){showDialog({title:'全部标为已读',text:`将清除 ${totalUnread()} 条未读消息提醒`,onOk(){S.convs.forEach(c=>c.unread=0);renderMain();renderBottom();toast('已全部标为已读')}})}
+
+/* ---------- page stack ---------- */
+const STACK=[],PAGES={};
+function pushPage(type,data={}){const el=document.createElement('div');el.className='page';document.getElementById('layers').appendChild(el);const p={type,data,el};STACK.push(p);PAGES[type](p);requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));return p}
+function popPage(n=1){for(let i=0;i<n;i++){const p=STACK.pop();if(!p)break;p.el.classList.remove('in');setTimeout(()=>p.el.remove(),260)}
+  renderMain();renderBottom();const t=STACK[STACK.length-1];if(t&&!['search','compose'].includes(t.type))PAGES[t.type](t)}
+function popAll(){popPage(STACK.length)}
+const openPage=t=>pushPage(t);
+function hdr(title,sub,right=''){return `<div class="hdr"><button class="back" onclick="popPage()">${I('back',22,2)}</button><div class="tt">${title}${sub?`<small>${sub}</small>`:''}</div>${right}</div>`}
+
+/* ---------- chat ---------- */
+function openChat(id){const c=S.convs.find(x=>x.id===id);c.unread=0;pushPage('chat',{id});renderMain();renderBottom()}
+function openFriendChat(fid){let c=S.convs.find(x=>x.type==='single'&&x.fid===fid);if(!c){c={id:'c_'+fid,type:'single',fid,msgs:[],unread:0};S.convs.push(c)}openChat(c.id)}
+function openGroupChat(gid){let c=S.convs.find(x=>x.type==='group'&&x.gid===gid);const g=S.chats.find(x=>x.id===gid);if(!c){c={id:'c_'+gid,type:'group',gid,name:g.name,msgs:[],unread:0};S.convs.push(c)}openChat(c.id)}
+PAGES.chat=p=>{
+  const c=S.convs.find(x=>x.id===p.data.id);c.unread=0;
+  let sub='',right='';
+  if(c.type==='single'){const f=fr(c.fid);sub=f?(f.online?'在线':'离线')+' · ID '+f.uid:'';right=f?`<button class="act" onclick="friendSheet('${f.id}',true)">${I('more',20,2.5)}</button>`:''}
+  if(c.type==='group'){const g=S.chats.find(x=>x.id===c.gid);sub=g?g.count+'人':''}
+  if(c.type==='bc'){sub=c.ids.slice(0,3).map(id=>{const f=fr(id);return f?fname(f):'已删除'}).join('、')+(c.ids.length>3?` 等${c.ids.length}人`:'');right=`<button class="act" onclick="showRecipients('${c.id}')">${I('users',20)}</button>`}
+  const canSend=c.type!=='sys';
+  p.el.innerHTML=hdr(esc(convName(c)),esc(sub),right)+`<div class="msgs" id="msgs_${c.id}">${msgsHTML(c)}</div>`+
+   (canSend?`<div class="ibar"><input id="in_${c.id}" placeholder="${c.type==='bc'?`补发给这 ${c.ids.length} 人…`:'说点什么…'}" maxlength="500" onkeydown="if(event.key==='Enter')sendMsg('${c.id}')"><button class="send" onclick="sendMsg('${c.id}')">${c.type==='bc'?'补发':'发送'}</button></div>`:`<div class="ronly">官方/系统消息，暂不支持回复</div>`);
+  const box=p.el.querySelector('.msgs');box.scrollTop=box.scrollHeight;
+};
+function msgsHTML(c){
+  let h='',last=0;
+  if(c.type==='bc')h+=`<div class="sysnote">你正在给 ${c.ids.length} 位好友群发消息<br>对方以单聊形式收到，互相看不到其他接收人</div>`;
+  if(!c.msgs.length&&c.type!=='bc')h+=`<div class="sysnote">打个招呼，开始聊天吧</div>`;
+  for(const x of c.msgs){
+    if(x.t-last>5*MIN)h+=`<div class="tsep">${fmtFull(x.t)}</div>`;last=x.t;
+    if(x.from==='me'){h+=`<div class="row me"><div class="mecol"><div class="bub me">${esc(x.text)}</div>${c.type==='bc'?`<span class="bcnt">${I('check',12,2.4)}已发送给 ${x.cnt} 人</span>`:''}</div></div>`}
+    else{const who=x.who||convName(c);h+=`<div class="row">${c.type==='sys'&&!c.letter?avIcon('bell',34,'sys'):av(who,34)}<div>${c.type==='group'?`<div class="who">${esc(who)}</div>`:''}<div class="bub ${c.type==='sys'?'sysbub':''}">${esc(x.text)}</div></div></div>`}
+  }
+  return h;
+}
+function refreshChat(c){const box=document.getElementById('msgs_'+c.id);if(box){box.innerHTML=msgsHTML(c);box.scrollTop=box.scrollHeight}}
+function sendMsg(id){
+  const c=S.convs.find(x=>x.id===id);const inp=document.getElementById('in_'+id);const v=inp.value.trim();if(!v)return;
+  c.msgs.push({from:'me',text:v,t:Date.now(),cnt:c.type==='bc'?c.ids.length:0});inp.value='';refreshChat(c);
+  if(c.type==='bc'){toast(`已补发给 ${c.ids.length} 人`);return}
+  setTimeout(()=>{
+    const who=c.type==='group'?pick(NICK):null;
+    c.msgs.push({from:'them',text:pick(REPLY),t:Date.now(),who});
+    const open=STACK.some(p=>p.type==='chat'&&p.data.id===c.id&&p===STACK[STACK.length-1]);
+    if(open)refreshChat(c);else c.unread++;
+    renderMain();renderBottom();
+  },1300);
+}
+function showRecipients(id){
+  const c=S.convs.find(x=>x.id===id);
+  ov(`<div class="sheet tall"><div class="sh-t">群发对象（${c.ids.length}人）</div><div class="sh-scroll">${c.ids.map(fid=>{const f=fr(fid);return f?`<div class="li">${av(fname(f),36,f.online)}<div class="bd"><div class="t1">${esc(fname(f))}</div><div class="t2">ID ${f.uid} · ${esc(grp(f.group)?.name||'')}</div></div></div>`:''}).join('')}</div><button class="sh-i cancel" onclick="closeOv()">关闭</button></div>`,'bottom');
+}
+
+/* ---------- search ---------- */
+function openSearch(scope){pushPage('search',{scope})}
+PAGES.search=p=>{
+  p.el.innerHTML=`<div class="shdr"><div class="sbox grow">${I('search',16)}<input id="sKw" placeholder="${p.data.scope==='contacts'?'搜索好友昵称/备注/用户ID':'昵称/备注/用户ID/群聊ID/聊天记录'}" oninput="renderSearch()" onkeydown="if(event.key==='Enter')commitSearch()"><button class="clr" id="sClr" onclick="setKw('')">${I('close',14,2.4)}</button></div><button class="txtbtn" onclick="popPage()">取消</button></div><div class="scroll" id="sRes"></div>`;
+  renderSearch();setTimeout(()=>{const i=document.getElementById('sKw');i&&i.focus()},280);
+};
+let sMore=false;
+function setKw(v){const i=document.getElementById('sKw');i.value=v;sMore=false;renderSearch();i.focus()}
+function commitSearch(){const v=document.getElementById('sKw').value.trim();if(!v)return;S.history=[v,...S.history.filter(h=>h!==v)].slice(0,8)}
+function hlt(t,kw){const e=esc(t);if(!kw)return e;const k=esc(kw).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return e.replace(new RegExp(k,'gi'),s=>`<mark>${s}</mark>`)}
+function renderSearch(){
+  const kw=document.getElementById('sKw').value.trim();const box=document.getElementById('sRes');
+  document.getElementById('sClr').classList.toggle('vis',!!kw);
+  if(!kw){
+    box.innerHTML=(S.history.length?`<div class="blk"><div class="blk-h">搜索历史<button onclick="S.history=[];renderSearch()">${I('trash',15)}</button></div><div class="chips">${S.history.map(h=>`<button class="chip" onclick="setKw('${esc(h)}')">${esc(h)}</button>`).join('')}</div></div>`:'')+
+    `<div class="hint3"><div><span class="qi">${I('me',20)}</span>联系人</div><div><span class="qi">${I('users',20)}</span>群聊</div><div><span class="qi">${I('msg',20)}</span>聊天记录</div></div>`;
+    return;
+  }
+  const k=kw.toLowerCase();
+  const fs=S.friends.filter(f=>!f.black&&(f.name.toLowerCase().includes(k)||f.remark.toLowerCase().includes(k)||f.uid.includes(k)));
+  const gs=S.chats.filter(g=>g.name.toLowerCase().includes(k)||g.gid.includes(k));
+  const rec=S.convs.map(c=>({c,hits:c.msgs.filter(x=>x.text.toLowerCase().includes(k))})).filter(r=>r.hits.length);
+  let h='';
+  if(fs.length){h+=`<div class="rs-h">联系人</div>`+(sMore?fs:fs.slice(0,4)).map(f=>`<div class="rs" onclick="commitSearch();openFriendChat('${f.id}')">${av(fname(f),40,f.online)}<div class="bd"><div class="t1">${hlt(fname(f),kw)}</div><div class="t2">ID：${hlt(f.uid,kw)} · ${esc(grp(f.group)?.name||'')}</div></div></div>`).join('');
+    if(fs.length>4&&!sMore)h+=`<button class="rs-more" onclick="sMore=true;renderSearch()">查看更多联系人（${fs.length}）</button>`}
+  if(gs.length&&document.querySelector('.page:last-child #sKw')&&STACK[STACK.length-1].data.scope!=='contacts'){h+=`<div class="rs-h">群聊</div>`+gs.map(g=>`<div class="rs" onclick="commitSearch();openGroupChat('${g.id}')">${avIcon('users',40,'grp')}<div class="bd"><div class="t1">${hlt(g.name,kw)}</div><div class="t2">群ID：${hlt(g.gid,kw)} · ${g.count}人</div></div></div>`).join('')}
+  if(rec.length&&STACK[STACK.length-1].data.scope!=='contacts'){h+=`<div class="rs-h">聊天记录</div>`+rec.map(r=>`<div class="rs" onclick="commitSearch();openChat('${r.c.id}')">${convAv(r.c,40)}<div class="bd"><div class="t1">${esc(convName(r.c))}</div><div class="t2">${r.hits.length>1?r.hits.length+'条相关聊天记录':hlt(r.hits[0].text,kw)}</div></div></div>`).join('')}
+  box.innerHTML=h||`<div class="empty"><div class="ei">${I('search',26)}</div>没有找到“${esc(kw)}”相关结果</div>`;
+}
+
+/* ---------- contacts sub pages ---------- */
+PAGES.requests=p=>{
+  p.el.innerHTML=hdr('新的联系人')+`<div class="scroll">${S.requests.map(r=>`<div class="li">${av(r.name,44)}<div class="bd"><div class="t1">${esc(r.name)}</div><div class="t2">${esc(r.msg)}</div></div>${r.st===0?`<button class="btn gho" onclick="reqAct('${r.id}',2)">拒绝</button><button class="btn pri" onclick="reqAct('${r.id}',1)">同意</button>`:`<span class="done">${r.st===1?'已添加':'已拒绝'}</span>`}</div>`).join('')}</div>`;
+};
+function reqAct(id,st){const r=S.requests.find(x=>x.id===id);r.st=st;if(st===1){S.friends.unshift({id:'u_'+id,uid:r.uid,name:r.name,remark:'',group:'g0',online:true,vip:0,sign:'',black:false});toast('已添加，好友进入「我的好友」')}else toast('已拒绝');PAGES.requests(STACK[STACK.length-1]);renderMain()}
+PAGES.black=p=>{
+  const bl=S.friends.filter(f=>f.black);
+  p.el.innerHTML=hdr('黑名单',bl.length+'人')+`<div class="scroll">${bl.map(f=>`<div class="li">${av(fname(f),44)}<div class="bd"><div class="t1">${esc(fname(f))}</div><div class="t2">ID ${f.uid}</div></div><button class="btn gho" onclick="unblack('${f.id}')">移出黑名单</button></div>`).join('')||emptyH('ban','黑名单为空')}<div class="tip">加入黑名单后，你将不再收到对方的消息，且不会出现在群发选择列表中。</div></div>`;
+};
+function unblack(id){fr(id).black=false;toast('已移出黑名单');PAGES.black(STACK[STACK.length-1])}
+PAGES.mygroups=p=>{
+  p.el.innerHTML=hdr('我的群聊')+`<div class="scroll">${S.chats.map(g=>`<div class="li" style="cursor:pointer" onclick="openGroupChat('${g.id}')">${avIcon('users',44,'grp')}<div class="bd"><div class="t1">${esc(g.name)}</div><div class="t2">群ID ${g.gid} · ${g.count}人</div></div>${I('chev',16)}</div>`).join('')}</div>`;
+};
+PAGES.gmanage=p=>{
+  const cnt=id=>S.friends.filter(f=>!f.black&&f.group===id).length;
+  p.el.innerHTML=hdr('分组管理',`${S.groups.length}个分组`)+`<div class="scroll">
+   <button class="gm-add" onclick="addGroup()">${I('plus',18,2.2)}添加分组</button>
+   ${S.groups.map(g=>`<div class="gm"><div class="gm-top"><div class="bd"><div class="t1">${esc(g.name)}${g.fixed?'<span class="tag">默认</span>':''}</div><div class="t2">${cnt(g.id)} 位好友</div></div>
+     ${g.fixed?'':`<button class="icb" title="重命名" onclick="renameGroup('${g.id}')">${I('edit',15)}</button><button class="icb dan" title="删除分组" onclick="delGroup('${g.id}')">${I('trash',15)}</button>`}</div>
+     <div class="gm-ops"><button class="btn gho" onclick="addMembers('${g.id}')">${I('plus',13,2.4)}添加成员</button><button class="btn gho" ${cnt(g.id)?'':'disabled'} onclick="openMembers('${g.id}')">${I('close',13,2.4)}${g.fixed?'移出成员':'删除成员'}</button></div></div>`).join('')}
+   <div class="tip">· 分组名称最多10个字，不可重名，最多支持30个分组<br>· 默认分组「我的好友」不可删除、不可重命名<br>· 每位好友只能属于一个分组，添加到新分组会自动从原分组移出，不会重复<br>· 删除成员后，好友自动归入「我的好友」；默认分组的成员只能移动到其他分组<br>· 删除分组后，组内好友自动移至「我的好友」</div></div>`;
+};
+function validName(v,except){if(!v){toast('分组名称不能为空');return false}if(v.length>10){toast('分组名称最多10个字');return false}if(S.groups.some(g=>g.name===v&&g.id!==except)){toast('分组名称已存在');return false}return true}
+function addGroup(){if(S.groups.length>=30)return toast('最多支持30个分组');showDialog({title:'添加分组',input:{ph:'请输入分组名称（≤10字）',max:10},onOk(v){if(!validName(v))return false;const id='g'+Date.now();S.groups.push({id,name:v});S.open.add(id);toast('分组已创建');PAGES.gmanage(STACK[STACK.length-1]);renderMain()}})}
+function renameGroup(id){const g=grp(id);showDialog({title:'重命名分组',input:{value:g.name,max:10},onOk(v){if(!validName(v,id))return false;g.name=v;toast('已重命名');PAGES.gmanage(STACK[STACK.length-1]);renderMain()}})}
+function delGroup(id){const g=grp(id);const n=S.friends.filter(f=>f.group===id).length;showDialog({title:`删除分组「${esc(g.name)}」？`,text:n?`组内 ${n} 位好友将移至「我的好友」`:'该分组下暂无好友',okText:'删除',danger:true,onOk(){S.friends.forEach(f=>{if(f.group===id)f.group='g0'});S.groups=S.groups.filter(x=>x.id!==id);toast('分组已删除');PAGES.gmanage(STACK[STACK.length-1]);renderMain()}})}
+function addFriend(){showDialog({title:'添加好友/群聊',text:'输入对方用户ID或群聊ID',input:{ph:'8位数字ID',max:8},onOk(v){if(!/^\d{8}$/.test(v)){toast('请输入正确的8位ID');return false}toast(v.startsWith('8')?'入群申请已发送':'好友申请已发送')}})}
+
+/* group members (delete) */
+let MEM=null;
+function openMembers(gid){MEM={gid,set:new Set(),kw:''};pushPage('gmembers',{gid})}
+const memList=()=>S.friends.filter(f=>!f.black&&f.group===MEM.gid);
+PAGES.gmembers=p=>{
+  const g=grp(MEM.gid);
+  p.el.innerHTML=hdr(`「${esc(g.name)}」成员`,`${memList().length}人 · 勾选后${g.fixed?'移动到其他分组':'移出分组'}`)+
+   `<div class="pad"><div class="sbox">${I('search',16)}<input placeholder="搜索昵称/备注/用户ID" value="${esc(MEM.kw)}" oninput="MEM.kw=this.value.trim();renderMem()"></div></div>
+    <div id="memTop"></div><div class="scroll" id="memList"></div><div class="foot" id="memFoot"></div>`;
+  renderMem();
+};
+function memVisible(){const k=MEM.kw.toLowerCase();return memList().filter(f=>!k||fname(f).toLowerCase().includes(k)||f.uid.includes(k))}
+function renderMem(){
+  const g=grp(MEM.gid),V=memVisible(),n=MEM.set.size;
+  document.getElementById('memTop').innerHTML=V.length?`<div class="allrow" onclick="memAll()"><i class="cb ${cbStateIn(V,MEM.set)}"></i><span>全选</span><em>${V.length}人</em></div>`:'';
+  const l=document.getElementById('memList'),st=l.scrollTop;
+  l.innerHTML=V.map(f=>`<div class="srow" onclick="memOne('${f.id}')"><i class="cb ${MEM.set.has(f.id)?'on':''}"></i>${av(fname(f),36,f.online)}<div class="bd">${esc(fname(f))}<small>ID ${f.uid}</small></div></div>`).join('')||emptyH('users','该分组暂无成员');
+  l.scrollTop=st;
+  document.getElementById('memFoot').innerHTML=`<div class="pk"><span class="cnt">已选 <b>${n}</b></span></div>
+    <button class="btn gho" style="height:40px;padding:0 16px;border-radius:20px" ${n?'':'disabled'} onclick="memMoveTo()">移动到…</button>
+    ${g.fixed?'':`<button class="btn dan solid" style="height:40px;padding:0 18px;border-radius:20px" ${n?'':'disabled'} onclick="memRemove()">移出分组${n?`(${n})`:''}</button>`}`;
+}
+function cbStateIn(list,set){const n=list.filter(f=>set.has(f.id)).length;return n===0?'':(n===list.length?'on':'part')}
+function memOne(id){MEM.set.has(id)?MEM.set.delete(id):MEM.set.add(id);renderMem()}
+function memAll(){const V=memVisible();if(V.every(f=>MEM.set.has(f.id)))V.forEach(f=>MEM.set.delete(f.id));else V.forEach(f=>MEM.set.add(f.id));renderMem()}
+function memDone(msg){MEM.set.clear();toast(msg);PAGES.gmembers(STACK[STACK.length-1]);renderMain()}
+function memRemove(){const g=grp(MEM.gid),n=MEM.set.size;showDialog({title:`从「${esc(g.name)}」移出 ${n} 人？`,text:'移出后好友不会被删除，将自动归入「我的好友」',okText:'移出',danger:true,onOk(){MEM.set.forEach(id=>fr(id).group='g0');memDone(`已移出 ${n} 人，已归入「我的好友」`)}})}
+function memMoveTo(){const n=MEM.set.size;showSheet(`将 ${n} 位好友移动到`,S.groups.filter(g=>g.id!==MEM.gid).map(g=>({t:esc(g.name),fn:()=>{MEM.set.forEach(id=>fr(id).group=g.id);S.open.add(g.id);memDone(`已将 ${n} 人移至「${g.name}」`)}})))}
+
+/* friend actions */
+function friendSheet(id,inChat){
+  const f=fr(id);
+  showSheet(esc(fname(f))+' · ID '+f.uid,[
+    ...(inChat?[]:[{t:'发消息',fn:()=>openFriendChat(id)}]),
+    {t:'移动到分组',fn:()=>moveSheet(id)},
+    {t:'设置备注',fn:()=>showDialog({title:'设置备注',input:{value:f.remark,ph:'请输入备注名',max:12},onOk(v){f.remark=v;toast(v?'备注已保存':'已清除备注');renderMain();refreshTopPage()}})},
+    {t:'加入黑名单',danger:true,fn:()=>showDialog({title:'加入黑名单？',text:'加入后将不再接收对方消息',danger:true,okText:'确定',onOk(){f.black=true;toast('已加入黑名单');renderMain();refreshTopPage()}})},
+    {t:'删除好友',danger:true,fn:()=>showDialog({title:`删除好友「${esc(fname(f))}」？`,text:'将同时删除与该好友的聊天记录',danger:true,okText:'删除',onOk(){S.friends=S.friends.filter(x=>x.id!==id);S.convs=S.convs.filter(c=>!(c.type==='single'&&c.fid===id));if(inChat)popPage();renderMain();renderBottom();toast('已删除')}})}
+  ]);
+}
+function refreshTopPage(){const t=STACK[STACK.length-1];if(t&&t.type==='chat')PAGES.chat(t)}
+function moveSheet(id){const f=fr(id);showSheet('移动到分组',S.groups.map(g=>({t:esc(g.name),on:f.group===g.id,fn:()=>{if(f.group===g.id)return;f.group=g.id;S.open.add(g.id);renderMain();toast(`已移至「${g.name}」`)}})))}
+
+/* ---------- selection (broadcast / add members) ---------- */
+let SEL=null;const LIMIT=500;
+function startBroadcast(){SEL={mode:'bc',set:new Set(),open:new Set(['g0']),kw:''};pushPage('select',{mode:'bc'})}
+function addMembers(gid){SEL={mode:'move',target:gid,set:new Set(),open:new Set(),kw:''};pushPage('select',{mode:'move',target:gid})}
+const lim=()=>SEL.mode==='bc'?LIMIT:Infinity;
+const elig=()=>S.friends.filter(f=>!f.black&&(SEL.mode==='bc'||f.group!==SEL.target));
+PAGES.select=p=>{
+  const isB=SEL.mode==='bc';
+  p.el.innerHTML=hdr(isB?'选择群发对象':`添加成员到「${esc(grp(SEL.target).name)}」`,isB?'单次最多可选 500 人':'从其他分组移入')+
+   `<div class="pad"><div class="sbox">${I('search',16)}<input id="selKw" placeholder="搜索昵称/备注/用户ID" value="${esc(SEL.kw)}" oninput="SEL.kw=this.value.trim();renderSel(true)"></div></div>
+    <div id="selTop"></div><div class="scroll" id="selList"></div><div class="foot" id="selFoot"></div>`;
+  renderSel();
+};
+function cbState(list){const n=list.filter(f=>SEL.set.has(f.id)).length;return n===0?'':(n===list.length?'on':'part')}
+function renderSel(resetScroll){
+  const E=elig(),isB=SEL.mode==='bc';
+  const full=SEL.set.size>0&&SEL.set.size>=Math.min(lim(),E.length);
+  document.getElementById('selTop').innerHTML=SEL.kw?'':`<div class="allrow" onclick="selAll()"><i class="cb ${full?'on':SEL.set.size?'part':''}"></i><span>全选全部</span><em>${E.length}人</em>${isB?'<span class="lim">单次上限500人</span>':''}</div>`;
+  const list=document.getElementById('selList');const st=resetScroll?0:list.scrollTop;
+  let h='';
+  if(SEL.kw){const k=SEL.kw.toLowerCase();const r=E.filter(f=>fname(f).toLowerCase().includes(k)||f.name.toLowerCase().includes(k)||f.uid.includes(k));
+    h=r.length?`<div class="rs-h">搜索结果 ${r.length}人</div>`+r.slice(0,200).map(f=>selRow(f,SEL.kw)).join(''):emptyH('search','没有匹配的好友');}
+  else for(const g of S.groups){
+    const ms=E.filter(f=>f.group===g.id);if(!ms.length)continue;const on=SEL.open.has(g.id);
+    h+=`<div class="sgh" onclick="toggleSelOpen('${g.id}')"><span class="cbw" onclick="event.stopPropagation();selGroup('${g.id}')"><i class="cb ${cbState(ms)}"></i></span><span class="gn"><span class="arr ${on?'o':''}">${I('chev',14,2.2)}</span>${esc(g.name)}</span><em>${ms.filter(f=>SEL.set.has(f.id)).length}/${ms.length}</em></div>`;
+    if(on)h+=ms.map(f=>selRow(f)).join('');
+  }
+  list.innerHTML=h;list.scrollTop=st;
+  const n=SEL.set.size;const picked=[...SEL.set].slice(-5).reverse().map(id=>{const f=fr(id);return f?av(fname(f),28):''}).join('');
+  document.getElementById('selFoot').innerHTML=`<div class="pk">${n?`<div class="stack">${picked}</div>`:''}<span class="cnt">已选 <b>${n}</b>${isB?' / 500':''}</span>${n?`<button class="clear" onclick="SEL.set.clear();renderSel()">清空</button>`:''}</div><button class="bigbtn" ${n?'':'disabled'} onclick="selNext()">${isB?'下一步':'确定'}${n?`(${n})`:''}</button>`;
+}
+function selRow(f,kw){const on=SEL.set.has(f.id);return `<div class="srow" onclick="selOne('${f.id}')"><i class="cb ${on?'on':''}"></i>${av(fname(f),36,f.online)}<div class="bd">${kw?hlt(fname(f),kw):esc(fname(f))}${f.vip?` <span class="vip" style="display:inline-block">V${f.vip}</span>`:''}<small>ID ${kw?hlt(f.uid,kw):f.uid}${(kw||SEL.mode==='move')?' · 当前：'+esc(grp(f.group)?.name||''):''}</small></div></div>`}
+function toggleSelOpen(id){SEL.open.has(id)?SEL.open.delete(id):SEL.open.add(id);renderSel()}
+function addMany(list){let skip=0;for(const f of list){if(SEL.set.has(f.id))continue;if(SEL.set.size>=lim()){skip++;continue}SEL.set.add(f.id)}if(skip)toast(`单次群发最多500人，已选满，${skip}人未选中`)}
+function selOne(id){if(SEL.set.has(id))SEL.set.delete(id);else{if(SEL.set.size>=lim())return toast('单次群发最多选择500人');SEL.set.add(id)}renderSel()}
+function selGroup(gid){const ms=elig().filter(f=>f.group===gid);if(ms.every(f=>SEL.set.has(f.id)))ms.forEach(f=>SEL.set.delete(f.id));else{if(SEL.set.size>=lim())return toast('已选满500人，请先取消部分好友');addMany(ms)}renderSel()}
+function selAll(){const E=elig();if(SEL.set.size>=Math.min(lim(),E.length))SEL.set.clear();else addMany(E);renderSel()}
+function selNext(){
+  if(SEL.mode==='bc'){pushPage('compose',{ids:[...SEL.set]});return}
+  const g=grp(SEL.target);const n=SEL.set.size;SEL.set.forEach(id=>fr(id).group=g.id);S.open.add(g.id);popPage();toast(`已将 ${n} 位好友移至「${g.name}」`);
+}
+
+/* ---------- compose ---------- */
+PAGES.compose=p=>{
+  const ids=p.data.ids;
+  p.el.innerHTML=hdr('编辑群发内容')+`<div class="scroll">
+   <div class="rcpt"><div class="rcpt-h">发送给<b>${ids.length}</b>人<button onclick="popPage()">修改</button></div>
+   <div class="chips">${ids.slice(0,10).map(id=>`<span class="chip">${esc(fname(fr(id)))}</span>`).join('')}${ids.length>10?`<span class="chip" style="color:var(--sub)">等${ids.length}人</span>`:''}</div></div>
+   <div class="ta"><textarea id="bcText" maxlength="500" placeholder="请输入群发内容，对方将以单聊形式收到…" oninput="document.getElementById('bcCnt').textContent=this.value.length"></textarea><div class="cn"><span id="bcCnt">0</span>/500</div></div>
+   <div class="tip">· 接收人以单聊形式收到消息，看不到其他接收人<br>· 黑名单好友不会出现在可选列表中<br>· 群发成功后，可在「消息」列表的群发窗口中继续补发</div>
+  </div><div class="foot"><button class="bigbtn full" onclick="doBroadcast()">确定群发</button></div>`;
+};
+function doBroadcast(){
+  const ids=STACK[STACK.length-1].data.ids;const v=document.getElementById('bcText').value.trim();
+  if(!v)return toast('请输入群发内容');
+  showDialog({title:'确认群发',text:`将向 ${ids.length} 位好友发送该消息，发送后不可撤回`,okText:'确定发送',onOk(){
+    const c={id:'bc'+Date.now(),type:'bc',ids:[...ids],msgs:[{from:'me',text:v,t:Date.now(),cnt:ids.length}],unread:0};
+    S.convs.push(c);S.top='msg';S.sub='msg';S.hl=c.id;scrollMem.msg=0;SEL=null;
+    popAll();renderAll();toast(`群发成功，已发送给 ${ids.length} 人`);
+    setTimeout(()=>{S.hl=null},2100);
+  }});
+}
+
+/* ---------- overlay ---------- */
+let SHEET=[],DLG=null;
+function ov(html,pos){const o=document.getElementById('overlay');o.className='show pos-'+pos;o.innerHTML=`<div class="mask" onclick="closeOv()"></div>${html}`}
+function closeOv(){const o=document.getElementById('overlay');o.className='';o.innerHTML=''}
+function showSheet(title,items){SHEET=items;ov(`<div class="sheet">${title?`<div class="sh-t">${title}</div>`:''}<div class="sh-scroll">${items.map((it,i)=>`<button class="sh-i ${it.danger?'danger':''} ${it.on?'on':''}" onclick="sheetAct(${i})">${it.t}${it.on?I('check',16,2.4):''}</button>`).join('')}</div><button class="sh-i cancel" onclick="closeOv()">取消</button></div>`,'bottom')}
+function sheetAct(i){const f=SHEET[i].fn;closeOv();f&&f()}
+function showDialog(o){DLG=o;ov(`<div class="dlg"><div class="dlg-t">${o.title}</div>${o.text?`<div class="dlg-x">${o.text}</div>`:''}${o.input?`<input id="dlgIn" maxlength="${o.input.max||20}" value="${esc(o.input.value||'')}" placeholder="${esc(o.input.ph||'')}" onkeydown="if(event.key==='Enter')dlgOk()">`:''}<div class="dlg-b"><button onclick="closeOv()">取消</button><button class="${o.danger?'danger':'ok'}" onclick="dlgOk()">${o.okText||'确定'}</button></div></div>`,'center');if(o.input)setTimeout(()=>{const i=document.getElementById('dlgIn');i.focus();i.select()},60)}
+function dlgOk(){const v=DLG.input?document.getElementById('dlgIn').value.trim():null;const fn=DLG.onOk;if(fn(v)===false)return;closeOv()}
+
+renderAll();
+</script>
+</body>
+</html>
