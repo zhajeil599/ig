@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP彩金配置</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义一些简单的样式，主要使用 Tailwind */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6 text-sm text-gray-700">
+
+    <!-- 顶部操作栏 -->
+    <div class="flex justify-between items-center mb-4 bg-white p-4 rounded shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center">
+                <label for="level-search" class="mr-2 font-medium">等级</label>
+                <input type="text" id="level-search" placeholder="输入等级" class="border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            </div>
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">查询</button>
+            <button onclick="openModal('add-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">新增</button>
+            <button onclick="openModal('public-config-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">公共配置</button>
+        </div>
+        <div class="flex space-x-2">
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">重置</button>
+            <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition duration-150" title="刷新">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="bg-white rounded shadow-sm overflow-hidden overflow-x-auto">
+        <table class="min-w-full text-center whitespace-nowrap">
+            <thead class="bg-gray-50 border-b">
+                <tr>
+                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">等级</th>
+                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">总存款</th>
+                    <th colspan="4" class="px-4 py-2 font-medium text-gray-500 border-b border-r border-gray-200">晋级奖励</th>
+                    <th colspan="4" class="px-4 py-2 font-medium text-gray-500 border-b border-r border-gray-200">月工资</th>
+                    <th colspan="4" class="px-4 py-2 font-medium text-gray-500 border-b border-r border-gray-200">周工资</th>
+                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">状态</th>
+                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">创建时间</th>
+                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500">操作</th>
+                </tr>
+                <tr>
+                    <!-- 晋级奖励子字段 -->
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当日充值</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当日打码</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">晋级奖励</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs border-r border-gray-200 bg-gray-100">日累计封顶</th>
+                    <!-- 月工资子字段 -->
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当月充值</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当月打码</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">月工资</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs border-r border-gray-200 bg-gray-100">月累计封顶</th>
+                    <!-- 周工资子字段 -->
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当周充值</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当周打码</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">周工资</th>
+                    <th class="px-3 py-2 font-medium text-gray-500 text-xs border-r border-gray-200 bg-gray-100">周累计封顶</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3">1</td>
+                    <td class="px-4 py-3">100</td>
+                    <td class="px-4 py-3">40</td><td class="px-4 py-3">200</td><td class="px-4 py-3 text-red-500">10</td><td class="px-4 py-3 border-r border-gray-100">30</td>
+                    <td class="px-4 py-3">100</td><td class="px-4 py-3">1000</td><td class="px-4 py-3 text-red-500">100</td><td class="px-4 py-3 border-r border-gray-100">500</td>
+                    <td class="px-4 py-3">100</td><td class="px-4 py-3">1000</td><td class="px-4 py-3 text-red-500">30</td><td class="px-4 py-3 border-r border-gray-100">150</td>
+                    <td class="px-4 py-3 text-gray-600">开启</td>
+                    <td class="px-4 py-3 text-gray-500">2026-07-07 15:01:18</td>
+                    <td class="px-4 py-3 space-x-2">
+                        <button onclick="openModal('edit-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">修改</button>
+                        <button onclick="openModal('delete-modal')" class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">删除</button>
+                    </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3">2</td>
+                    <td class="px-4 py-3">500</td>
+                    <td class="px-4 py-3">80</td><td class="px-4 py-3">500</td><td class="px-4 py-3 text-red-500">50</td><td class="px-4 py-3 border-r border-gray-100">100</td>
+                    <td class="px-4 py-3">500</td><td class="px-4 py-3">5000</td><td class="px-4 py-3 text-red-500">300</td><td class="px-4 py-3 border-r border-gray-100">1000</td>
+                    <td class="px-4 py-3">300</td><td class="px-4 py-3">3000</td><td class="px-4 py-3 text-red-500">100</td><td class="px-4 py-3 border-r border-gray-100">300</td>
+                    <td class="px-4 py-3 text-gray-600">开启</td>
+                    <td class="px-4 py-3 text-gray-500">2026-07-08 10:20:00</td>
+                    <td class="px-4 py-3 space-x-2">
+                        <button onclick="openModal('edit-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">修改</button>
+                        <button onclick="openModal('delete-modal')" class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">删除</button>
+                    </td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3">3</td>
+                    <td class="px-4 py-3">1000</td>
+                    <td class="px-4 py-3">150</td><td class="px-4 py-3">1000</td><td class="px-4 py-3 text-red-500">120</td><td class="px-4 py-3 border-r border-gray-100">300</td>
+                    <td class="px-4 py-3">1000</td><td class="px-4 py-3">10000</td><td class="px-4 py-3 text-red-500">800</td><td class="px-4 py-3 border-r border-gray-100">2500</td>
+                    <td class="px-4 py-3">600</td><td class="px-4 py-3">6000</td><td class="px-4 py-3 text-red-500">250</td><td class="px-4 py-3 border-r border-gray-100">800</td>
+                    <td class="px-4 py-3 text-gray-600">开启</td>
+                    <td class="px-4 py-3 text-gray-500">2026-07-09 14:15:30</td>
+                    <td class="px-4 py-3 space-x-2">
+                        <button onclick="openModal('edit-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">修改</button>
+                        <button onclick="openModal('delete-modal')" class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- 分页 -->
+        <div class="flex justify-end items-center p-4 border-t bg-gray-50">
+            <span class="mr-4 text-gray-500">共 3 条</span>
+            <select class="border border-gray-300 rounded px-2 py-1 mr-4 bg-white">
+                <option>50条/页</option>
+                <option>100条/页</option>
+            </select>
+            <div class="flex items-center space-x-2">
+                <button class="px-2 py-1 border rounded text-gray-400 cursor-not-allowed">&lt;</button>
+                <button class="px-2 py-1 border rounded text-blue-500 border-blue-500 font-bold">1</button>
+                <button class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100">&gt;</button>
+                <span class="ml-2">前往</span>
+                <input type="text" value="1" class="border border-gray-300 rounded w-10 text-center mx-1">
+                <span>页</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 模态框: 添加 -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content relative max-w-4xl" style="width: 90%;">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-semibold">添加等级配置</h3>
+                <button onclick="closeModal('add-modal')" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <form class="space-y-6 max-h-[70vh] overflow-y-auto px-2">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 等级:</label><input type="text" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
+                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 总存款:</label><input type="text" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4">
+                    <h4 class="font-medium text-gray-700 mb-3 border-l-4 border-blue-500 pl-2">奖励配置</h4>
+                    <div class="grid grid-cols-3 gap-x-8 gap-y-4">
+                        <!-- 晋级奖励(恢复普通背景，修改为“日累计封顶”) -->
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium mb-2 text-center text-gray-600">晋级奖励</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日充值:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日打码:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">晋级奖励:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">日累计封顶:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                            </div>
+                        </div>
+                        <!-- 月工资 -->
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium mb-2 text-center text-gray-600">月工资</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月充值:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月打码:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月工资:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月累计封顶:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                            </div>
+                        </div>
+                        <!-- 周工资 -->
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium mb-2 text-center text-gray-600">周工资</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周充值:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周打码:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周工资:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周累计封顶:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center mt-4">
+                    <label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 状态:</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center text-blue-500 cursor-pointer"><input type="radio" name="status-add" class="mr-2" checked> 开启</label>
+                        <label class="flex items-center cursor-pointer text-gray-600"><input type="radio" name="status-add" class="mr-2"> 关闭</label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t mt-6 sticky bottom-0 bg-white">
+                    <button type="button" onclick="closeModal('add-modal')" class="border border-gray-300 px-4 py-2 rounded text-gray-600">关闭</button>
+                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模态框: 修改 -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content relative max-w-4xl" style="width: 90%;">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-semibold">修改等级配置</h3>
+                <button onclick="closeModal('edit-modal')" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <form class="space-y-6 max-h-[70vh] overflow-y-auto px-2">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 等级:</label><input type="text" value="1" class="flex-1 border border-gray-300 rounded px-3 py-1.5 bg-gray-100" readonly></div>
+                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 总存款:</label><input type="text" value="100" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <h4 class="font-medium text-gray-700 mb-3 border-l-4 border-blue-500 pl-2">奖励配置</h4>
+                    <div class="grid grid-cols-3 gap-x-8 gap-y-4">
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium mb-2 text-center text-gray-600">晋级奖励</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日充值:</label><input type="text" value="40" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日打码:</label><input type="text" value="200" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">晋级奖励:</label><input type="text" value="10.00" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">日累计封顶:</label><input type="text" value="30" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium mb-2 text-center text-gray-600">月工资</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月充值:</label><input type="text" value="100" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月打码:</label><input type="text" value="1000" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月工资:</label><input type="text" value="100.00" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月累计封顶:</label><input type="text" value="500" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <div class="font-medium mb-2 text-center text-gray-600">周工资</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周充值:</label><input type="text" value="100" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周打码:</label><input type="text" value="1000" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周工资:</label><input type="text" value="30.00" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周累计封顶:</label><input type="text" value="150" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t mt-6 sticky bottom-0 bg-white">
+                    <button type="button" onclick="closeModal('edit-modal')" class="border border-gray-300 px-4 py-2 rounded text-gray-600">关闭</button>
+                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模态框: VIP公共设置 -->
+    <div id="public-config-modal" class="modal">
+        <div class="modal-content relative max-w-5xl" style="width: 90%;">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-semibold">VIP公共设置</h3>
+                <button onclick="closeModal('public-config-modal')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            
+            <div class="max-h-[70vh] overflow-y-auto pr-4 space-y-6">
+                <!-- 基础公共配置项 -->
+                <div>
+                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">全局配置</h4>
+                    <div class="flex items-center mb-4 ml-4">
+                        <label class="w-24 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 稽核倍数</label>
+                        <input type="text" value="1.00" class="border border-gray-300 rounded px-3 py-1.5 w-32 text-center">
+                        <span class="text-gray-400 text-xs ml-3">0.00表示不需要稽核</span>
+                    </div>
+                </div>
+
+                <!-- 晋级奖励配置 (新增) -->
+                <div>
+                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">晋级奖励配置</h4>
+                    <div class="space-y-3 ml-4">
+                        <div class="flex items-center">
+                            <label class="w-32 text-right pr-4 text-gray-600">晋级时是否重复领取</label>
+                            <label class="mr-4"><input type="radio" name="upgrade_repeat" class="mr-1"> 可重复领取(含跨级部分)</label>
+                            <label class="text-blue-500"><input type="radio" name="upgrade_repeat" checked class="mr-1"> 只能领取最高一档</label>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="w-32 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 奖励领取过期天数</label>
+                            <input type="text" value="30" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">
+                            <span class="text-gray-400 text-xs ml-3">0表示不过期</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 每周工资配置 (去掉了领取时间) -->
+                <div>
+                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">每周工资配置</h4>
+                    <div class="space-y-3 ml-4">
+                        <div class="flex items-center">
+                            <label class="w-32 text-right pr-4 text-gray-600">晋级时是否重复领取</label>
+                            <label class="mr-4"><input type="radio" name="weekly_repeat" class="mr-1"> 可重复领取(含跨级部分)</label>
+                            <label class="text-blue-500"><input type="radio" name="weekly_repeat" checked class="mr-1"> 只能领取最高一档</label>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="w-32 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 奖励领取过期天数</label>
+                            <input type="text" value="7" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">
+                            <span class="text-gray-400 text-xs ml-3">0表示不过期</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 每月工资配置 (去掉了领取时间) -->
+                <div>
+                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">每月工资配置</h4>
+                    <div class="space-y-3 ml-4">
+                        <div class="flex items-center">
+                            <label class="w-32 text-right pr-4 text-gray-600">晋级时是否重复领取</label>
+                            <label class="mr-4"><input type="radio" name="monthly_repeat" class="mr-1"> 可重复领取(含跨级部分)</label>
+                            <label class="text-blue-500"><input type="radio" name="monthly_repeat" checked class="mr-1"> 只能领取最高一档</label>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="w-32 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 奖励领取过期天数</label>
+                            <input type="text" value="30" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">
+                            <span class="text-gray-400 text-xs ml-3">0表示不过期</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 富文本编辑器UI重制 -->
+                <div class="mt-8 pt-4 border-t border-gray-200">
+                    <!-- 顶部颜色选择条 -->
+                    <div class="flex items-center mb-3 space-x-2 text-sm">
+                        <span class="font-bold text-gray-700 mr-2 text-base">文案内容</span>
+                        <span class="text-gray-500">文字颜色</span>
+                        <div class="flex space-x-1 p-1">
+                            <div class="w-5 h-5 bg-black rounded-sm border border-gray-300 cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-red-500 rounded-sm border border-gray-300 cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-yellow-200 rounded-sm border border-gray-300 cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-blue-500 rounded-sm border border-gray-300 cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-green-500 rounded-sm border border-gray-300 cursor-pointer"></div>
+                            <div class="w-6 h-6 bg-red-400 border border-gray-300 rounded flex items-center justify-center cursor-pointer ml-1">
+                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        
+                        <span class="text-gray-500 ml-6">背景颜色</span>
+                        <div class="flex space-x-1 p-1">
+                            <div class="w-5 h-5 bg-white border border-gray-300 rounded-sm cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-orange-50 border border-gray-300 rounded-sm cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-pink-50 border border-gray-300 rounded-sm cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-blue-50 border border-gray-300 rounded-sm cursor-pointer"></div>
+                            <div class="w-5 h-5 bg-green-50 border border-gray-300 rounded-sm cursor-pointer"></div>
+                            <div class="w-6 h-6 bg-orange-50 border border-gray-300 rounded flex items-center justify-center cursor-pointer ml-1">
+                                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 编辑器主体框 -->
+                    <div class="border rounded border-gray-300">
+                        <div class="bg-white border-b divide-y divide-gray-200">
+                            <!-- 第一行 -->
+                            <div class="flex flex-wrap text-gray-500 text-sm px-1 py-1">
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>正文</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 font-serif font-bold text-lg leading-none">“</button>
+                                <div class="border-r border-gray-300 mx-1 my-2"></div>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 font-bold text-lg leading-none">B</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 underline text-lg leading-none">U</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 italic text-lg leading-none">I</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>⋯</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 border-b-2 border-gray-400 pb-1"><span>A</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 bg-gray-200 rounded-sm m-0.5"><span>A</span><span class="text-[10px]">▼</span></button>
+                                <div class="border-r border-gray-300 mx-1 my-2"></div>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 text-gray-400"><span>默认字号</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 text-gray-400"><span>默认字体</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 text-gray-400"><span>默认行高</span><span class="text-[10px]">▼</span></button>
+                            </div>
+                            <!-- 第二行 -->
+                            <div class="flex flex-wrap text-gray-500 text-sm px-1 py-1">
+                                <button class="px-3 py-1.5 hover:bg-gray-100">≡</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100">1.</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100">☑</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>≣</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>⇥</span><span class="text-[10px]">▼</span></button>
+                                <div class="border-r border-gray-300 mx-1 my-2"></div>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>☺</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100">🔗</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>🖼</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>▦</span><span class="text-[10px]">▼</span></button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100">&lt;/&gt;</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100">—</button>
+                                <div class="border-r border-gray-300 mx-1 my-2"></div>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 text-gray-300">↩</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100 text-gray-300">↪</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100">⛶</button>
+                                <button class="px-3 py-1.5 hover:bg-gray-100">&lt;/&gt;</button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 min-h-[150px] outline-none leading-relaxed" contenteditable="true">
+                            <h2 style="color: #ff9900; font-weight: bold; font-size: 16px;">👑 VIP 尊享特权</h2>
+                            <p style="margin-top: 8px;">VIP福利全面升级，周工资、月工资惊喜不断！晋级即发丰厚奖励！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 pt-4 border-t mt-6 bg-gray-50 -mx-5 -mb-5 p-4 rounded-b-lg">
+                <button type="button" onclick="closeModal('public-config-modal')" class="border border-gray-300 bg-white px-5 py-2 rounded text-gray-600 hover:bg-gray-50 shadow-sm">取消</button>
+                <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded shadow-sm">确认提交</button>
+            </div>
+        </div>
+    </div>
+
+<!-- 模态框: 删除确认 -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content relative" style="width: 400px; padding: 0;">
+            <div class="flex justify-between items-center border-b px-5 py-3">
+                <h3 class="text-base text-gray-700">温馨提示</h3>
+                <button onclick="closeModal('delete-modal')" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
+            </div>
+            <div class="p-6 pb-5">
+                <div class="flex items-center space-x-3 mb-8 ml-2 mt-2">
+                    <div class="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-sm shrink-0">!</div>
+                    <p class="text-gray-600 text-sm">确定删除这条数据？ 是否继续</p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('delete-modal')" class="border border-gray-300 bg-white px-4 py-1.5 rounded text-gray-600 text-sm hover:bg-gray-50">取消</button>
+                    <button type="button" onclick="closeModal('delete-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 需求说明 (前端可见) -->
+    <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-5 shadow-sm mb-10" id="prd-requirements">
+        <h2 class="text-base font-bold text-yellow-800 mb-3 flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            需求说明（研发必读，实际前端不展示给用户看）
+        </h2>
+        <ol class="list-decimal list-inside space-y-2 text-yellow-700 text-sm">
+            <li><strong class="font-semibold text-yellow-800">金额显示规则：</strong> 所有的金额字段（充值、打码、工资、封顶等）前端展示时，默认删除无效数字0（例如 10.00 展示为 10，10.50 展示为 10.5）。</li>
+            <li><strong class="font-semibold text-yellow-800">输入框限制：</strong> 弹窗中带 <span class="text-red-500">*</span> 号的为必填项。等级必须为连续正整数；各项金额（充值、打码、奖励、封顶）必须为大于等于 0 的数字，输入限制至多10位数字，且最多允许输入两位小数。</li>
+            <li><strong class="font-semibold text-yellow-800">关键字段含义：</strong> 
+                <ul class="list-disc list-inside ml-5 mt-1 space-y-1 text-yellow-700">
+                    <li><span class="font-medium text-yellow-800">当日充值 / 当日打码：</span> 触发或领取对应奖励所必须满足的单日充值和有效投注门槛条件。</li>
+                    <li><span class="font-medium text-yellow-800">晋级奖励：</span> 达到对应等级条件后，发放给玩家的彩金奖励。</li>
+                    <li><span class="font-medium text-yellow-800">日/周/月累计封顶：</span> 限制玩家在该周期内，领取该项奖励的最大总金额上限，防止超发。</li>
+                </ul>
+            </li>
+            <li><strong class="font-semibold text-yellow-800">公共配置含义：</strong> 
+                <ul class="list-disc list-inside ml-5 mt-1 space-y-1 text-yellow-700">
+                    <li><span class="font-medium text-yellow-800">稽核倍数：</span> 玩家提现该笔福利彩金前需要完成的流水倍数（填 0 意味着免稽核直接可提）。</li>
+                    <li><span class="font-medium text-yellow-800">晋级时是否重复领取：</span> 控制跨级晋升时，是叠加领取所有途径等级的奖励，还是只发最高级别的奖励。</li>
+                    <li><span class="font-medium text-yellow-800">奖励领取过期天数：</span> 逾期未领取的奖励将自动失效无法领取，设置为 0 则表示永久有效。</li>
+                </ul>
+            </li>
+            <li><strong class="font-semibold text-yellow-800">删除交互：</strong> 点击删除按钮须弹出二次确认框，点击“确定”后再请求接口并刷新当前列表。</li>
+        </ol>
+    </div>
+
+    <script>
+        // 简单的模态框控制逻辑
+        function openModal(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // 点击模态框外部区域关闭
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
