@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VIP Upgrade Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #121212;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #ffffff;
+        }
+
+        .app-container {
+            width: 375px;
+            height: 100vh;
+            background-color: #000000;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .app-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .text-gold {
+            background: linear-gradient(180deg, #FFF6D3 0%, #D8A246 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .bg-gold-gradient {
+            background: linear-gradient(180deg, #FDE19F 0%, #B48325 100%);
+            box-shadow: inset 0px 2px 4px rgba(255,255,255,0.4), 0px 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .bg-silver-gradient {
+            background: linear-gradient(180deg, #E6E6E6 0%, #999999 100%);
+            box-shadow: inset 0px 2px 4px rgba(255,255,255,0.6), 0px 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .hero-bg {
+            background: radial-gradient(circle at 50% 30%, #4A2711 0%, #000000 80%);
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 280px;
+            height: 140px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .gauge-arc {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            border: 2px dashed #D8A246;
+            border-bottom-color: transparent;
+            border-left-color: transparent;
+            transform: rotate(-45deg);
+        }
+        .gauge-label {
+            position: absolute;
+            font-size: 10px;
+            color: #D8A246;
+        }
+
+        .gold-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 11px;
+        }
+        .gold-table th, .gold-table td {
+            border: 1px solid #73531F;
+            padding: 8px 2px;
+        }
+        .gold-table th {
+            color: #D8A246;
+            font-weight: normal;
+        }
+        .gold-table td {
+            color: #E2E2E2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container relative">
+        
+        <!-- 悬浮球1：充值有奖 -->
+        <div id="dragBall1" class="absolute z-50 flex items-center justify-center bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] w-14 h-14 rounded-full text-xs font-bold shadow-[0_0_15px_rgba(212,160,84,0.6)] cursor-move select-none active:scale-95 transition-transform text-center leading-tight" style="right: 12px; top: 120px;">
+            充值<br>有奖
+        </div>
+        
+        <!-- 悬浮球2：领取记录 -->
+        <div id="dragBall2" class="absolute z-50 flex items-center justify-center bg-[#1a1612] border-2 border-[#d4a054] text-[#d4a054] w-14 h-14 rounded-full text-[11px] leading-tight shadow-[0_0_10px_rgba(212,160,84,0.3)] cursor-move select-none active:scale-95 transition-transform text-center" style="right: 12px; top: 190px;">
+            领取<br>记录
+        </div>
+
+        <!-- 1. 顶部导航 -->
+
+        <!-- 1. 顶部导航 -->
+        <header class="sticky top-0 w-full bg-[#151515] h-12 flex items-center px-4 z-40 border-b border-[#333]">
+            <button class="text-gray-300 w-8 h-8 flex items-center justify-start focus:outline-none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h1 class="flex-1 text-center text-[16px] font-medium text-gray-200 pr-8">升级模式</h1>
+        </header>
+
+        <!-- 2. 头部信息区 -->
+        <section class="hero-bg w-full pt-6 pb-6 px-4 relative">
+            <!-- 标题 -->
+            <div class="text-center mt-2 relative z-10">
+                <div class="inline-block relative">
+                    <h2 class="text-4xl font-black text-gold tracking-widest" style="-webkit-text-stroke: 1px #5c3a00;">升级模式</h2>
+                </div>
+                <div class="mt-2 text-center">
+                    <span class="bg-[#3A1F0B] text-[#D8A246] text-[10px] px-3 py-1 rounded-full border border-[#73531F]">充值永久累计 等级俸禄 终生有效</span>
+                </div>
+            </div>
+
+            <!-- 表盘 -->
+            <div class="gauge-container mt-6">
+                <div class="gauge-arc"></div>
+                <div class="gauge-label" style="left: 10px; bottom: 10px;">V1</div>
+                <div class="gauge-label" style="left: 30px; bottom: 50px;">V2</div>
+                <div class="gauge-label" style="left: 60px; bottom: 90px;">V3</div>
+                <div class="gauge-label" style="left: 100px; bottom: 120px;">V4</div>
+                <div class="gauge-label" style="left: 135px; bottom: 130px; font-weight: bold;">V5</div>
+                <div class="gauge-label" style="right: 100px; bottom: 120px;">V6</div>
+                <div class="gauge-label" style="right: 60px; bottom: 90px;">V7</div>
+                <div class="gauge-label" style="right: 30px; bottom: 50px;">V8</div>
+                <div class="gauge-label" style="right: 10px; bottom: 10px;">V9</div>
+                
+                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 border border-[#D8A246] rounded-full px-4 py-1 bg-[#1A0B02] text-[#D8A246] text-[12px]">
+                    总充值
+                </div>
+            </div>
+
+            <!-- 余额 -->
+            <div class="bg-gold-gradient rounded-full py-3 mt-1 mb-4 flex justify-center items-center relative z-10 border-2 border-[#FFE8A1]">
+                <span class="text-[#4A2D00] text-2xl font-black">￥ 1,000.00</span>
+            </div>
+
+            <!-- 替换：新增限制条件的 周俸禄 & 月俸禄 按钮 -->
+            <div class="flex gap-2 px-1 relative z-10 mt-2 mb-4">
+                <!-- 周俸禄：立即领取状态 (加了 id="weekBonusBtn" 用于点击交互) -->
+                <div id="weekBonusBtn" class="flex-1 bg-gold-gradient rounded-xl py-2 px-1 text-center border-b-4 border-[#9c6f1a] shadow-md cursor-pointer active:translate-y-1 active:border-b-0 transition-all flex flex-col justify-center items-center">
+                    <div class="flex justify-center items-center gap-1 mb-1.5 mt-0.5">
+                        <div class="text-[#3e2708] font-bold text-[15px]">周俸禄</div>
+                        <div class="text-[#8b2323] font-bold text-[13px]">￥30</div>
+                    </div>
+                    <div class="bg-[#8b2323] text-[#FDE19F] text-[11px] px-4 py-1 rounded-full font-bold shadow-inner w-10/12">
+                        立即领取
+                    </div>
+                </div>
+                
+                <!-- 月俸禄：未达标状态 (去掉了“下月再来”) -->
+                <div class="flex-1 bg-silver-gradient rounded-xl py-2 px-1 text-center border-b-4 border-gray-500 shadow-md flex flex-col justify-center items-center">
+                    <div class="flex justify-center items-center gap-1 mb-1 mt-0.5">
+                        <div class="text-[#333] font-bold text-[15px]">月俸禄</div>
+                        <div class="text-[#333] font-bold text-[12px]">￥100</div>
+                    </div>
+                    <div class="text-[#8b2323] text-[9px] bg-black/10 rounded mx-1 py-1 px-2 leading-tight font-bold w-11/12 mt-0.5">
+                        需充值 100<br>需有效投注 1000
+                    </div>
+                </div>
+            </div>
+
+            <!-- 当前VIP卡片 -->
+            <div class="mt-5 bg-gradient-to-b from-[#5c3311] to-[#2b1706] rounded-xl p-4 border border-[#8b5a2b] relative z-10 shadow-lg">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="text-gold text-2xl font-bold italic tracking-wider">VIP 4</div>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#D8A246] to-[#FFF6D3] flex items-center justify-center shadow-[0_0_10px_#D8A246]">
+                        <svg class="w-5 h-5 text-[#4A2D00]" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2l1.6 4.8H18l-3.8 2.8 1.4 4.4-4-3-4 3 1.4-4.4L2 6.8h6.4L10 2z"/></svg>
+                    </div>
+                </div>
+                <div class="w-full bg-[#1A0B02] h-2 rounded-full overflow-hidden border border-[#3A1F0B]">
+                    <div class="bg-gold-gradient h-full w-1/3 rounded-full"></div>
+                </div>
+                <div class="text-gray-400 text-[10px] mt-2 text-left">
+                    下一级距离 <span class="text-[#D8A246]">￥ 3,000.00</span> 充值
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 等级可领 区域 (含充值和流水要求) -->
+        <section class="mt-2 px-4 mb-6">
+            <!-- 标题 -->
+            <div class="flex justify-center mb-4">
+                <div class="bg-[#2a2015] border border-[#d4a054] px-6 py-1 rounded-md text-[#d4a054] font-bold flex items-center shadow-lg">
+                    <span class="mr-2">♠</span> 等级可领 <span class="ml-2">♠</span>
+                </div>
+            </div>
+
+            <!-- 列表容器 -->
+            <div class="bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl p-4 h-[350px] overflow-y-auto space-y-3">
+                
+                <!-- V1 -->
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mr-3 border border-blue-500/50"><span class="text-blue-400 font-bold text-lg">v1</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v1</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">1</span></div>
+                        <button class="bg-[#6b7280] text-white text-xs px-4 py-1.5 rounded-md">已领取</button>
+                    </div>
+                </div>
+
+                <!-- V2 -->
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center mr-3 border border-cyan-500/50"><span class="text-cyan-400 font-bold text-lg">v2</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v2</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">3</span></div>
+                        <button class="bg-[#6b7280] text-white text-xs px-4 py-1.5 rounded-md">已领取</button>
+                    </div>
+                </div>
+
+                <!-- V3 -->
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center mr-3 border border-teal-500/50"><span class="text-teal-400 font-bold text-lg">v3</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v3</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">5</span></div>
+                        <button class="bg-[#6b7280] text-white text-xs px-4 py-1.5 rounded-md">已领取</button>
+                    </div>
+                </div>
+
+                <!-- V4 - 立即领取 -->
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center mr-3 border border-pink-500/50"><span class="text-pink-400 font-bold text-lg">v4</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v4</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold text-yellow-400">9</span></div>
+                        <button class="bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] font-bold text-xs px-4 py-1.5 rounded-md shadow">立即领取</button>
+                    </div>
+                </div>
+
+                <!-- V5 - 立即领取 -->
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center mr-3 border border-rose-500/50"><span class="text-rose-400 font-bold text-lg">v5</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v5</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold text-yellow-400">11</span></div>
+                        <button class="bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] font-bold text-xs px-4 py-1.5 rounded-md shadow">立即领取</button>
+                    </div>
+                </div>
+
+                <!-- V6 -> V10 (等待升级) -->
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center mr-3 border border-purple-500/50"><span class="text-purple-400 font-bold text-lg">v6</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v6</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">15</span></div>
+                        <button class="bg-[#6b7280] text-gray-300 text-xs px-4 py-1.5 rounded-md">等待升级</button>
+                    </div>
+                </div>
+
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center mr-3 border border-indigo-500/50"><span class="text-indigo-400 font-bold text-lg">v7</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v7</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">23</span></div>
+                        <button class="bg-[#6b7280] text-gray-300 text-xs px-4 py-1.5 rounded-md">等待升级</button>
+                    </div>
+                </div>
+                
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center mr-3 border border-orange-500/50"><span class="text-orange-400 font-bold text-lg">v8</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v8</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">28</span></div>
+                        <button class="bg-[#6b7280] text-gray-300 text-xs px-4 py-1.5 rounded-md">等待升级</button>
+                    </div>
+                </div>
+
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-[#d4a054]/20 flex items-center justify-center mr-3 border border-[#d4a054]/50"><span class="text-[#d4a054] font-bold text-lg">v9</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v9</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">33</span></div>
+                        <button class="bg-[#6b7280] text-gray-300 text-xs px-4 py-1.5 rounded-md">等待升级</button>
+                    </div>
+                </div>
+
+                <div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-3 border border-red-500/50"><span class="text-red-400 font-bold text-lg">v10</span></div>
+                        <div>
+                            <div class="text-white font-bold text-lg">v10</div>
+                            <div class="text-gray-400 text-[9px] mt-1 leading-tight">需充值 100<br>需有效投注 1000</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">38</span></div>
+                        <button class="bg-[#6b7280] text-gray-300 text-xs px-4 py-1.5 rounded-md">等待升级</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 活动详情 -->
+        <section class="px-4 py-4 mt-2">
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <span class="text-[#D8A246] text-[10px]">◆</span>
+                <h3 class="text-[#D8A246] font-bold text-[15px] tracking-widest">活动详情</h3>
+                <span class="text-[#D8A246] text-[10px]">◆</span>
+            </div>
+
+            <div class="mt-4 mb-4 text-sm leading-relaxed bg-[#2a2015] p-3 rounded-lg border border-[#3e3427]">
+                <p class="text-[#d4a054] font-bold text-base mb-1">👑 VIP 尊享特权</p>
+                <p class="text-gray-300">VIP福利全面升级，周工资、月工资惊喜不断！晋级即发丰厚奖励！</p>
+            </div>
+
+            <div class="border border-[#73531F] p-1 rounded-lg bg-[#0D0D0D]">
+                <table class="gold-table w-full">
+                    <thead>
+                        <tr class="bg-[#1A1A1A]">
+                            <th class="py-2">VIP等级</th>
+                            <th class="py-2">总存款</th>
+                            <th class="py-2">晋级礼金</th>
+                            <th class="py-2">周俸禄</th>
+                            <th class="py-2">月俸禄</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 有金额的地方加入了充值/投注说明，为0的地方保持干净 -->
+                        <tr>
+                            <td class="py-2">V2</td>
+                            <td class="py-2">200+</td>
+                            <td class="py-1">2<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-2">0</td>
+                            <td class="py-2">0</td>
+                        </tr>
+                        <tr class="bg-[#151515]">
+                            <td class="py-2">V3</td>
+                            <td class="py-2">500+</td>
+                            <td class="py-1">3<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-2">0</td>
+                            <td class="py-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">V4</td>
+                            <td class="py-2">1000+</td>
+                            <td class="py-1">5<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">3<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-2">0</td>
+                        </tr>
+                        <tr class="bg-[#151515]">
+                            <td class="py-2">V5</td>
+                            <td class="py-2">3000+</td>
+                            <td class="py-1">9<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">7<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">V7</td>
+                            <td class="py-2">5000+</td>
+                            <td class="py-1">11<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">8<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">1<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                        </tr>
+                        <tr class="bg-[#151515]">
+                            <td class="py-2">V8</td>
+                            <td class="py-2">7500+</td>
+                            <td class="py-1">23<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">10<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">1<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">V9</td>
+                            <td class="py-2">10000+</td>
+                            <td class="py-1">28<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">15<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">38<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                        </tr>
+                        <tr class="bg-[#151515]">
+                            <td class="py-2">V10</td>
+                            <td class="py-2">20000+</td>
+                            <td class="py-1">33<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">22<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                            <td class="py-1">48<br><span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">充100<br>投1000</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 5. 注意事项 -->
+
+        <!-- 5. 注意事项 -->
+        <section class="px-6 py-6 pb-12">
+            <h4 class="text-center text-[#D8A246] text-[12px] mb-3">注意事项</h4>
+            <p class="text-gray-500 text-[10px] leading-relaxed text-justify">
+                同一IP地址，同一银行账户、同一电话号码、均视为同一人。只可领取一次。如发现任何利用或个人以不诚实的方式套取红利、或恶意刷流水等非法行为，公司保留冻结、取消该玩家个人账户及账户结余的权利。
+            </p>
+        </section>
+
+    </div>
+
+    <!-- 弹窗：领取记录 -->
+    <div id="recordModal" class="fixed inset-0 bg-black/80 z-[100] hidden flex-col items-center justify-center">
+        <div class="w-[340px] bg-[#1a1612] border border-[#d4a054] rounded-xl relative flex flex-col mt-10 shadow-2xl">
+            <div class="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#2a2015] border border-[#d4a054] px-6 py-1.5 rounded-md text-[#d4a054] font-bold flex items-center whitespace-nowrap shadow-lg">
+                <span class="mr-2">♠</span> 领取记录 <span class="ml-2">♠</span>
+            </div>
+
+            <div class="flex text-[#d4a054] text-xs font-bold pt-10 pb-3 px-4 border-b border-[#3e3427]">
+                <div class="flex-[3] text-left">日期</div>
+                <div class="flex-[2] text-center">金额</div>
+                <div class="flex-[2] text-center">类型</div>
+                <div class="flex-[3] text-right">详情</div>
+            </div>
+
+            <div class="overflow-y-auto max-h-[300px] text-xs text-gray-300">
+                <div class="flex py-3 px-4 border-b border-[#2a2015] items-center bg-[#2a2015]/20">
+                    <div class="flex-[3] text-left">2026-04-03</div>
+                    <div class="flex-[2] text-center text-[#d4a054]">3.00</div>
+                    <div class="flex-[2] text-center">晋级礼金</div>
+                    <div class="flex-[3] text-right">v3-晋级礼金</div>
+                </div>
+                <div class="flex py-3 px-4 border-b border-[#2a2015] items-center">
+                    <div class="flex-[3] text-left">2026-04-03</div>
+                    <div class="flex-[2] text-center text-[#d4a054]">2.00</div>
+                    <div class="flex-[2] text-center">晋级礼金</div>
+                    <div class="flex-[3] text-right">v2-晋级礼金</div>
+                </div>
+                <div class="flex py-3 px-4 border-b border-[#2a2015] items-center bg-[#2a2015]/20">
+                    <div class="flex-[3] text-left">2026-04-03</div>
+                    <div class="flex-[2] text-center text-[#d4a054]">1.00</div>
+                    <div class="flex-[2] text-center">晋级礼金</div>
+                    <div class="flex-[3] text-right">v1-晋级礼金</div>
+                </div>
+                <div class="text-center py-6 text-gray-600">没有更多了</div>
+            </div>
+        </div>
+
+        <button id="closeRecordBtn" class="mt-8 w-10 h-10 rounded-full border border-[#d4a054] text-[#d4a054] flex items-center justify-center text-2xl bg-[#1a1612] hover:bg-[#d4a054] hover:text-white transition-colors">
+            ×
+        </button>
+    </div>
+
+    <!-- 交互脚本 -->
+    <script>
+        // 1. 支持多个悬浮球独立拖拽的逻辑
+        const makeDraggable = (element) => {
+            if (!element) return;
+            let isDown = false;
+            let startX, startY, startLeft, startTop;
+
+            const startDrag = (e) => {
+                isDown = true;
+                startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+                startLeft = element.offsetLeft;
+                startTop = element.offsetTop;
+                element.style.right = 'auto'; // 解除右侧对齐限制，交由left接管
+            };
+
+            const onDrag = (e) => {
+                if (!isDown) return;
+                e.preventDefault(); 
+                const x = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const y = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                element.style.left = (startLeft + x - startX) + 'px';
+                element.style.top = (startTop + y - startY) + 'px';
+            };
+
+            const stopDrag = () => {
+                isDown = false;
+            };
+
+            // 鼠标事件
+            element.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+
+            // 触摸事件
+            element.addEventListener('touchstart', startDrag, {passive: false});
+            document.addEventListener('touchmove', onDrag, {passive: false});
+            document.addEventListener('touchend', stopDrag);
+        };
+
+        // 绑定两个独立的悬浮球
+        makeDraggable(document.getElementById('dragBall1'));
+        makeDraggable(document.getElementById('dragBall2'));
+
+        // 2. 弹窗打开与关闭逻辑（绑定到悬浮球2）
+        document.getElementById('dragBall2').addEventListener('click', function() {
+            const modal = document.getElementById('recordModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+        
+        document.getElementById('closeRecordBtn').addEventListener('click', function() {
+            const modal = document.getElementById('recordModal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        });
+    </script>
+
+<!-- 新增：Toast 提示组件 (默认隐藏) -->
+    <div id="toast" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-6 py-3 rounded-lg text-sm z-[200] opacity-0 pointer-events-none transition-opacity duration-300 shadow-xl border border-[#d4a054]">
+        领取成功
+    </div>
+
+    <!-- 新增：周俸禄点击交互逻辑 -->
+    <script>
+        document.getElementById('weekBonusBtn').addEventListener('click', function() {
+            const toast = document.getElementById('toast');
+            
+            // 1. 显示 Toast 提示
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            
+            // 2. 1.5秒后自动隐藏 Toast
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 1500);
+
+            // 3. 把按钮变成置灰的“已领取/下周再来”状态，并取消点击效果
+            this.className = "flex-1 bg-silver-gradient rounded-xl py-2 px-1 text-center border-b-4 border-gray-500 shadow-md flex flex-col justify-center items-center pointer-events-none";
+            this.innerHTML = `
+                <div class="flex justify-center items-center gap-1 mb-1 mt-0.5">
+                    <div class="text-[#333] font-bold text-[15px]">周俸禄</div>
+                    <div class="text-[#333] font-bold text-[12px]">￥30</div>
+                </div>
+                <div class="text-[#666] text-[11px] font-bold mt-1">下周再来</div>
+            `;
+        });
+    </script>
+
+</body>
+</html>
