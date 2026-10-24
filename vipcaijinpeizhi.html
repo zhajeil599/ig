@@ -5,32 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP彩金配置</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* 自定义一些简单的样式，主要使用 Tailwind */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 50;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+        /* 框架通用样式 */
+        :root {
+            --sidebar-bg: #343d47;
+            --sidebar-hover: #2b333e;
+            --sidebar-active: #242b33;
+            --primary-blue: #1890ff;
         }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 10% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #f0f2f5; color: #333; overflow: hidden; }
+
+        /* 左侧侧边栏 */
+        .sidebar { width: 240px; background-color: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
+        .sidebar-logo { padding: 20px; font-size: 20px; font-weight: bold; background-color: #2b333e; text-align: left; border-bottom: 1px solid #1f252d; }
+        .menu-group { margin-bottom: 2px; }
+        .menu-item { padding: 12px 20px; cursor: pointer; color: #aeb9c2; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; font-size: 14px; }
+        .menu-item:hover { background-color: var(--sidebar-hover); color: #fff; }
+        .menu-item.active { background-color: var(--sidebar-active); color: var(--primary-blue); border-left: 4px solid var(--primary-blue); }
+        .menu-item i.main-icon { width: 20px; margin-right: 10px; }
+        .menu-item .arrow { font-size: 12px; opacity: 0.7; }
+        .sub-menu { background-color: #242b33; }
+        .sub-item { padding: 10px 20px 10px 50px; font-size: 13px; color: #aeb9c2; cursor: pointer; display: block; text-decoration: none; }
+        .sub-item:hover { color: #fff; }
+        .sub-item.active { color: var(--primary-blue); background-color: #1a1f26; }
+
+        /* 右侧内容区 */
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .header { height: 50px; background-color: #fff; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; align-items: center; padding: 0 20px; font-size: 14px; color: #666; }
+        .page-body { padding: 24px; overflow-y: auto; flex: 1; font-size: 14px; color: #374151; }
+
+        /* 模态框样式保留原版 Tailwind 依赖的逻辑 */
+        .modal { display: none; position: fixed; z-index: 50; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="bg-gray-100 p-6 text-sm text-gray-700">
+<body>
+
+    <!-- 侧边栏菜单 -->
+    <div class="sidebar">
+        <div class="sidebar-logo">代理后台</div>
+        
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-house main-icon"></i>首页</span></div>
+        
+        <div class="menu-group">
+            <div class="menu-item">
+                <span class="item-left"><i class="fa-solid fa-users main-icon"></i>会员管理</span>
+                <i class="fa-solid fa-chevron-up arrow"></i>
+            </div>
+            <div class="sub-menu">
+                <a href="#" class="sub-item">会员列表</a>
+                <a href="#" class="sub-item">层级管理</a>
+                <a href="#" class="sub-item">用户银行卡列表</a>
+                <a href="#" class="sub-item">用户USDT列表</a>
+                <a href="#" class="sub-item">用户钱包列表</a>
+                <a href="#" class="sub-item">用户支付宝列表</a>
+                <a href="#" class="sub-item">登录查询</a>
+                <a href="#" class="sub-item">用户签到记录</a>
+            </div>
+        </div>
+
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-id-card main-icon"></i>VIP会员卡</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        
+        <!-- 选中的 VIP彩金 菜单 -->
+        <div class="menu-group">
+            <div class="menu-item active">
+                <span class="item-left"><i class="fa-solid fa-coins main-icon"></i>VIP彩金</span>
+                <i class="fa-solid fa-chevron-up arrow"></i>
+            </div>
+            <div class="sub-menu">
+                <a href="#" class="sub-item active">VIP彩金配置</a>
+                <a href="#" class="sub-item">VIP彩金记录</a>
+            </div>
+        </div>
+
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-wallet main-icon"></i>财务管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gamepad main-icon"></i>游戏管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-sitemap main-icon"></i>代理系统</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-chart-line main-icon"></i>报表查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-comments main-icon"></i>聊天群组</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-video main-icon"></i>主播管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-database main-icon"></i>数据统计</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-file-export main-icon"></i>导出管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gift main-icon"></i>活动管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-clock-rotate-left main-icon"></i>日志查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-key main-icon"></i>验证码查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-envelope main-icon"></i>短信模板管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-tower-broadcast main-icon"></i>渠道管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-rectangle-ad main-icon"></i>广告位管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gear main-icon"></i>系统管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    </div>
+
+    <!-- 右侧主体内容 -->
+    <div class="main-content">
+        <!-- 顶部标题导航 -->
+        <div class="header justify-between">
+            <!-- 左侧：收缩图标与余额 -->
+            <div class="flex items-center space-x-6">
+                <i class="fa-solid fa-outdent text-xl cursor-pointer text-gray-700"></i>
+                <div class="text-gray-600">余额 <span class="text-red-400">340246.92</span></div>
+            </div>
+            
+            <!-- 右侧：快捷按钮、到期时间、账户头像 -->
+            <div class="flex items-center space-x-6">
+                <!-- 快捷操作按钮 -->
+                <div class="flex space-x-4">
+                    <button class="bg-[#4096ff] hover:bg-blue-500 text-white px-5 py-1.5 rounded-full text-sm">人工存款</button>
+                    <div class="relative">
+                        <button class="bg-[#4096ff] hover:bg-blue-500 text-white px-5 py-1.5 rounded-full text-sm flex items-center space-x-1">
+                            <i class="fa-regular fa-bell"></i><span>会员出款</span>
+                        </button>
+                        <span class="absolute -top-1.5 -right-3 bg-[#ff4d4f] text-white text-[10px] px-1.5 py-0.5 rounded-full border border-white z-10">10000+</span>
+                    </div>
+                    <div class="relative">
+                        <button class="bg-[#4096ff] hover:bg-blue-500 text-white px-5 py-1.5 rounded-full text-sm flex items-center space-x-1">
+                            <i class="fa-regular fa-bell"></i><span>免提直充</span>
+                        </button>
+                        <span class="absolute -top-1.5 -right-1 bg-[#ff4d4f] text-white text-[10px] px-1.5 py-0.5 rounded-full border border-white z-10">22</span>
+                    </div>
+                </div>
+
+                <!-- 到期时间 -->
+                <div class="text-red-400 pl-4 border-l border-gray-200">到期时间: 2030-12-27</div>
+                
+                <!-- 账户信息 (最右侧) -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white"><i class="fa-solid fa-user"></i></div>
+                    <span class="text-gray-600">ben</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页面内主体 -->
+        <div class="page-body">
 
     <!-- 顶部操作栏 -->
     <div class="flex justify-between items-center mb-4 bg-white p-4 rounded shadow-sm">
@@ -145,6 +253,7 @@
         </div>
     </div>
 
+  
 
     <!-- 模态框: 添加 -->
     <div id="add-modal" class="modal">
@@ -465,6 +574,9 @@
             <li><strong class="font-semibold text-yellow-800">删除交互：</strong> 点击删除按钮须弹出二次确认框，点击“确定”后再请求接口并刷新当前列表。</li>
         </ol>
     </div>
+
+</div> <!-- page-body 结束 -->
+    </div> <!-- main-content 结束 -->
 
     <script>
         // 简单的模态框控制逻辑
