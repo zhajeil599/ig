@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>交易记录-提现详情 · 交互原型 + 需求说明</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef1f6;color:#1f2937;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+button{font-family:inherit;color:inherit;cursor:pointer}
+.page{max-width:1280px;margin:0 auto;padding:32px 24px 64px;display:flex;flex-direction:column;gap:32px}
+.top h1{margin:0 0 6px;font-size:26px}
+.top p{margin:0;font-size:13px;color:#6b7280}
+.proto{display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap}
+/* phone */
+.phone{width:390px;height:844px;flex-shrink:0;background:#0b0b0c;color:#fff;position:relative;overflow:hidden;border-radius:28px;box-shadow:0 0 0 8px #1c1c1f,0 20px 40px rgba(0,0,0,.25)}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column}
+.hdr{height:52px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+.hdr h2{margin:0;font-size:18px;font-weight:700}
+.iconbtn{position:absolute;left:4px;top:4px;width:44px;height:44px;background:transparent;border:0;display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;justify-content:space-between;padding:0 10px;flex-shrink:0}
+.tabs button{background:transparent;border:0;font-size:14px;color:#e6e7ea;padding:10px 8px;min-height:44px}
+.tabs .on{color:#ff3b5c;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:5px}
+.tabs .on span{width:18px;height:3px;border-radius:2px;background:#ff3b5c}
+.filters{display:flex;justify-content:space-around;background:#141416;flex-shrink:0}
+.filters button{background:transparent;border:0;font-size:14px;font-weight:600;min-height:44px;padding:0 16px;display:flex;align-items:center;gap:6px}
+.list{flex:1;overflow-y:auto;padding:12px 12px 24px;display:flex;flex-direction:column;gap:10px}
+.card{position:relative;background:#1e1f22;border-radius:8px;padding:14px 12px;flex-shrink:0}
+.card .hit{position:absolute;inset:0;width:100%;height:100%;background:transparent;border:0;border-radius:8px;z-index:1}
+.card .body{position:relative;z-index:2;pointer-events:none;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;justify-content:space-between;align-items:center}
+.sub{font-size:12px;color:#b4b6bb}
+.copy{pointer-events:auto;width:32px;height:32px;margin:-8px 0;background:transparent;border:0;display:inline-flex;align-items:center;justify-content:center}
+.more{padding:8px 0;text-align:center;font-size:12px;color:#8e9096}
+.empty{padding:80px 0;text-align:center;font-size:13px;color:#8e9096}
+.mask{position:absolute;left:0;right:0;top:156px;bottom:0;background:rgba(0,0,0,.55);z-index:5;display:flex;flex-direction:column}
+.opts{background:#1a1b1e;padding:8px 12px 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.opts button{min-height:40px;border-radius:6px;border:1px solid #26272b;background:#26272b;color:#e6e7ea;font-size:13px}
+.opts button.on{border-color:#ff3b5c;background:rgba(255,59,92,.12);color:#ff6b84}
+.mask .close{flex:1;background:transparent;border:0}
+.dwrap{flex:1;overflow-y:auto;padding:0 14px 28px}
+.dcard{background:#1e1f22;border-radius:0 0 16px 16px;padding:22px 18px 4px;display:flex;flex-direction:column;align-items:center}
+.ico{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.dash{width:100%;border-top:1px dashed #3a3b40;margin-top:18px}
+.drow{width:100%;display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:52px;border-bottom:1px solid #2a2b2f}
+.drow:last-child{border-bottom:0}
+.drow .l{font-size:14px;color:#8e9096;flex-shrink:0}
+.drow .v{display:flex;align-items:center;gap:2px;min-width:0}
+.drow .v span{font-size:14px;text-align:right;word-break:break-all}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.toast{position:absolute;left:50%;top:46%;transform:translateX(-50%);background:rgba(40,41,45,.96);color:#fff;font-size:14px;padding:10px 20px;border-radius:8px;z-index:20}
+/* notes */
+.notes{flex:1;min-width:320px;display:flex;flex-direction:column;gap:12px}
+.notes .tag{font-size:12px;color:#2f6fed;font-weight:700;letter-spacing:1px}
+.notes h2{margin:4px 0;font-size:22px}
+.notes .hint{margin:0 0 6px;font-size:13px;color:#6b7280}
+.note{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;display:flex;gap:12px}
+.note .no{flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#2f6fed;color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.note strong{display:block;font-size:14px;margin-bottom:4px}
+.note p{margin:0;font-size:13px;line-height:1.7;color:#4b5563;white-space:pre-line}
+/* spec */
+.spec{background:#fff;border-radius:12px;padding:40px 44px;display:flex;flex-direction:column;gap:32px}
+.spec section{display:flex;flex-direction:column;gap:12px}
+.spec h3{margin:0;font-size:19px;border-left:4px solid #2f6fed;padding-left:10px}
+.spec .tip{margin:0;font-size:13px;color:#6b7280}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th{background:#eef2f7;color:#374151;font-weight:600;text-align:left}
+th,td{border:1px solid #e5e7eb;padding:9px 12px;font-size:13px;line-height:1.55;vertical-align:top}
+tr:nth-child(even) td{background:#fafbfc}
+td.y{color:#166534;font-weight:600;text-align:center}
+td.n{color:#9ca3af;text-align:center}
+th.c{text-align:center}
+.box{background:#f4f6fa;border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.7}
+.warn{background:#fff7dd;border:1px solid #f5dab1;border-radius:8px;padding:16px 20px}
+.warn ol{margin:0;padding-left:20px;font-size:13px;line-height:1.9;color:#5b4300}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top">
+    <h1>交易记录-提现详情 · 交互原型 + 需求说明</h1>
+    <p>版本 V1.3 · 2026-10-26 · 左侧原型可点击：点卡片进入详情，点「全部 ▼」筛选状态，点复制图标复制订单号。右侧说明随当前页面切换。</p>
+  </div>
+
+  <div class="proto">
+    <div class="phone" id="phone"></div>
+    <aside class="notes" id="notes"></aside>
+  </div>
+
+  <div class="spec">
+    <section>
+      <h3>一、前台状态（列表 + 详情共用）</h3>
+      <div class="tblwrap"><table>
+        <thead><tr><th style="width:11%">前台状态</th><th style="width:16%">颜色 / 图标</th><th style="width:38%">包含的后台状态</th><th>资金处理</th></tr></thead>
+        <tbody>
+          <tr><td><strong>申请中</strong></td><td>灰白 #D2D4D9 · 时钟</td><td>待审核、审核中（锁单）、审核通过待出款、代付处理中、代付失败待重新代付</td><td>提交时从余额扣除（冻结）</td></tr>
+          <tr><td><strong>提现成功</strong></td><td>绿 #2EC27E · 对勾</td><td>出款成功、已人工出款</td><td>扣除完成</td></tr>
+          <tr><td><strong>提现失败</strong></td><td>红 #F04B5A · 叉</td><td>审核拒绝、代付失败后拒绝出款（退回）</td><td>提现金额全额退回余额</td></tr>
+        </tbody>
+      </table></div>
+      <p class="tip">流转：提交 → 申请中 → 提现成功 / 提现失败。后台中间环节前台不单独展示，统一显示「申请中」。</p>
+    </section>
+
+    <section>
+      <h3>二、不同状态的详情页字段</h3>
+      <p class="tip">✓ 展示 · — 不展示。收款信息行按第三节，与状态无关（交易哈希除外）。</p>
+      <div class="tblwrap"><table>
+        <thead><tr><th style="width:18%">字段</th><th class="c" style="width:12%">申请中</th><th class="c" style="width:12%">提现成功</th><th class="c" style="width:12%">提现失败</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>状态图标 + 文案、头部金额</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>头部金额 = ¥ + 提现金额</td></tr>
+          <tr><td>交易类型、提现方式</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>交易类型固定「提现」</td></tr>
+          <tr><td>收款信息行</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>按提现方式，见第三节</td></tr>
+          <tr><td>创建时间</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>会员提交申请的时间</td></tr>
+          <tr><td>提现金额、手续费</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>手续费为 0 显示「0 CNY（免手续费）」</td></tr>
+          <tr><td>到账币种、汇率</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>法币方式汇率为 1</td></tr>
+          <tr><td><strong>预计到账</strong></td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td>（提现金额 − 手续费）÷ 汇率</td></tr>
+          <tr><td><strong>实际到账</strong></td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td>同上公式，绿字</td></tr>
+          <tr><td><strong>退回金额</strong></td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>= 提现金额，全额退回余额</td></tr>
+          <tr><td><strong>完成时间</strong></td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td>出款成功或失败退回的时间</td></tr>
+          <tr><td><strong>交易哈希</strong></td><td class="n">—</td><td class="y">✓ 仅 USDT</td><td class="n">—</td><td>可复制</td></tr>
+          <tr><td>订单号码</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>可复制</td></tr>
+          <tr><td><strong>备注</strong></td><td class="y">有内容才展示</td><td class="y">有内容才展示</td><td class="y">有内容才展示</td><td>无内容不展示该行；提现失败为红字（一般为失败原因），其他为白字。列表卡片规则相同</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <h3>三、不同提现方式的收款信息字段</h3>
+      <p class="tip">收款信息行排在「提现方式」之后、「创建时间」之前，按下表顺序展示。✓ 展示 · — 不展示。</p>
+      <div class="tblwrap"><table>
+        <thead><tr><th style="width:13%">字段</th><th class="c" style="width:10%">免提直充</th><th class="c" style="width:10%">支付宝</th><th class="c" style="width:10%">银行卡</th><th class="c" style="width:10%">USDT</th><th class="c" style="width:10%">钱包</th><th style="width:22%">掩码规则</th><th>示例</th></tr></thead>
+        <tbody>
+          <tr><td>提现方式（通用行）</td><td class="y">免提直充</td><td class="y">支付宝</td><td class="y">银行卡</td><td class="y">USDT</td><td class="y">钱包</td><td>不掩码</td><td>银行卡</td></tr>
+          <tr><td>收款银行</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td>不掩码</td><td>招商银行</td></tr>
+          <tr><td>银行卡号</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td>前 4 后 4，中间掩码</td><td>6225 **** **** 6688</td></tr>
+          <tr><td>持卡人</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td>保留首尾字，中间掩码</td><td>张*明</td></tr>
+          <tr><td>支付宝账号</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td>手机号中间 4 位掩码；邮箱保留前 3 位</td><td>138****5521</td></tr>
+          <tr><td>支付宝实名</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td>只显示最后一个字</td><td>*明</td></tr>
+          <tr><td>链类型</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td>不掩码</td><td>TRC20</td></tr>
+          <tr><td>提现地址</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓ 可复制</td><td class="n">—</td><td>前 6 后 6，中间掩码；复制为完整地址</td><td>TQ8xm3****Rk9Fd2</td></tr>
+          <tr><td>交易哈希</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">仅成功 · 可复制</td><td class="n">—</td><td>前 8 后 8，中间掩码；复制为完整哈希</td><td>8f3a1c9e****d47b20e6</td></tr>
+          <tr><td>钱包类型</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>不掩码</td><td>NO钱包</td></tr>
+          <tr><td>钱包账号</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>前 2 后 4，中间掩码</td><td>NO*****2231</td></tr>
+          <tr><td>到账币种</td><td class="y">CNY</td><td class="y">CNY</td><td class="y">CNY</td><td class="y">USDT</td><td class="y">CNY</td><td>—</td><td>—</td></tr>
+          <tr><td>汇率</td><td class="y">1</td><td class="y">1</td><td class="y">1</td><td class="y">提交时锁定值</td><td class="y">1</td><td>—</td><td>7.12</td></tr>
+        </tbody>
+      </table></div>
+      <p class="tip">免提直充没有收款对象，不展示任何收款信息行，只展示通用字段。</p>
+    </section>
+
+    <section>
+      <h3>四、通用规则</h3>
+      <div class="tblwrap"><table>
+        <thead><tr><th style="width:18%">规则</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>数字显示</td><td>详情页金额、汇率去掉小数点后无效的 0，金额最多 4 位、汇率最多 8 位小数。例：100.0000 → 100；12.5000 → 12.5；27.8090 → 27.809；1.00000000 → 1。列表页金额沿用 2 位小数（-100.00）。</td></tr>
+          <tr><td>手续费</td><td>按提现时实际收取金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。</td></tr>
+          <tr><td>时间格式</td><td>详情页 YYYY/MM/DD HH:mm:ss</td></tr>
+          <tr><td>复制</td><td>订单号码、提现地址、交易哈希可复制，toast「复制成功」1.5 秒消失</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <h3>五、交互</h3>
+      <div class="tblwrap"><table>
+        <thead><tr><th style="width:22%">操作</th><th>结果</th></tr></thead>
+        <tbody>
+          <tr><td>点击提现记录卡片任意位置</td><td>进入该笔订单的提现详情页</td></tr>
+          <tr><td>点击卡片内订单号复制图标</td><td>只复制，不跳转</td></tr>
+          <tr><td>详情页左上角返回</td><td>回到交易记录-提现，保留原筛选条件</td></tr>
+          <tr><td>筛选「全部 ▼」</td><td>展开：全部 / 申请中 / 提现成功 / 提现失败；选中后列表即时过滤，无数据显示「暂无记录」</td></tr>
+          <tr><td>进入详情时订单状态已变化</td><td>详情页以接口最新状态为准，返回列表时刷新该卡片状态</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <h3>六、待确认清单</h3>
+      <div class="warn"><ol>
+        <li>手续费扣法：内扣（到账 = 提现金额 − 手续费）还是外扣（余额另扣）？原型按内扣。</li>
+        <li>提现失败时手续费是否一并退回？原型按全额退回。</li>
+        <li>各收款信息的掩码规则需与会员详情「提现账号」页签保持一致，请研发确认现有规则。</li>
+        <li>订单号前缀不统一：列表为 U 开头，现网详情为 WD 开头，需要后端确认同一笔订单用哪个号。</li>
+        <li>时间格式不统一：列表用「-」，详情用「/」，建议统一。</li>
+      </ol></div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var DATA = [
+    { id: 'r1', method: '免提直充', orderNo: 'U20261026132005118842', time: '2026-10-26 13:20:05', amount: 100, fee: 0, currency: 'CNY', rate: 1, status: 'pending', remark: '', extra: [], done: '' },
+    { id: 'r2', method: '银行卡', orderNo: 'U20261025160938793843', time: '2026-10-25 16:09:38', amount: 500, fee: 5, currency: 'CNY', rate: 1, status: 'pending', remark: '', extra: [{ label: '收款银行', value: '招商银行' }, { label: '银行卡号', value: '6225 **** **** 6688' }, { label: '持卡人', value: '张*明' }], done: '' },
+    { id: 'r3', method: 'USDT', orderNo: 'U20261024094512660217', time: '2026-10-24 09:45:12', amount: 200, fee: 2, currency: 'USDT', rate: 7.12, status: 'success', remark: '', extra: [{ label: '链类型', value: 'TRC20' }, { label: '提现地址', value: 'TQ8xm3****Rk9Fd2', copy: true }], txHash: '8f3a1c9e****d47b20e6', done: '2026-10-24 10:03:51' },
+    { id: 'r4', method: '支付宝', orderNo: 'U20261020201833440193', time: '2026-10-20 20:18:33', amount: 1000, fee: 12.5, currency: 'CNY', rate: 1, status: 'success', remark: '大额提现，已人工核实出款', extra: [{ label: '支付宝账号', value: '138****5521' }, { label: '支付宝实名', value: '*明' }], done: '2026-10-20 20:31:02' },
+    { id: 'r5', method: '钱包', orderNo: 'U20261018111406550128', time: '2026-10-18 11:14:06', amount: 300, fee: 3, currency: 'CNY', rate: 1, status: 'failed', remark: '流水未达标，请完成稽核后再提现', extra: [{ label: '钱包类型', value: 'NO钱包' }, { label: '钱包账号', value: 'NO*****2231' }], done: '2026-10-18 11:40:22' },
+    { id: 'r6', method: '银行卡', orderNo: 'U20261015154239057118', time: '2026-10-15 15:42:39', amount: 100, fee: 1, currency: 'CNY', rate: 1, status: 'failed', remark: '收款银行卡信息有误，资金已退回余额', extra: [{ label: '收款银行', value: '建设银行' }, { label: '银行卡号', value: '6217 **** **** 0213' }, { label: '持卡人', value: '张*明' }], done: '2026-10-15 16:12:31' }
+  ];
+  var S = {
+    pending: { label: '申请中', color: '#d2d4d9', svg: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>' },
+    success: { label: '提现成功', color: '#2ec27e', svg: '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' },
+    failed: { label: '提现失败', color: '#f04b5a', svg: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.8" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>' }
+  };
+  var FILTERS = [['all', '全部'], ['pending', '申请中'], ['success', '提现成功'], ['failed', '提现失败']];
+  var COPY_ICON = function (c, s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="' + c + '" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>'; };
+  var TRI = '<svg width="10" height="8" viewBox="0 0 10 8"><path d="M0 0h10L5 7z" fill="#fff"/></svg>';
+  var state = { screen: 'list', id: null, filter: 'all', filterOpen: false, toast: '' };
+  var timer;
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function num(n, dp) { return String(parseFloat(n.toFixed(dp))); }
+  function slash(t) { return (t || '').replace(/-/g, '/'); }
+  function find(id) { for (var i = 0; i < DATA.length; i++) if (DATA[i].id === id) return DATA[i]; return DATA[0]; }
+
+  function listHTML() {
+    var recs = DATA.filter(function (r) { return state.filter === 'all' || r.status === state.filter; });
+    var label = FILTERS.filter(function (f) { return f[0] === state.filter; })[0][1];
+    var h = '<div class="screen">' +
+      '<div class="hdr"><button class="iconbtn" aria-label="返回"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><h2>交易记录</h2></div>' +
+      '<div class="tabs"><button>充值</button><button class="on">提现<span></span></button><button>消费</button><button>场馆</button><button>活动</button><button>主播</button></div>' +
+      '<div class="filters"><button data-act="toggle">' + label + TRI + '</button><button>时间' + TRI + '</button></div>' +
+      '<div class="list">';
+    recs.forEach(function (r) {
+      var s = S[r.status];
+      h += '<div class="card"><button class="hit" data-act="open" data-id="' + r.id + '" aria-label="查看提现详情"></button><div class="body">' +
+        '<div class="row"><span style="font-size:15px;font-weight:700">' + esc(r.method) + '</span><span style="font-size:14px;font-weight:600;color:' + s.color + '">' + s.label + '</span></div>' +
+        '<div class="row"><div class="sub" style="display:flex;align-items:center;gap:2px">订单号：' + r.orderNo + '<button class="copy" data-act="copy" data-v="' + r.orderNo + '" aria-label="复制订单号">' + COPY_ICON('#b4b6bb', 14) + '</button></div><span style="font-size:18px;font-weight:700">-' + r.amount.toFixed(2) + '</span></div>' +
+        '<div class="sub">时间：' + r.time + '</div>' +
+        (r.remark ? '<div class="sub">备注：<span style="color:' + (r.status === 'failed' ? '#f04b5a' : '#e6e7ea') + '">' + esc(r.remark) + '</span></div>' : '') +
+        '</div></div>';
+    });
+    h += recs.length ? '<div class="more">没有更多了</div>' : '<div class="empty">暂无记录</div>';
+    h += '</div>';
+    if (state.filterOpen) {
+      h += '<div class="mask"><div class="opts">' + FILTERS.map(function (f) {
+        return '<button data-act="filter" data-f="' + f[0] + '" class="' + (f[0] === state.filter ? 'on' : '') + '">' + f[1] + '</button>';
+      }).join('') + '</div><button class="close" data-act="toggle" aria-label="关闭筛选"></button></div>';
+    }
+    return h + '</div>';
+  }
+
+  function rowsOf(r) {
+    var recv = num((r.amount - r.fee) / r.rate, 4) + ' ' + r.currency;
+    var rows = [{ label: '交易类型', value: '提现' }, { label: '提现方式', value: r.method }].concat(r.extra);
+    if (r.status === 'success' && r.txHash) rows.push({ label: '交易哈希', value: r.txHash, copy: true });
+    rows = rows.concat([
+      { label: '创建时间', value: slash(r.time) },
+      { label: '提现金额', value: num(r.amount, 4) + ' CNY' },
+      { label: '手续费', value: r.fee === 0 ? '0 CNY（免手续费）' : num(r.fee, 4) + ' CNY' },
+      { label: '到账币种', value: r.currency },
+      { label: '汇率', value: num(r.rate, 8) }
+    ]);
+    if (r.status === 'success') rows.push({ label: '实际到账', value: recv, color: '#2ec27e' });
+    else if (r.status === 'failed') rows.push({ label: '退回金额', value: num(r.amount, 4) + ' CNY' });
+    else rows.push({ label: '预计到账', value: recv });
+    if (r.status !== 'pending') rows.push({ label: '完成时间', value: slash(r.done) });
+    rows.push({ label: '订单号码', value: r.orderNo, copy: true, mono: true });
+    if (r.remark) rows.push({ label: '备注', value: r.remark, color: r.status === 'failed' ? '#f04b5a' : '#fff' });
+    return rows;
+  }
+
+  function detailHTML() {
+    var r = find(state.id), s = S[r.status];
+    var h = '<div class="screen">' +
+      '<div class="hdr" style="border-bottom:1px solid #1f2023"><button class="iconbtn" style="left:6px" data-act="back" aria-label="返回交易记录"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 5l-7 7 7 7"/></svg></button><h2 style="font-size:17px">提现详情</h2></div>' +
+      '<div class="dwrap"><div class="dcard">' +
+      '<div class="ico" style="background:' + s.color + '">' + s.svg + '</div>' +
+      '<div style="margin-top:12px;font-size:17px;color:' + s.color + '">' + s.label + '</div>' +
+      '<div style="margin-top:8px;font-size:28px;font-weight:800">¥' + num(r.amount, 4) + '</div>' +
+      '<div class="dash"></div>';
+    rowsOf(r).forEach(function (x) {
+      h += '<div class="drow"><span class="l">' + x.label + '</span><div class="v"><span class="' + (x.mono ? 'mono' : '') + '" style="color:' + (x.color || '#fff') + '">' + esc(x.value) + '</span>' +
+        (x.copy ? '<button class="copy" style="margin:0 -8px 0 0" data-act="copy" data-v="' + esc(x.value) + '" aria-label="复制' + x.label + '">' + COPY_ICON('#f5b301', 16) + '</button>' : '') + '</div></div>';
+    });
+    return h + '</div></div></div>';
+  }
+
+  function notesHTML() {
+    var items, title, hint;
+    if (state.screen === 'list') {
+      title = '交易记录 · 提现列表';
+      hint = '点击左侧任意卡片，查看对应的提现详情';
+      items = [
+        ['入口与跳转', '交易记录 → 提现 Tab。点击卡片任意位置，进入该笔订单的提现详情；点击订单号旁的复制图标只复制，不跳转。'],
+        ['状态（3 种）', '申请中（灰）/ 提现成功（绿）/ 提现失败（红）。\n后台审核、出款、重新代付等中间环节，前台统一显示「申请中」。'],
+        ['卡片字段', '提现方式、状态、订单号（可复制）、金额（沿用 2 位小数，带负号）、时间。'],
+        ['备注', '提现成功、提现失败都可能有备注，有内容才展示，无内容不展示该行。\n提现失败为红字（一般为失败原因），提现成功为白字。'],
+        ['筛选', '「全部 ▼」可选：全部、申请中、提现成功、提现失败；选中后即时过滤，无数据显示「暂无记录」。']
+      ];
+    } else {
+      var r = find(state.id), s = S[r.status];
+      title = '提现详情 · ' + s.label;
+      hint = '当前示例：' + r.method + ' · ' + r.orderNo;
+      var statusNote = {
+        pending: '包含后台：待审核、审核中、审核通过待出款、出款中、重新代付。中间环节前台不单独展示。提现金额在提交时已从余额扣除。',
+        success: '包含后台：出款成功、已人工出款。',
+        failed: '包含后台：审核拒绝、代付失败后拒绝出款。提现金额全额退回余额，后台填写的原因展示在「备注」（红字）。'
+      }[r.status];
+      var fields = {
+        pending: '展示：预计到账。\n不展示：实际到账、退回金额、完成时间、交易哈希。\n备注：有内容才展示（一般为空）。',
+        success: '展示：实际到账（绿字）、完成时间；USDT 另展示交易哈希。\n不展示：预计到账、退回金额。\n备注：有内容才展示（白字）。',
+        failed: '展示：退回金额、完成时间。\n不展示：预计到账、实际到账、交易哈希。\n备注：有内容才展示（红字，一般为失败原因）。'
+      }[r.status] + (r.status === 'failed' ? '\n退回金额 = 提现金额。' : '\n到账金额 =（提现金额 − 手续费）÷ 汇率。');
+      var method = {
+        '银行卡': '展示：收款银行、银行卡号（前 4 后 4，中间掩码）、持卡人（中间字掩码）。\n不展示：支付宝、USDT、钱包相关字段。',
+        '支付宝': '展示：支付宝账号（手机号中间 4 位掩码）、支付宝实名（只显示最后一个字）。\n不展示：银行卡、USDT、钱包相关字段。',
+        'USDT': '展示：链类型（TRC20 / ERC20）、提现地址（前 6 后 6，中间掩码，可复制）；提现成功时增加交易哈希（可复制）。\n到账币种为 USDT，汇率为提交时锁定的值。\n不展示：银行卡、支付宝、钱包相关字段。',
+        '钱包': '展示：钱包类型、钱包账号（前 2 后 4，中间掩码）。\n不展示：银行卡、支付宝、USDT 相关字段。',
+        '免提直充': '免提直充没有收款对象，不展示任何收款信息行，只展示通用字段。'
+      }[r.method];
+      items = [
+        ['状态：' + s.label, statusNote],
+        ['本状态展示的字段', fields],
+        ['收款信息 · ' + r.method, method + '\n5 种方式的完整对照见下方第三节。'],
+        ['手续费', '按提现时实际收取的金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。'],
+        ['数字显示', '金额、汇率去掉小数点后无效的 0：100.0000 → 100，27.8090 → 27.809，1.00000000 → 1。'],
+        ['其他', '订单号码可复制，提示「复制成功」；时间格式 YYYY/MM/DD HH:mm:ss；左上角返回，保留列表原筛选条件。']
+      ];
+    }
+    return '<span class="tag">需求说明</span><h2>' + title + '</h2><p class="hint">' + esc(hint) + '</p>' +
+      items.map(function (it, i) { return '<div class="note"><span class="no">' + (i + 1) + '</span><div><strong>' + esc(it[0]) + '</strong><p>' + esc(it[1]) + '</p></div></div>'; }).join('');
+  }
+
+  function render() {
+    var phone = document.getElementById('phone');
+    phone.innerHTML = (state.screen === 'list' ? listHTML() : detailHTML()) +
+      (state.toast ? '<div class="toast" role="status">' + state.toast + '</div>' : '');
+    document.getElementById('notes').innerHTML = notesHTML();
+  }
+
+  document.getElementById('phone').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var act = b.getAttribute('data-act');
+    if (act === 'open') { state.screen = 'detail'; state.id = b.getAttribute('data-id'); state.filterOpen = false; }
+    else if (act === 'back') { state.screen = 'list'; }
+    else if (act === 'toggle') { state.filterOpen = !state.filterOpen; }
+    else if (act === 'filter') { state.filter = b.getAttribute('data-f'); state.filterOpen = false; }
+    else if (act === 'copy') {
+      try { navigator.clipboard && navigator.clipboard.writeText(b.getAttribute('data-v')).catch(function () {}); } catch (err) {}
+      state.toast = '复制成功';
+      clearTimeout(timer);
+      timer = setTimeout(function () { state.toast = ''; render(); }, 1500);
+    }
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
