@@ -80,7 +80,7 @@ th.c{text-align:center}
 <div class="page">
   <div class="top">
     <h1>交易记录-提现详情 · 交互原型 + 需求说明</h1>
-    <p>版本 V1.3 · 2026-10-26 · 左侧原型可点击：点卡片进入详情，点「全部 ▼」筛选状态，点复制图标复制订单号。右侧说明随当前页面切换。</p>
+    <p>版本 V1.4 · 2026-10-26 · 左侧原型可点击：点卡片进入详情，点「全部 ▼」筛选状态，点复制图标复制订单号。右侧说明随当前页面切换。</p>
   </div>
 
   <div class="proto">
@@ -96,7 +96,7 @@ th.c{text-align:center}
         <tbody>
           <tr><td><strong>申请中</strong></td><td>灰白 #D2D4D9 · 时钟</td><td>待审核、审核中（锁单）、审核通过待出款、代付处理中、代付失败待重新代付</td><td>提交时从余额扣除（冻结）</td></tr>
           <tr><td><strong>提现成功</strong></td><td>绿 #2EC27E · 对勾</td><td>出款成功、已人工出款</td><td>扣除完成</td></tr>
-          <tr><td><strong>提现失败</strong></td><td>红 #F04B5A · 叉</td><td>审核拒绝、代付失败后拒绝出款（退回）</td><td>提现金额全额退回余额</td></tr>
+          <tr><td><strong>提现失败</strong></td><td>红 #F04B5A · 叉</td><td>审核拒绝、代付失败后拒绝出款（退回）</td><td>提现金额（含手续费）全额退回余额</td></tr>
         </tbody>
       </table></div>
       <p class="tip">流转：提交 → 申请中 → 提现成功 / 提现失败。后台中间环节前台不单独展示，统一显示「申请中」。</p>
@@ -116,7 +116,7 @@ th.c{text-align:center}
           <tr><td>到账币种、汇率</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>法币方式汇率为 1</td></tr>
           <tr><td><strong>预计到账</strong></td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td>（提现金额 − 手续费）÷ 汇率</td></tr>
           <tr><td><strong>实际到账</strong></td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td>同上公式，绿字</td></tr>
-          <tr><td><strong>退回金额</strong></td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>= 提现金额，全额退回余额</td></tr>
+          <tr><td><strong>退回金额</strong></td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>= 提现金额（含手续费），全额退回余额</td></tr>
           <tr><td><strong>完成时间</strong></td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td>出款成功或失败退回的时间</td></tr>
           <tr><td><strong>交易哈希</strong></td><td class="n">—</td><td class="y">✓ 仅 USDT</td><td class="n">—</td><td>可复制</td></tr>
           <tr><td>订单号码</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>可复制</td></tr>
@@ -155,8 +155,9 @@ th.c{text-align:center}
         <thead><tr><th style="width:18%">规则</th><th>说明</th></tr></thead>
         <tbody>
           <tr><td>数字显示</td><td>详情页金额、汇率去掉小数点后无效的 0，金额最多 4 位、汇率最多 8 位小数。例：100.0000 → 100；12.5000 → 12.5；27.8090 → 27.809；1.00000000 → 1。列表页金额沿用 2 位小数（-100.00）。</td></tr>
-          <tr><td>手续费</td><td>按提现时实际收取金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。</td></tr>
-          <tr><td>时间格式</td><td>详情页 YYYY/MM/DD HH:mm:ss</td></tr>
+          <tr><td>手续费</td><td>内扣：到账金额 =（提现金额 − 手续费）÷ 汇率。提现失败时，提现金额（含手续费）全额退回余额。按提现时实际收取金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。</td></tr>
+          <tr><td>订单号码</td><td>按系统中实际订单号格式展示，列表与详情为同一个订单号。</td></tr>
+          <tr><td>时间格式</td><td>列表与详情统一为 YYYY-MM-DD HH:mm:ss，如 2026-10-25 16:09:38。</td></tr>
           <tr><td>复制</td><td>订单号码、提现地址、交易哈希可复制，toast「复制成功」1.5 秒消失</td></tr>
         </tbody>
       </table></div>
@@ -177,13 +178,13 @@ th.c{text-align:center}
     </section>
 
     <section>
-      <h3>六、待确认清单</h3>
-      <div class="warn"><ol>
-        <li>手续费扣法：内扣（到账 = 提现金额 − 手续费）还是外扣（余额另扣）？原型按内扣。</li>
-        <li>提现失败时手续费是否一并退回？原型按全额退回。</li>
-        <li>各收款信息的掩码规则需与会员详情「提现账号」页签保持一致，请研发确认现有规则。</li>
-        <li>订单号前缀不统一：列表为 U 开头，现网详情为 WD 开头，需要后端确认同一笔订单用哪个号。</li>
-        <li>时间格式不统一：列表用「-」，详情用「/」，建议统一。</li>
+      <h3>六、已确认规则</h3>
+      <div class="warn" style="background:#f0faf4;border-color:#b7e4c7"><ol style="color:#14532d">
+        <li>手续费采用内扣：到账金额 =（提现金额 − 手续费）÷ 汇率。</li>
+        <li>提现失败时，提现金额（含手续费）全额退回余额。</li>
+        <li>订单号码按系统中实际订单号格式展示。</li>
+        <li>时间格式列表与详情统一用「-」：YYYY-MM-DD HH:mm:ss。</li>
+        <li>免提直充没有收款对象，不展示收款信息行。</li>
       </ol></div>
     </section>
   </div>
@@ -212,7 +213,7 @@ th.c{text-align:center}
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function num(n, dp) { return String(parseFloat(n.toFixed(dp))); }
-  function slash(t) { return (t || '').replace(/-/g, '/'); }
+  function slash(t) { return t || ''; }
   function find(id) { for (var i = 0; i < DATA.length; i++) if (DATA[i].id === id) return DATA[i]; return DATA[0]; }
 
   function listHTML() {
@@ -315,9 +316,9 @@ th.c{text-align:center}
         ['状态：' + s.label, statusNote],
         ['本状态展示的字段', fields],
         ['收款信息 · ' + r.method, method + '\n5 种方式的完整对照见下方第三节。'],
-        ['手续费', '按提现时实际收取的金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。'],
+        ['手续费', '内扣：到账金额 =（提现金额 − 手续费）÷ 汇率。\n提现失败时，提现金额（含手续费）全额退回余额。\n按提现时实际收取的金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。'],
         ['数字显示', '金额、汇率去掉小数点后无效的 0：100.0000 → 100，27.8090 → 27.809，1.00000000 → 1。'],
-        ['其他', '订单号码可复制，提示「复制成功」；时间格式 YYYY/MM/DD HH:mm:ss；左上角返回，保留列表原筛选条件。']
+        ['其他', '订单号码按系统中实际订单号格式展示，可复制，提示「复制成功」。\n时间格式统一为 YYYY-MM-DD HH:mm:ss（与列表一致）。\n左上角返回，保留列表原筛选条件。']
       ];
     }
     return '<span class="tag">需求说明</span><h2>' + title + '</h2><p class="hint">' + esc(hint) + '</p>' +
