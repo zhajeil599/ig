@@ -1823,7 +1823,7 @@
                        &lt;span class=&quot;price-orig&quot;&gt;原价 ${fmt(orig)}&lt;/span&gt;`;
     } else {
       box.innerHTML = `&lt;span class=&quot;price-now&quot;&gt;${fmt(orig)}&lt;/span&gt;
-                       &lt;span class=&quot;price-target&quot;&gt;打码达标价 &lt;b&gt;${fmt(discPrice(orig))}&lt;/b&gt;&lt;/span&gt;`;
+                       &lt;span class=&quot;price-target&quot;&gt;流水达标价 &lt;b&gt;${fmt(discPrice(orig))}&lt;/b&gt;&lt;/span&gt;`;
     }
   }
 
@@ -1838,7 +1838,7 @@
     } else if (qualified()) {
       banner.style.display = &#x27;block&#x27;;
       banner.className = &#x27;disc-banner done&#x27;;
-      banner.innerHTML = `✅ 已达成累计打码 ${DISC.bet}，购买短剧享 &lt;b&gt;${zhe()}&lt;/b&gt; 优惠`;
+      banner.innerHTML = `✅ 已达成游戏流水 ${DISC.bet}，购买短剧享 &lt;b&gt;${zhe()}&lt;/b&gt; 优惠`;
       hint.innerText = `（已享${zhe()}）`;
     } else {
       const need = Math.max(0, DISC.bet - userBet);
@@ -1847,11 +1847,11 @@
       banner.className = &#x27;disc-banner todo&#x27;;
       banner.innerHTML = `
         &lt;div class=&quot;disc-banner-top&quot;&gt;
-          &lt;div class=&quot;disc-banner-text&quot;&gt;🎮 累计打码满 &lt;b&gt;${DISC.bet}&lt;/b&gt; 购剧享 &lt;b&gt;${zhe()}&lt;/b&gt;，还差 &lt;b&gt;${fmt(need)}&lt;/b&gt;&lt;/div&gt;
+          &lt;div class=&quot;disc-banner-text&quot;&gt;🎮 累计游戏流水满 &lt;b&gt;${DISC.bet}&lt;/b&gt; 购剧享 &lt;b&gt;${zhe()}&lt;/b&gt;，还差 &lt;b&gt;${fmt(need)}&lt;/b&gt;&lt;/div&gt;
           &lt;div class=&quot;go-game-btn&quot; onclick=&quot;goGameCenter()&quot;&gt;去游戏&lt;/div&gt;
         &lt;/div&gt;
         &lt;div class=&quot;disc-progress&quot;&gt;&lt;i style=&quot;width:${pct}%&quot;&gt;&lt;/i&gt;&lt;/div&gt;
-        &lt;div class=&quot;disc-progress-label&quot;&gt;&lt;span&gt;当前累计打码 ${fmt(userBet)}&lt;/span&gt;&lt;span&gt;${DISC.bet}&lt;/span&gt;&lt;/div&gt;`;
+        &lt;div class=&quot;disc-progress-label&quot;&gt;&lt;span&gt;当前游戏流水 ${fmt(userBet)}&lt;/span&gt;&lt;span&gt;${DISC.bet}&lt;/span&gt;&lt;/div&gt;`;
       hint.innerText = `（打码享${zhe()}）`;
     }
     const gh = document.getElementById(&#x27;gameHint&#x27;);
@@ -2046,18 +2046,18 @@
           每个购买选项（解锁本集 / 解锁全剧）均展示两个价格：
           <ul>
             <li><b>已达标：</b>主价格 = 折后价（红色）+「8折」角标，下方原价划线。</li>
-            <li><b>未达标：</b>主价格 = 原价（红色），下方橙色「打码达标价 xx」。</li>
+            <li><b>未达标：</b>主价格 = 原价（红色），下方橙色「流水达标价 xx」。</li>
             <li>折扣比例为 100（功能关闭）时只展示原价，不展示任何折扣元素。</li>
             <li>折扣文案按配置自动换算，如 80% →「8折」、85% →「8.5折」。</li>
           </ul>
         </div>
         <div class="note">
-          <div class="note-title"><span class="mk">2</span>未达标：激励打码 + 去游戏</div>
+          <div class="note-title"><span class="mk">2</span>未达标：激励游戏流水 + 去游戏</div>
           弹窗价格上方展示激励条：<br>
-          「🎮 累计打码满 <b>100</b> 购剧享 <b>8折</b>，还差 <b>35</b>」+ 打码进度条（当前 / 目标）+「<b>去游戏</b>」按钮。
+          「🎮 累计游戏流水满 <b>100</b> 购剧享 <b>8折</b>，还差 <b>35</b>」+ 游戏流水进度条（当前 / 目标）+「<b>去游戏</b>」按钮。
           <ul>
             <li>点「去游戏」：关闭弹窗，跳转<b>游戏中心</b>（底部导航「游戏」页）。</li>
-            <li>已达标时激励条变为「✅ 已达成累计打码 100，购买短剧享 8折优惠」，无按钮。</li>
+            <li>已达标时激励条变为「✅ 已达成游戏流水 100，购买短剧享 8折优惠」，无按钮。</li>
           </ul>
         </div>
         <div class="note">
