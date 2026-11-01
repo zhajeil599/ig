@@ -149,7 +149,7 @@
         .detail-table td.bets { text-align: left; line-height: 1.8; }
         .bet { color: #909399; }
         .bet.hit { color: #303133; font-weight: bold; background: #fff7e6; padding: 0 4px; border-radius: 2px; }
-        .bet.hit::after { content: " ← 对冲"; color: #e6a23c; font-weight: normal; font-size: 11px; }
+        .bet.hit::after { content: " ← 疑似对冲"; color: #e6a23c; font-weight: normal; font-size: 11px; }
 
         /* 规则说明 */
         .rule-doc { font-size: 13px; color: #606266; line-height: 1.8; }
@@ -285,8 +285,12 @@
                 - 同一期可能出现多个组合（如目标下小100，B、C、D 各下大50，则 B+C、B+D、C+D 均为组合），每个组合分别判定、分别统计。</li>
             <li><strong>命中对冲期数（累计，不要求连续）：</strong>按"对冲关系"分别统计——单人对冲按同一会员统计，组合对冲按同一对会员组合统计。某对冲关系在 N 期内与目标会员形成对冲的期数累计 ≥ M（M=命中对冲期数）时列出。同一期内同一对冲关系在多个玩法上都对冲，只计 1 期。</li>
             <li><strong>列表展示：</strong>按期数倒序，每期一组（期数、操作单元格合并），组内首行为目标会员，其后为该期命中的对冲会员；按该彩种的对冲玩法分列展示各会员的投注金额，参与对冲的金额加粗高亮。<br>
-                - 对冲会员账号后显示对冲标签：单人对冲 / 组合N（组合编号在本次查询结果内固定）；同一会员同期参与多个组合时打多个标签。<br>
+                - 对冲会员账号后显示标签：疑似单人对冲 / 疑似组合对冲N（组合编号在本次查询结果内固定）；同一会员同期参与多个组合时打多个标签。<br>
                 - 列表上方展示本次命中的全部对冲关系及其命中期数，点击可筛选只看该关系涉及的期数。</li>
+            <li><strong>列表玩法列：</strong>只展示所选彩种的可对冲玩法（见下方"对冲玩法定义"），列固定，不随查询结果增减；某玩法本期无人下注时该列留空。<br>
+                - 每格展示该会员本期在该选项上的投注总额（不论是否参与对冲），参与疑似对冲的金额加粗高亮。<br>
+                - 非对冲玩法（如豹子、豹顺、特码等）不单独成列，合计金额展示在最后的"其他玩法"列，无则留空；明细在详情中查看。</li>
+            <li><strong>"疑似"文案：</strong>查询结果仅为按规则筛出的疑似对冲，由商户自行判断。页面中所有描述判定结果的文案均需带"疑似"，包括：结果汇总、对冲关系筛选项、对冲标签、详情标题、本期对冲关系、注单明细中的对冲标记。功能名称（对冲查询、对冲规则说明）及查询条件名称不加。</li>
             <li><strong>商户区分：</strong>与目标会员同商户（包括子商户）的会员，整行数据红色字体，账号完整显示，括号内显示所属商户名；其他商户的会员，整行数据黄色字体，账号只显示前2位+***+后4位，括号内显示"其他"。</li>
             <li><strong>账号保护：</strong>其他商户会员的完整账号不得在页面及返回数据中出现；查看详情时以加密后的账号标识进行查询，详情中同样只显示脱敏账号。</li>
             <li><strong>详情展示：</strong>按期查看，顶部列出该期所有对冲关系的金额对应；下方展示目标会员及该期全部对冲会员在本期的所有投注（包括非对冲玩法，如豹子、豹顺等），命中对冲的投注高亮标注。</li>
@@ -309,19 +313,19 @@
     <div class="modal-overlay" id="detailModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="detailTitle">对冲注单详情</h3>
+                <h3 id="detailTitle">疑似对冲注单详情</h3>
                 <button class="close-btn" onclick="closeModal('detailModal')">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="rel-box">
-                    <div class="rel-title">本期对冲关系</div>
+                    <div class="rel-title">本期疑似对冲关系</div>
                     <div id="detailRels"></div>
                 </div>
                 <table class="detail-table">
                     <thead>
                         <tr>
                             <th width="22%">会员账户</th>
-                            <th width="16%">对冲标签</th>
+                            <th width="16%">疑似对冲标签</th>
                             <th width="12%">本期投注总额</th>
                             <th width="50%">本期全部投注明细</th>
                         </tr>
@@ -340,6 +344,7 @@
                 <button class="close-btn" onclick="closeModal('ruleModal')">&times;</button>
             </div>
             <div class="modal-body rule-doc">
+                <div class="eg" style="background:#fdf6ec;color:#e6a23c;margin:0 0 10px">查询结果只是按下注规律筛出来的"疑似对冲"，系统不会自动处理，是否真的在刷流水请商户结合实际情况自己判断。</div>
                 <h4>一、什么是对冲</h4>
                 同一个彩种、同一期，目标会员下了一边（比如"大"），另一个会员下了相反的一边（"小"），而且金额一样，就算一次对冲。这样两人不管开什么都一输一赢，只是在刷流水。
                 <div class="eg">例：第088期，A 下"大"100元，B 下"小"100元 → A 和 B 对冲。</div>
@@ -350,7 +355,7 @@
 
                 <h4>三、两个人凑一起也算（组合对冲）</h4>
                 两个会员都下了相反的一边，两人金额加起来刚好等于目标会员的金额，也算对冲，叫"组合对冲"。最多只看两个人的组合。
-                <div class="eg">例：A 下"小"100，B 下"大"50，C 下"大"50 → B+C 组合对冲，列表里 B 和 C 后面会标"组合1"。<br>
+                <div class="eg">例：A 下"小"100，B 下"大"50，C 下"大"50 → B+C 组合对冲，列表里 B 和 C 后面会标"疑似组合对冲1"。<br>
                     如果同一期还有 D 下"大"50，那 B+D、C+D 也都会算成组合，分别打上不同的组合标签；一个人参与了几个组合就会有几个标签。</div>
 
                 <h4>四、命中对冲期数怎么算</h4>
@@ -363,7 +368,10 @@
                     <li><span class="c-other">黄色</span>：其他商户的会员，账号只显示前2位和后4位（如 60***1022），商户显示为"其他"，但仍可以查看详情。</li>
                 </ul>
 
-                <h4>六、哪些玩法算"相反"</h4>
+                <h4>六、列表里显示哪些玩法</h4>
+                列表只显示这个彩种可以对冲的玩法（如大、小、单、双），每格是这个会员这一期在该选项上下注的总金额，参与疑似对冲的金额会加粗标黄。<br>其他玩法（如豹子、特码）不单独列出，合计金额放在"其他玩法"一列，具体下了什么点"详情"查看。
+
+                <h4>七、哪些玩法算"相反"</h4>
                 <ul>
                     <li>快三、鱼虾蟹、PC28、六合彩类：大 / 小、单 / 双</li>
                     <li>赛车：大 / 小、单 / 双、冠亚和大 / 和小、和单 / 和双</li>
@@ -519,14 +527,14 @@
         all.forEach(it => new Set(it.rels.map(r => r.key)).forEach(k => count[k] = (count[k] || 0) + 1));
         const qualified = Object.keys(count).filter(k => count[k] >= M)
             .sort((a, b) => count[b] - count[a] || a.localeCompare(b));
-        if (!qualified.length) { showEmpty(`追溯 ${N} 期内，没有命中对冲期数 ≥ ${M} 期的会员`); return; }
+        if (!qualified.length) { showEmpty(`追溯 ${N} 期内，没有命中对冲期数 ≥ ${M} 期的疑似对冲会员`); return; }
 
-        // 3. 关系标签：单人对冲 / 组合N
+        // 3. 关系标签：疑似单人对冲 / 疑似组合对冲N
         const relInfo = {};
         let comboNo = 0;
         qualified.forEach(k => {
             const isCombo = k.startsWith('C:');
-            relInfo[k] = { key: k, type: isCombo ? 'C' : 'S', members: k.slice(2).split('+'), count: count[k], label: isCombo ? '组合' + (++comboNo) : '单人对冲' };
+            relInfo[k] = { key: k, type: isCombo ? 'C' : 'S', members: k.slice(2).split('+'), count: count[k], label: isCombo ? '疑似组合对冲' + (++comboNo) : '疑似单人对冲' };
         });
 
         // 4. 只保留含达标关系的期
@@ -539,7 +547,7 @@
 
         const first = current - N + 1;
         document.getElementById('summaryText').innerHTML =
-            `追溯 <b>${N}</b> 期（${first} ~ ${current}），命中对冲期数 ≥ <b>${M}</b> 期的对冲关系 <b style="color:#f56c6c">${qualified.length}</b> 个，涉及 <b>${state.issues.length}</b> 期`;
+            `追溯 <b>${N}</b> 期（${first} ~ ${current}），命中对冲期数 ≥ <b>${M}</b> 期的疑似对冲关系 <b style="color:#f56c6c">${qualified.length}</b> 个，涉及 <b>${state.issues.length}</b> 期`;
 
         renderChips();
         renderHead();
@@ -571,7 +579,7 @@
     function renderHead() {
         const cols = state.cfg.pairs.flatMap(p => [p.ha || p.a, p.hb || p.b]);
         document.getElementById('tableHead').innerHTML =
-            `<tr><th>期数</th><th>会员账户</th>${cols.map(c => `<th>${c}</th>`).join('')}<th>操作</th></tr>`;
+            `<tr><th>期数</th><th>会员账户</th>${cols.map(c => `<th>${c}</th>`).join('')}<th>其他玩法<i class="help-icon">?<span class="tooltip-text">该会员本期在非对冲玩法（如豹子、特码）上的投注合计，具体投注点“详情”查看。</span></i></th><th>操作</th></tr>`;
     }
 
     // 某期参与列表展示的会员顺序：目标在首行
@@ -589,7 +597,7 @@
     function memberTags(it, m) {
         if (m === 'T') return '<span class="tag tag-target">目标会员</span>';
         const labels = [...new Set(it.rels.filter(r => r.members.includes(m)).map(r => state.rels[r.key].label))].sort();
-        return labels.map(l => `<span class="tag ${l === '单人对冲' ? 'tag-single' : 'tag-combo'}">${l}</span>`).join('');
+        return labels.map(l => `<span class="tag ${l.includes('单人') ? 'tag-single' : 'tag-combo'}">${l}</span>`).join('');
     }
 
     function renderTable() {
@@ -613,6 +621,8 @@
                         tr += `<td class="amt c-color ${amt && isHit(it, m, p, s) ? 'hit' : ''}">${amt || ''}</td>`;
                     });
                 });
+                const other = it.bets.filter(b => b.m === m && b.x).reduce((a, b) => a + b.amt, 0);
+                tr += `<td class="amt c-color">${other || ''}</td>`;
                 if (idx === 0) tr += `<td rowspan="${ms.length}"><button class="btn-detail" onclick="viewDetail('${it.issue}')">详情</button></td>`;
                 tr += '</tr>';
                 html += tr;
@@ -633,7 +643,7 @@
     function viewDetail(issue) {
         const it = state.issues.find(x => x.issue === issue);
         const cfg = state.cfg;
-        document.getElementById('detailTitle').textContent = `对冲注单详情 · ${state.lottery} · 第 ${issue} 期`;
+        document.getElementById('detailTitle').textContent = `疑似对冲注单详情 · ${state.lottery} · 第 ${issue} 期`;
 
         // 对冲关系金额对应
         document.getElementById('detailRels').innerHTML = it.rels.map(r => {
