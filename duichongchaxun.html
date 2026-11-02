@@ -30,12 +30,14 @@
             position: relative;
         }
 
+        .section-title { font-size: 15px; font-weight: bold; color: #303133; margin: 0 0 12px; display: flex; align-items: center; }
+
         /* 查询面板 */
         .query-panel {
             display: flex;
             flex-wrap: wrap;
             gap: 16px 20px;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
             background-color: #f8f9fb;
             padding: 20px;
             border-radius: 6px;
@@ -60,13 +62,51 @@
         }
         .btn-query:hover { background-color: #66b1ff; }
         .btn-query:active { background-color: #3a8ee6; }
-        .btn-query:disabled { background-color: #a0cfff; cursor: not-allowed; }
         .link-rule { color: #409eff; font-size: 13px; cursor: pointer; border: none; background: none; padding: 0; }
         .link-rule:hover { text-decoration: underline; }
 
-        /* 结果区 */
+        /* 提交成功提示 */
+        .notice {
+            display: none; background: #f0f9eb; border: 1px solid #e1f3d8; color: #67c23a; font-size: 13px;
+            padding: 8px 14px; border-radius: 4px; margin-bottom: 14px;
+        }
+
+        /* 任务列表 */
+        .task-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-plain {
+            height: 28px; padding: 0 12px; border: 1px solid #dcdfe6; background: #fff; border-radius: 3px;
+            cursor: pointer; color: #606266; font-size: 13px;
+        }
+        .btn-plain:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+        .task-table td { font-size: 12px; }
+        .task-table td.cond { text-align: left; line-height: 1.7; }
+        .sub { color: #909399; font-size: 12px; }
+        .red { color: #f56c6c; }
+        .st { display: inline-block; font-size: 12px; line-height: 20px; padding: 0 8px; border-radius: 3px; border: 1px solid; }
+        .st-wait { color: #909399; border-color: #d3d4d6; background: #f4f4f5; }
+        .st-run { color: #409eff; border-color: #b3d8ff; background: #ecf5ff; }
+        .st-done { color: #67c23a; border-color: #c2e7b0; background: #f0f9eb; }
+        .st-fail { color: #f56c6c; border-color: #fbc4c4; background: #fef0f0; }
+        .st-exp { color: #c0c4cc; border-color: #e4e7ed; background: #fafafa; }
+        .bar { width: 80px; height: 6px; background: #ebeef5; border-radius: 3px; margin: 6px auto 2px; overflow: hidden; }
+        .bar i { display: block; height: 100%; background: #409eff; transition: width 0.4s; }
+        .btn-text { border: none; background: none; color: #409eff; cursor: pointer; font-size: 13px; padding: 0; }
+        .btn-text:hover { text-decoration: underline; }
+        .row-new td { background: #f5faff; }
+
+        /* 结果页 */
+        .result-head {
+            display: flex; align-items: center; gap: 16px; background: #f8f9fb; border: 1px solid #e4e7ed;
+            border-radius: 6px; padding: 12px 16px; margin-bottom: 16px;
+        }
+        .btn-back { border: none; background: none; color: #409eff; cursor: pointer; font-size: 14px; padding: 0; white-space: nowrap; }
+        .btn-back:hover { text-decoration: underline; }
+        .cond-summary { font-size: 13px; color: #606266; line-height: 1.8; flex: 1; }
+        .cond-summary b { color: #303133; font-weight: normal; }
+        .cond-summary .sep { color: #dcdfe6; margin: 0 8px; }
+
         .result-panel { display: none; }
-        .loading-text, .empty-text { text-align: center; color: #909399; font-size: 14px; margin: 40px 0; display: none; }
+        .empty-text { text-align: center; color: #909399; font-size: 14px; margin: 40px 0; display: none; }
 
         .summary-bar {
             display: flex; justify-content: space-between; align-items: center;
@@ -110,7 +150,7 @@
 
         .btn-detail {
             background-color: #409eff; border: none; color: white; cursor: pointer;
-            font-size: 13px; padding: 5px 12px; border-radius: 3px; transition: background-color 0.2s;
+            font-size: 13px; padding: 5px 12px; border-radius: 3px; transition: background-color 0.2s; white-space: nowrap;
         }
         .btn-detail:hover { background-color: #66b1ff; }
 
@@ -162,14 +202,14 @@
         .help-icon {
             display: inline-flex; justify-content: center; align-items: center; width: 15px; height: 15px;
             border-radius: 50%; background-color: #c0c4cc; color: #fff; font-size: 11px; margin-left: 5px;
-            cursor: help; position: relative; font-style: normal; font-weight: normal;
+            cursor: help; position: relative; font-style: normal; font-weight: normal; vertical-align: middle;
         }
         .help-icon:hover { background-color: #909399; }
         .help-icon .tooltip-text {
             visibility: hidden; width: 260px; background-color: #303133; color: #fff; text-align: left;
             border-radius: 4px; padding: 8px 12px; position: absolute; z-index: 999; bottom: 130%; left: 50%;
             transform: translateX(-50%); opacity: 0; transition: opacity 0.3s; font-size: 12px; line-height: 1.6;
-            white-space: normal; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            white-space: normal; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-weight: normal;
         }
         .help-icon .tooltip-text::after {
             content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
@@ -183,6 +223,7 @@
             border-radius: 4px; font-size: 13px; color: #606266; line-height: 1.6;
         }
         .prd-doc-section h4 { margin: 0 0 10px 0; color: #303133; font-size: 14px; }
+        .prd-doc-section h5 { margin: 12px 0 6px; color: #303133; font-size: 13px; }
         .prd-doc-section ul { margin: 0; padding-left: 20px; }
         .prd-doc-section li { margin-bottom: 6px; }
     </style>
@@ -190,92 +231,155 @@
 <body>
 
 <div class="prototype-container">
-    <!-- 查询条件区 -->
-    <div class="query-panel">
-        <div class="form-group">
-            <label>彩种名称</label>
-            <select id="lotteryName">
-                <option value="一分时时彩">一分时时彩</option>
-                <option value="一分赛车">一分赛车</option>
-                <option value="一分11选5">一分11选5</option>
-                <option value="一分快三" selected>一分快三</option>
-                <option value="一分六合彩">一分六合彩</option>
-                <option value="一分快乐十分">一分快乐十分</option>
-                <option value="鱼虾蟹">鱼虾蟹</option>
-                <option value="百人牛牛">百人牛牛</option>
-                <option value="香港六合彩">香港六合彩</option>
-                <option value="澳门六合彩旧">旧澳门六合彩</option>
-                <option value="澳门六合彩">新澳门六合彩</option>
-                <option value="正澳门六合彩">正澳门六合彩</option>
-                <option value="三分快三">三分快三</option>
-                <option value="三分六合">三分六合</option>
-                <option value="视讯五分快三">视讯五分快三</option>
-                <option value="视讯十分六合">视讯十分六合</option>
-                <option value="一分动物彩">一分动物彩</option>
-                <option value="三分动物彩">三分动物彩</option>
-                <option value="五分动物彩">五分动物彩</option>
-                <option value="极速百家乐">极速百家乐</option>
-                <option value="PC28">PC28</option>
-                <option value="赛事">赛事</option>
-            </select>
+
+    <!-- ================= 页面一：对冲查询（提交任务 + 任务列表） ================= -->
+    <div id="viewTask">
+        <div class="query-panel">
+            <div class="form-group">
+                <label>彩种名称</label>
+                <select id="lotteryName">
+                    <option value="一分时时彩">一分时时彩</option>
+                    <option value="一分赛车">一分赛车</option>
+                    <option value="一分11选5">一分11选5</option>
+                    <option value="一分快三" selected>一分快三</option>
+                    <option value="一分六合彩">一分六合彩</option>
+                    <option value="一分快乐十分">一分快乐十分</option>
+                    <option value="鱼虾蟹">鱼虾蟹</option>
+                    <option value="百人牛牛">百人牛牛</option>
+                    <option value="香港六合彩">香港六合彩</option>
+                    <option value="澳门六合彩旧">旧澳门六合彩</option>
+                    <option value="澳门六合彩">新澳门六合彩</option>
+                    <option value="正澳门六合彩">正澳门六合彩</option>
+                    <option value="三分快三">三分快三</option>
+                    <option value="三分六合">三分六合</option>
+                    <option value="视讯五分快三">视讯五分快三</option>
+                    <option value="视讯十分六合">视讯十分六合</option>
+                    <option value="一分动物彩">一分动物彩</option>
+                    <option value="三分动物彩">三分动物彩</option>
+                    <option value="五分动物彩">五分动物彩</option>
+                    <option value="极速百家乐">极速百家乐</option>
+                    <option value="PC28">PC28</option>
+                    <option value="赛事">赛事</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>当前期数</label>
+                <input type="text" id="currentIssue" placeholder="输入期号" value="20261006088">
+            </div>
+
+            <div class="form-group">
+                <label>目标用户ID</label>
+                <input type="text" id="targetUid" placeholder="输入目标用户ID" value="601691087">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    追溯历史期数
+                    <i class="help-icon">?
+                        <span class="tooltip-text">从【当前期数】往前倒推检查多少期（含当前期）。例如填 50，就检查最近 50 期里的投注。</span>
+                    </i>
+                </label>
+                <input type="number" id="maxHistory" placeholder="输入N值" value="50" min="1">
+            </div>
+
+            <div class="form-group">
+                <label>
+                    命中对冲期数
+                    <i class="help-icon">?
+                        <span class="tooltip-text">在追溯的期数里，同一个对冲对象（某一个会员，或某两个会员的组合）和目标会员对冲的期数，累计达到这个数就会列出来。不要求连续，例如第1、5、9期都对冲，也算3期。</span>
+                    </i>
+                </label>
+                <input type="number" id="minHedge" placeholder="输入M值" value="10" min="1">
+            </div>
+
+            <div class="btn-group">
+                <button class="link-rule" onclick="openRule()">对冲规则说明</button>
+                <button class="btn-query" onclick="submitTask()">提交查询</button>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>当前期数</label>
-            <input type="text" id="currentIssue" placeholder="输入期号" value="20261006088">
-        </div>
+        <div class="notice" id="notice"></div>
 
-        <div class="form-group">
-            <label>目标用户ID</label>
-            <input type="text" id="targetUid" placeholder="输入目标用户ID" value="601691087">
-        </div>
-
-        <div class="form-group">
-            <label>
-                追溯历史期数
+        <div class="task-toolbar">
+            <div class="section-title" style="margin:0">
+                查询任务
                 <i class="help-icon">?
-                    <span class="tooltip-text">从【当前期数】往前倒推检查多少期（含当前期）。例如填 50，就检查最近 50 期里的投注。</span>
+                    <span class="tooltip-text">提交后系统在后台处理，无需停留在本页。处理完成后点击【查看结果】查看疑似对冲列表。结果保留 7 天，过期需重新提交。</span>
                 </i>
-            </label>
-            <input type="number" id="maxHistory" placeholder="输入N值" value="50" min="1">
+            </div>
+            <div>
+                <span class="sub" id="taskCount" style="margin-right:10px"></span>
+                <button class="btn-plain" onclick="renderTasks()">刷新</button>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>
-                命中对冲期数
-                <i class="help-icon">?
-                    <span class="tooltip-text">在追溯的期数里，同一个对冲对象（某一个会员，或某两个会员的组合）和目标会员对冲的期数，累计达到这个数就会列出来。不要求连续，例如第1、5、9期都对冲，也算3期。</span>
-                </i>
-            </label>
-            <input type="number" id="minHedge" placeholder="输入M值" value="10" min="1">
-        </div>
-
-        <div class="btn-group">
-            <button class="link-rule" onclick="openRule()">对冲规则说明</button>
-            <button class="btn-query" id="btnQuery" onclick="executeQuery()">查 询</button>
-        </div>
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th width="16%">任务编号</th>
+                    <th>查询条件</th>
+                    <th width="9%">提交人</th>
+                    <th width="15%">提交 / 完成时间</th>
+                    <th width="11%">状态</th>
+                    <th width="13%">结果</th>
+                    <th width="10%">操作</th>
+                </tr>
+            </thead>
+            <tbody id="taskBody"></tbody>
+        </table>
     </div>
 
-    <div class="loading-text" id="loadingState">正在跨平台全量检索对冲注单数据，请稍候...</div>
-    <div class="empty-text" id="emptyState"></div>
-
-    <!-- 查询结果区 -->
-    <div class="result-panel" id="resultPanel">
-        <div class="summary-bar">
-            <div id="summaryText"></div>
-            <div class="legend"><span class="lg-same">本商户（含子商户）</span><span class="lg-other">其他商户</span></div>
+    <!-- ================= 页面二：查询结果列表 ================= -->
+    <div id="viewResult" style="display:none">
+        <div class="result-head">
+            <button class="btn-back" onclick="backToTask()">← 返回查询任务</button>
+            <div class="cond-summary" id="resultCond"></div>
+            <button class="link-rule" onclick="openRule()">对冲规则说明</button>
         </div>
-        <div class="chip-list" id="chipList"></div>
-        <table class="main-table">
-            <thead id="tableHead"></thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-        <div class="pager" id="pager"></div>
+
+        <div class="empty-text" id="emptyState"></div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="summary-bar">
+                <div id="summaryText"></div>
+                <div class="legend"><span class="lg-same">本商户（含子商户）</span><span class="lg-other">其他商户</span></div>
+            </div>
+            <div class="chip-list" id="chipList"></div>
+            <table class="main-table">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div class="pager" id="pager"></div>
+        </div>
     </div>
 
     <!-- 研发需求说明文档区块 -->
     <div class="prd-doc-section">
         <h4>📝 研发需求说明文档，研发阅读实际前端页面不展示</h4>
+
+        <h5>一、查询方式（异步任务，交互参照全量导出）</h5>
+        <ul>
+            <li><strong>页面结构：</strong>对冲查询页上方为查询条件区，下方为查询任务列表；点击任务的【查看结果】进入查询结果页，结果页左上角提供【返回查询任务】入口。</li>
+            <li><strong>提交查询：</strong>填写查询条件后点击【提交查询】，系统生成一条查询任务在后台处理，页面不等待结果。提交成功后在查询区下方提示"查询任务已提交，处理完成后可在下方列表点击【查看结果】"，新任务置顶显示在任务列表首行。提交后用户可离开本页，任务继续处理。</li>
+            <li><strong>提交校验：</strong>
+                <br>- 查询条件均为必填，未填写时提示补全，不生成任务。
+                <br>- 所选彩种暂无可对冲玩法时，直接提示"该彩种暂无可对冲玩法"，不生成任务。
+                <br>- 同一后台账号已有相同查询条件（彩种、当前期数、目标会员、追溯历史期数、命中对冲期数均相同）的任务在排队或处理中，提示"相同条件的查询任务正在处理中，请勿重复提交"，不生成任务。
+                <br>- 同一后台账号同时排队或处理中的任务最多 3 个，超出时提示"当前已有 3 个查询任务正在处理，请等待完成后再提交"。</li>
+            <li><strong>任务列表：</strong>展示本商户后台账号提交的查询任务，按提交时间倒序，分页展示。列表内容：任务编号、查询条件（彩种、当前期数、目标会员、追溯历史期数、命中对冲期数）、提交人、提交时间及完成时间、状态、结果、操作。</li>
+            <li><strong>任务状态：</strong>排队中 → 处理中（展示处理进度）→ 已完成 / 失败；已完成的任务超过 7 天变为已过期。列表中存在排队中或处理中的任务时自动刷新状态，也可点击【刷新】手动更新。</li>
+            <li><strong>结果列：</strong>已完成的任务直接显示命中的疑似对冲关系个数及涉及期数；没有命中时显示"未命中"。其他状态显示"—"。</li>
+            <li><strong>操作列：</strong>
+                <br>- 已完成：【查看结果】，进入查询结果页（未命中也可进入，结果页显示空状态提示）。
+                <br>- 处理中 / 排队中：不可操作，提示"处理完成后可查看"。
+                <br>- 失败：状态旁"?"悬浮显示失败原因；操作为【重新提交】，按原查询条件生成一条新任务，原失败任务保留。
+                <br>- 已过期：提示"结果已过期"，需重新提交查询。</li>
+            <li><strong>查询结果页：</strong>顶部展示本次任务的任务编号、查询条件及结果生成时间。结果为任务完成时的数据，之后不再变化；如需最新数据，请重新提交查询。结果页的列表、筛选、详情、规则说明交互见下方第二部分。</li>
+            <li><strong>结果保留：</strong>查询结果保留 7 天，过期后不可查看。</li>
+        </ul>
+
+        <h5>二、对冲判定与结果展示</h5>
         <ul>
             <li><strong>查询范围：</strong>以【当前期数】为起点往前推 N 期（含当前期，N=追溯历史期数），检索目标会员在这些期内的注单，与全平台（含其他商户）同彩种同期注单进行比对。</li>
             <li><strong>单人对冲：</strong>同一彩种、同一期、同一可对冲玩法下，其他会员投注了与目标会员相反的选项（如大/小、单/双），且金额与目标会员在该选项上的金额相等，即判定为对冲。<br>
@@ -290,12 +394,11 @@
             <li><strong>列表玩法列：</strong>只展示所选彩种的可对冲玩法（见下方"对冲玩法定义"），列固定，不随查询结果增减；某玩法本期无人下注时该列留空。<br>
                 - 每格展示该会员本期在该选项上的投注总额（不论是否参与对冲），参与疑似对冲的金额加粗高亮。<br>
                 - 非对冲玩法（如豹子、豹顺、特码等）不单独成列，合计金额展示在最后的"其他玩法"列，无则留空；明细在详情中查看。</li>
-            <li><strong>"疑似"文案：</strong>查询结果仅为按规则筛出的疑似对冲，由商户自行判断。页面中所有描述判定结果的文案均需带"疑似"，包括：结果汇总、对冲关系筛选项、对冲标签、详情标题、本期对冲关系、注单明细中的对冲标记。功能名称（对冲查询、对冲规则说明）及查询条件名称不加。</li>
+            <li><strong>"疑似"文案：</strong>查询结果仅为按规则筛出的疑似对冲，由商户自行判断。页面中所有描述判定结果的文案均需带"疑似"，包括：任务列表结果列、结果汇总、对冲关系筛选项、对冲标签、详情标题、本期对冲关系、注单明细中的对冲标记。功能名称（对冲查询、对冲规则说明）、查询条件名称及任务状态不加。</li>
             <li><strong>商户区分：</strong>与目标会员同商户（包括子商户）的会员，整行数据红色字体，账号完整显示，括号内显示所属商户名；其他商户的会员，整行数据黄色字体，账号只显示前2位+***+后4位，括号内显示"其他"。</li>
-            <li><strong>账号保护：</strong>其他商户会员的完整账号不得在页面及返回数据中出现；查看详情时以加密后的账号标识进行查询，详情中同样只显示脱敏账号。</li>
+            <li><strong>账号保护：</strong>其他商户会员的完整账号在页面、详情及任务结果中均不得出现，一律显示脱敏账号。</li>
             <li><strong>详情展示：</strong>按期查看，顶部列出该期所有对冲关系的金额对应；下方展示目标会员及该期全部对冲会员在本期的所有投注（包括非对冲玩法，如豹子、豹顺等），命中对冲的投注高亮标注。</li>
-            <li><strong>规则说明：</strong>查询区提供"对冲规则说明"入口，用通俗文字和例子向商户说明判定规则、颜色含义，内容见页面弹窗。</li>
-            <li><strong>性能与超时容灾：</strong>由于涉及跨库或全量注单扫描，若查询耗时预估超过3秒，需在底层开启异步任务处理。前端需保持Loading状态阻断重复点击，避免并发导致接口崩溃或页面卡死。</li>
+            <li><strong>规则说明：</strong>查询页及结果页均提供"对冲规则说明"入口，用通俗文字和例子向商户说明判定规则、颜色含义及查询任务的使用方式，内容见页面弹窗。</li>
             <li><strong>对冲玩法定义（列表按此分列）：</strong><br>
                 - 一分快三&三分快三&视讯五分快三&鱼虾蟹&一分六合彩&PC28：大&小；单&双<br>
                 - 一分赛车：大&小；单&双；和大&和小；和单&和双<br>
@@ -304,7 +407,7 @@
                 - 极速百家乐：庄&闲<br>
                 - 一分时时彩&一分11选5：第一球两面，大&小；单&双。总和，大&小；单&双。<br>
                 - 香港六合彩&澳门六合彩(旧/新/正)&三分六合&视讯十分六合：两面盘，大&小；单&双。<br>
-                - 一分/三分/五分动物彩、赛事：暂未定义对冲玩法，查询时提示"该彩种暂无可对冲玩法"。
+                - 一分/三分/五分动物彩、赛事：暂未定义对冲玩法，提交时提示"该彩种暂无可对冲玩法"。
             </li>
         </ul>
     </div>
@@ -345,33 +448,37 @@
             </div>
             <div class="modal-body rule-doc">
                 <div class="eg" style="background:#fdf6ec;color:#e6a23c;margin:0 0 10px">查询结果只是按下注规律筛出来的"疑似对冲"，系统不会自动处理，是否真的在刷流水请商户结合实际情况自己判断。</div>
-                <h4>一、什么是对冲</h4>
+                <h4>一、怎么查询</h4>
+                填好查询条件点【提交查询】，系统会在后台慢慢查，不用一直等在页面上。下方"查询任务"里可以看到进度，状态变成"已完成"后点【查看结果】就能看到疑似对冲列表。
+                <div class="eg">查询结果保留 7 天，过期后需要重新提交。查询失败的任务可以点【重新提交】再查一次。</div>
+
+                <h4>二、什么是对冲</h4>
                 同一个彩种、同一期，目标会员下了一边（比如"大"），另一个会员下了相反的一边（"小"），而且金额一样，就算一次对冲。这样两人不管开什么都一输一赢，只是在刷流水。
                 <div class="eg">例：第088期，A 下"大"100元，B 下"小"100元 → A 和 B 对冲。</div>
 
-                <h4>二、只要有一个玩法对上就算</h4>
+                <h4>三、只要有一个玩法对上就算</h4>
                 不需要两人下的玩法一模一样，只要其中一个玩法是反着下、金额一样，就算对冲。其他玩法不影响。
                 <div class="eg">例：A 下了"大"100、"双"50、"豹子"20，B 只下了"小"100 → 也算对冲。点"详情"可以看到双方这一期下的所有注单。</div>
 
-                <h4>三、两个人凑一起也算（组合对冲）</h4>
+                <h4>四、两个人凑一起也算（组合对冲）</h4>
                 两个会员都下了相反的一边，两人金额加起来刚好等于目标会员的金额，也算对冲，叫"组合对冲"。最多只看两个人的组合。
                 <div class="eg">例：A 下"小"100，B 下"大"50，C 下"大"50 → B+C 组合对冲，列表里 B 和 C 后面会标"疑似组合对冲1"。<br>
                     如果同一期还有 D 下"大"50，那 B+D、C+D 也都会算成组合，分别打上不同的组合标签；一个人参与了几个组合就会有几个标签。</div>
 
-                <h4>四、命中对冲期数怎么算</h4>
+                <h4>五、命中对冲期数怎么算</h4>
                 在"追溯历史期数"里，同一个对象（某一个会员，或者某两个会员的固定组合）跟目标会员对冲的期数加起来，达到"命中对冲期数"就会列出来。<strong>不需要连续</strong>，同一期在多个玩法上对冲也只算 1 期。
                 <div class="eg">例：追溯 50 期、命中对冲期数填 10。B 在这 50 期里有 12 期跟 A 对冲 → 列出；C 只有 6 期 → 不列出。</div>
 
-                <h4>五、颜色和账号怎么看</h4>
+                <h4>六、颜色和账号怎么看</h4>
                 <ul>
                     <li><span class="c-same">红色</span>：跟目标会员同一个商户（包括子商户）的会员，显示完整账号和商户名。</li>
                     <li><span class="c-other">黄色</span>：其他商户的会员，账号只显示前2位和后4位（如 60***1022），商户显示为"其他"，但仍可以查看详情。</li>
                 </ul>
 
-                <h4>六、列表里显示哪些玩法</h4>
+                <h4>七、列表里显示哪些玩法</h4>
                 列表只显示这个彩种可以对冲的玩法（如大、小、单、双），每格是这个会员这一期在该选项上下注的总金额，参与疑似对冲的金额会加粗标黄。<br>其他玩法（如豹子、特码）不单独列出，合计金额放在"其他玩法"一列，具体下了什么点"详情"查看。
 
-                <h4>七、哪些玩法算"相反"</h4>
+                <h4>八、哪些玩法算"相反"</h4>
                 <ul>
                     <li>快三、鱼虾蟹、PC28、六合彩类：大 / 小、单 / 双</li>
                     <li>赛车：大 / 小、单 / 双、冠亚和大 / 和小、和单 / 和双</li>
@@ -426,15 +533,10 @@
 
     /* ========== 模拟注单模板（p=对冲玩法序号，s=0选a/1选b，x=非对冲玩法） ========== */
     const PATTERNS = {
-        // 单人对冲：目标还下了非对冲玩法
         P1: [{ m: 'T', p: 0, s: 0, amt: 100 }, { m: 'T', x: 1, amt: 10 }, { m: 'M1', p: 0, s: 1, amt: 100 }],
-        // 组合对冲：50+50=100（与附件表格一致）
         P2: [{ m: 'T', p: 0, s: 0, amt: 100 }, { m: 'O1', p: 0, s: 1, amt: 50 }, { m: 'M1', p: 0, s: 1, amt: 50 }],
-        // 组合对冲：另一个玩法
         P3: [{ m: 'T', p: 1, s: 0, amt: 50 }, { m: 'O1', p: 1, s: 1, amt: 25 }, { m: 'M1', p: 1, s: 1, amt: 25 }],
-        // 一期多个组合：120+80、120+80
         P4: [{ m: 'T', p: 0, s: 1, amt: 200 }, { m: 'M2', p: 0, s: 0, amt: 120 }, { m: 'O1', p: 0, s: 0, amt: 80 }, { m: 'M1', p: 0, s: 0, amt: 80 }],
-        // 目标多玩法，对方各只下一个玩法
         P5: [{ m: 'T', p: 0, s: 0, amt: 100 }, { m: 'T', p: 1, s: 1, amt: 50 }, { m: 'T', x: 1, amt: 20 }, { m: 'M1', p: 0, s: 1, amt: 100 }, { m: 'M1', x: 1, amt: 5 }, { m: 'O2', p: 1, s: 0, amt: 50 }]
     };
     const CYCLE = ['P1', 'P2', 'P5', 'P3', 'P4', null, 'P1', 'P2', null, 'P5', 'P1', 'P3', 'P2', 'P4', 'P1'];
@@ -447,6 +549,8 @@
     const accSpan = m => `<span class="${m.same ? 'c-same' : 'c-other'}">${accText(m)}</span>`;
     const money = n => '¥' + n;
     const optName = (cfg, p, s) => s === 0 ? cfg.pairs[p].a : cfg.pairs[p].b;
+    const pad = n => String(n).padStart(2, '0');
+    const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
     // 找出某一期的对冲关系（单人 + 最多2人组合）
     function findRelations(bets, cfg) {
@@ -475,87 +579,190 @@
         return rels;
     }
 
-    /* ========== 查询 ========== */
-    function executeQuery() {
-        const lottery = document.getElementById('lotteryName').value;
-        const targetUid = document.getElementById('targetUid').value.trim();
-        const current = parseInt(document.getElementById('currentIssue').value, 10);
-        const N = parseInt(document.getElementById('maxHistory').value, 10);
-        const M = parseInt(document.getElementById('minHedge').value, 10);
-
-        if (!lottery || !targetUid || !current || !N || !M) {
-            alert('请完整填写查询条件！');
-            return;
-        }
-
-        const btn = document.getElementById('btnQuery');
-        btn.disabled = true;
-        document.getElementById('resultPanel').style.display = 'none';
-        document.getElementById('emptyState').style.display = 'none';
-        document.getElementById('loadingState').style.display = 'block';
-
-        setTimeout(() => {
-            btn.disabled = false;
-            document.getElementById('loadingState').style.display = 'none';
-            MEMBERS.T.id = targetUid;
-            runAnalysis(lottery, current, N, M);
-        }, 800);
-    }
-
-    function showEmpty(msg) {
-        const el = document.getElementById('emptyState');
-        el.textContent = msg;
-        el.style.display = 'block';
-    }
-
-    function runAnalysis(lottery, current, N, M) {
-        const cfg = CFG[lottery];
-        if (!cfg || !cfg.pairs.length) { showEmpty('该彩种暂无可对冲玩法'); return; }
-
-        // 1. 生成 N 期模拟注单并识别对冲关系
+    // 后台任务处理：计算某个任务的查询结果（结果为完成时快照）
+    function computeResult(t) {
+        const cfg = CFG[t.lottery];
+        const current = parseInt(t.issue, 10);
         const all = [];
-        for (let i = 0; i < N; i++) {
+        for (let i = 0; i < t.N; i++) {
             const pt = CYCLE[i % CYCLE.length];
             if (!pt) continue;
             const bets = PATTERNS[pt].filter(b => b.x || b.p < cfg.pairs.length);
             const rels = findRelations(bets, cfg);
             if (rels.length) all.push({ issue: String(current - i), bets, rels });
         }
-
-        // 2. 按对冲关系累计期数（同期同关系只算1期）
         const count = {};
         all.forEach(it => new Set(it.rels.map(r => r.key)).forEach(k => count[k] = (count[k] || 0) + 1));
-        const qualified = Object.keys(count).filter(k => count[k] >= M)
+        const qualified = Object.keys(count).filter(k => count[k] >= t.M)
             .sort((a, b) => count[b] - count[a] || a.localeCompare(b));
-        if (!qualified.length) { showEmpty(`追溯 ${N} 期内，没有命中对冲期数 ≥ ${M} 期的疑似对冲会员`); return; }
-
-        // 3. 关系标签：疑似单人对冲 / 疑似组合对冲N
         const relInfo = {};
         let comboNo = 0;
         qualified.forEach(k => {
             const isCombo = k.startsWith('C:');
             relInfo[k] = { key: k, type: isCombo ? 'C' : 'S', members: k.slice(2).split('+'), count: count[k], label: isCombo ? '疑似组合对冲' + (++comboNo) : '疑似单人对冲' };
         });
-
-        // 4. 只保留含达标关系的期
-        state.issues = all.map(it => ({ ...it, rels: it.rels.filter(r => relInfo[r.key]) })).filter(it => it.rels.length);
-        state.rels = relInfo;
-        state.cfg = cfg;
-        state.lottery = lottery;
-        state.filterKey = null;
-        state.page = 1;
-
-        const first = current - N + 1;
-        document.getElementById('summaryText').innerHTML =
-            `追溯 <b>${N}</b> 期（${first} ~ ${current}），命中对冲期数 ≥ <b>${M}</b> 期的疑似对冲关系 <b style="color:#f56c6c">${qualified.length}</b> 个，涉及 <b>${state.issues.length}</b> 期`;
-
-        renderChips();
-        renderHead();
-        renderTable();
-        document.getElementById('resultPanel').style.display = 'block';
+        const issues = all.map(it => ({ ...it, rels: it.rels.filter(r => relInfo[r.key]) })).filter(it => it.rels.length);
+        return { cfg, issues, rels: relInfo, relCount: qualified.length, first: current - t.N + 1, current };
     }
 
-    /* ========== 渲染 ========== */
+    /* ========== 查询任务 ========== */
+    const OPERATOR = 'admin01';   // 当前登录的后台账号
+    const MAX_ACTIVE = 3;
+    let seq = 0;
+    let highlightNo = null;
+
+    const tasks = [
+        { no: 'HQ2026110218051201', lottery: '一分快三', issue: '20261006088', target: '601691087', N: 50, M: 10, operator: 'admin01', submitAt: '2026-11-02 18:05:12', finishAt: '2026-11-02 18:06:47', status: 'done' },
+        { no: 'HQ2026110217304001', lottery: '一分赛车', issue: '20261006060', target: '601691055', N: 30, M: 15, operator: 'ops_lily', submitAt: '2026-11-02 17:30:40', finishAt: '2026-11-02 17:31:22', status: 'done' },
+        { no: 'HQ2026110215122001', lottery: '百人牛牛', issue: '20261006020', target: '601690012', N: 500, M: 20, operator: 'admin01', submitAt: '2026-11-02 15:12:20', finishAt: '2026-11-02 15:22:20', status: 'failed', reason: '查询数据量过大，处理超时。建议缩小追溯历史期数后重新提交。' },
+        { no: 'HQ2026102611080501', lottery: '一分时时彩', issue: '20261019045', target: '601691087', N: 100, M: 10, operator: 'admin01', submitAt: '2026-10-26 11:08:05', finishAt: '2026-10-26 11:09:30', status: 'expired' }
+    ];
+    tasks.filter(t => t.status === 'done').forEach(t => t.result = computeResult(t));
+
+    const sameCond = (a, b) => a.lottery === b.lottery && a.issue === b.issue && a.target === b.target && a.N === b.N && a.M === b.M;
+    const isActive = t => t.status === 'queued' || t.status === 'running';
+
+    function submitTask() {
+        const lottery = document.getElementById('lotteryName').value;
+        const issue = document.getElementById('currentIssue').value.trim();
+        const target = document.getElementById('targetUid').value.trim();
+        const N = parseInt(document.getElementById('maxHistory').value, 10);
+        const M = parseInt(document.getElementById('minHedge').value, 10);
+
+        if (!lottery || !issue || !target || !N || !M) { alert('请完整填写查询条件！'); return; }
+        if (!CFG[lottery].pairs.length) { alert('该彩种暂无可对冲玩法'); return; }
+        createTask({ lottery, issue, target, N, M });
+    }
+
+    function createTask(c) {
+        const mine = tasks.filter(t => t.operator === OPERATOR && isActive(t));
+        if (mine.some(t => sameCond(t, c))) { alert('相同条件的查询任务正在处理中，请勿重复提交'); return; }
+        if (mine.length >= MAX_ACTIVE) { alert(`当前已有 ${MAX_ACTIVE} 个查询任务正在处理，请等待完成后再提交`); return; }
+
+        const d = new Date();
+        const no = 'HQ' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + pad(++seq);
+        tasks.unshift({ ...c, no, operator: OPERATOR, submitAt: fmt(d), finishAt: '', status: 'queued', progress: 0, wait: 3 });
+        highlightNo = no;
+        showNotice('查询任务已提交，处理完成后可在下方列表点击【查看结果】');
+        renderTasks();
+        startTicker();
+    }
+
+    function resubmit(no) {
+        const t = tasks.find(x => x.no === no);
+        createTask({ lottery: t.lottery, issue: t.issue, target: t.target, N: t.N, M: t.M });
+    }
+
+    // 模拟后台处理进度
+    let timer = null;
+    function startTicker() { if (!timer) timer = setInterval(tick, 600); }
+    function tick() {
+        let active = false;
+        tasks.forEach(t => {
+            if (t.status === 'queued') {
+                if (--t.wait <= 0) t.status = 'running';
+                active = true;
+            } else if (t.status === 'running') {
+                t.progress = Math.min(100, t.progress + 8 + Math.floor(Math.random() * 10));
+                if (t.progress >= 100) {
+                    t.status = 'done';
+                    t.finishAt = fmt(new Date());
+                    t.result = computeResult(t);
+                } else active = true;
+            }
+        });
+        renderTasks();
+        if (!active) { clearInterval(timer); timer = null; }
+    }
+
+    let noticeTimer = null;
+    function showNotice(msg) {
+        const el = document.getElementById('notice');
+        el.textContent = msg;
+        el.style.display = 'block';
+        clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(() => el.style.display = 'none', 5000);
+    }
+
+    function statusHtml(t) {
+        switch (t.status) {
+            case 'queued': return '<span class="st st-wait">排队中</span>';
+            case 'running': return `<span class="st st-run">处理中</span><div class="bar"><i style="width:${t.progress}%"></i></div><span class="sub">${t.progress}%</span>`;
+            case 'done': return '<span class="st st-done">已完成</span>';
+            case 'failed': return `<span class="st st-fail">失败</span><i class="help-icon">?<span class="tooltip-text">${t.reason}</span></i>`;
+            case 'expired': return '<span class="st st-exp">已过期</span>';
+        }
+    }
+
+    function resultHtml(t) {
+        if (t.status !== 'done') return '<span class="sub">—</span>';
+        const r = t.result;
+        return r.relCount
+            ? `疑似对冲关系 <b class="red">${r.relCount}</b> 个<br><span class="sub">涉及 ${r.issues.length} 期</span>`
+            : '<span class="sub">未命中</span>';
+    }
+
+    function opHtml(t) {
+        switch (t.status) {
+            case 'done': return `<button class="btn-detail" onclick="viewResult('${t.no}')">查看结果</button>`;
+            case 'failed': return `<button class="btn-text" onclick="resubmit('${t.no}')">重新提交</button>`;
+            case 'expired': return '<span class="sub">结果已过期</span>';
+            default: return '<span class="sub">处理完成后可查看</span>';
+        }
+    }
+
+    function renderTasks() {
+        document.getElementById('taskCount').textContent = `共 ${tasks.length} 条`;
+        document.getElementById('taskBody').innerHTML = tasks.length ? tasks.map(t => `
+            <tr class="${t.no === highlightNo ? 'row-new' : ''}">
+                <td>${t.no}</td>
+                <td class="cond">${t.lottery} · 第 ${t.issue} 期<br><span class="sub">目标会员 ${t.target} · 追溯 ${t.N} 期 · 命中 ≥ ${t.M} 期</span></td>
+                <td>${t.operator}</td>
+                <td>${t.submitAt}${t.finishAt ? `<br><span class="sub">${t.finishAt}</span>` : ''}</td>
+                <td>${statusHtml(t)}</td>
+                <td>${resultHtml(t)}</td>
+                <td>${opHtml(t)}</td>
+            </tr>`).join('') : '<tr><td colspan="7" class="sub">暂无查询任务</td></tr>';
+    }
+
+    /* ========== 结果页 ========== */
+    function viewResult(no) {
+        const t = tasks.find(x => x.no === no);
+        const r = t.result;
+        MEMBERS.T.id = t.target;
+        Object.assign(state, { cfg: r.cfg, lottery: t.lottery, issues: r.issues, rels: r.rels, filterKey: null, page: 1 });
+
+        const sep = '<span class="sep">|</span>';
+        document.getElementById('resultCond').innerHTML =
+            `任务编号 <b>${t.no}</b>${sep}彩种 <b>${t.lottery}</b>${sep}当前期数 <b>${t.issue}</b>${sep}目标会员 <b>${t.target}</b><br>` +
+            `追溯 <b>${t.N}</b> 期${sep}命中对冲期数 ≥ <b>${t.M}</b> 期${sep}结果生成时间 <b>${t.finishAt}</b>`;
+
+        const empty = document.getElementById('emptyState');
+        const panel = document.getElementById('resultPanel');
+        if (!r.relCount) {
+            panel.style.display = 'none';
+            empty.textContent = `追溯 ${t.N} 期内，没有命中对冲期数 ≥ ${t.M} 期的疑似对冲会员`;
+            empty.style.display = 'block';
+        } else {
+            empty.style.display = 'none';
+            document.getElementById('summaryText').innerHTML =
+                `追溯 <b>${t.N}</b> 期（${r.first} ~ ${r.current}），命中对冲期数 ≥ <b>${t.M}</b> 期的疑似对冲关系 <b style="color:#f56c6c">${r.relCount}</b> 个，涉及 <b>${r.issues.length}</b> 期`;
+            renderChips();
+            renderHead();
+            renderTable();
+            panel.style.display = 'block';
+        }
+        switchView('result');
+    }
+
+    function backToTask() { switchView('task'); }
+
+    function switchView(v) {
+        document.getElementById('viewTask').style.display = v === 'task' ? 'block' : 'none';
+        document.getElementById('viewResult').style.display = v === 'result' ? 'block' : 'none';
+        document.querySelector('.prototype-container').scrollTop = 0;
+    }
+
     function relName(r) {
         return r.members.map(m => accText(MEMBERS[m])).join(' + ');
     }
@@ -582,14 +789,12 @@
             `<tr><th>期数</th><th>会员账户</th>${cols.map(c => `<th>${c}</th>`).join('')}<th>其他玩法<i class="help-icon">?<span class="tooltip-text">该会员本期在非对冲玩法（如豹子、特码）上的投注合计，具体投注点“详情”查看。</span></i></th><th>操作</th></tr>`;
     }
 
-    // 某期参与列表展示的会员顺序：目标在首行
     function issueMembers(it) {
         const ms = ['T'];
         it.rels.forEach(r => r.members.forEach(m => { if (!ms.includes(m)) ms.push(m); }));
         return ms;
     }
 
-    // 判断某会员在某列的投注是否参与了对冲
     function isHit(it, m, p, s) {
         return it.rels.some(r => r.p === p && (m === 'T' ? (r.s === s) : (r.members.includes(m) && r.s === 1 - s)));
     }
@@ -645,7 +850,6 @@
         const cfg = state.cfg;
         document.getElementById('detailTitle').textContent = `疑似对冲注单详情 · ${state.lottery} · 第 ${issue} 期`;
 
-        // 对冲关系金额对应
         document.getElementById('detailRels').innerHTML = it.rels.map(r => {
             const info = state.rels[r.key];
             const group = cfg.pairs[r.p].g;
@@ -656,7 +860,6 @@
                 <span class="arrow">⇄</span> 目标会员 ${accSpan(MEMBERS.T)} 下【${group}】${optName(cfg, r.p, r.s)} ${money(r.amt)}</div>`;
         }).join('');
 
-        // 各会员本期全部投注
         const ms = issueMembers(it);
         document.getElementById('detailTableBody').innerHTML = ms.map(m => {
             const mem = MEMBERS[m];
@@ -687,6 +890,8 @@
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
     }
+
+    renderTasks();
 </script>
 </body>
 </html>
