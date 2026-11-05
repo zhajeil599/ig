@@ -1,599 +1,698 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP彩金配置</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* 框架通用样式 */
-        :root {
-            --sidebar-bg: #343d47;
-            --sidebar-hover: #2b333e;
-            --sidebar-active: #242b33;
-            --primary-blue: #1890ff;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif; }
-        body { display: flex; height: 100vh; background-color: #f0f2f5; color: #333; overflow: hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIP彩金 前后端原型</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--sidebar-bg:#343d47;--sidebar-hover:#2b333e;--sidebar-active:#242b33;--primary-blue:#1890ff;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:"Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;}
+html,body{height:100%;}
+body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:hidden;}
 
-        /* 左侧侧边栏 */
-        .sidebar { width: 240px; background-color: var(--sidebar-bg); color: #fff; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; }
-        .sidebar-logo { padding: 20px; font-size: 20px; font-weight: bold; background-color: #2b333e; text-align: left; border-bottom: 1px solid #1f252d; }
-        .menu-group { margin-bottom: 2px; }
-        .menu-item { padding: 12px 20px; cursor: pointer; color: #aeb9c2; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; font-size: 14px; }
-        .menu-item:hover { background-color: var(--sidebar-hover); color: #fff; }
-        .menu-item.active { background-color: var(--sidebar-active); color: var(--primary-blue); border-left: 4px solid var(--primary-blue); }
-        .menu-item i.main-icon { width: 20px; margin-right: 10px; }
-        .menu-item .arrow { font-size: 12px; opacity: 0.7; }
-        .sub-menu { background-color: #242b33; }
-        .sub-item { padding: 10px 20px 10px 50px; font-size: 13px; color: #aeb9c2; cursor: pointer; display: block; text-decoration: none; }
-        .sub-item:hover { color: #fff; }
-        .sub-item.active { color: var(--primary-blue); background-color: #1a1f26; }
+/* 原型切换条 */
+.proto-nav{height:44px;flex-shrink:0;background:#111827;display:flex;align-items:center;padding:0 16px;gap:6px;}
+.proto-nav .ttl{color:#9ca3af;font-size:13px;margin-right:16px;}
+.proto-tab{color:#d1d5db;font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer;}
+.proto-tab:hover{background:#1f2937;}
+.proto-tab.on{background:#1890ff;color:#fff;}
+.view{flex:1;min-height:0;display:none;}
+.view.on{display:flex;}
 
-        /* 右侧内容区 */
-        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .header { height: 50px; background-color: #fff; box-shadow: 0 1px 4px rgba(0,21,41,.08); display: flex; align-items: center; padding: 0 20px; font-size: 14px; color: #666; }
-        .page-body { padding: 24px; overflow-y: auto; flex: 1; font-size: 14px; color: #374151; }
+/* 后台框架 */
+.sidebar{width:240px;background:var(--sidebar-bg);color:#fff;display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
+.sidebar-logo{padding:20px;font-size:20px;font-weight:bold;background:#2b333e;border-bottom:1px solid #1f252d;}
+.menu-item{padding:12px 20px;cursor:pointer;color:#aeb9c2;display:flex;align-items:center;justify-content:space-between;font-size:14px;}
+.menu-item:hover{background:var(--sidebar-hover);color:#fff;}
+.menu-item.active{background:var(--sidebar-active);color:var(--primary-blue);border-left:4px solid var(--primary-blue);}
+.menu-item i.main-icon{width:20px;margin-right:10px;}
+.menu-item .arrow{font-size:12px;opacity:.7;}
+.sub-menu{background:#242b33;}
+.sub-item{padding:10px 20px 10px 50px;font-size:13px;color:#aeb9c2;cursor:pointer;display:block;text-decoration:none;}
+.sub-item:hover{color:#fff;}
+.sub-item.active{color:var(--primary-blue);background:#1a1f26;}
+.main-content{flex:1;display:flex;flex-direction:column;min-width:0;}
+.header{height:50px;background:#fff;box-shadow:0 1px 4px rgba(0,21,41,.08);display:flex;align-items:center;padding:0 20px;font-size:14px;color:#666;flex-shrink:0;}
+.page-body{padding:24px;overflow-y:auto;flex:1;font-size:14px;color:#374151;}
+.modal{display:none;position:fixed;z-index:50;inset:0;overflow:auto;background:rgba(0,0,0,.4);}
+.modal-content{background:#fefefe;margin:5% auto;padding:20px;border:1px solid #888;width:80%;max-width:600px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,.1);}
 
-        /* 模态框样式保留原版 Tailwind 依赖的逻辑 */
-        .modal { display: none; position: fixed; z-index: 50; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
-        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    </style>
+/* 问号提示 */
+.q{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid #9ca3af;color:#9ca3af;font-size:10px;line-height:1;margin-left:4px;cursor:help;vertical-align:middle;font-weight:normal;}
+.q:hover{border-color:#1890ff;color:#1890ff;}
+#gtip{position:fixed;z-index:999;max-width:280px;background:rgba(17,24,39,.94);color:#fff;font-size:12px;line-height:1.6;padding:8px 10px;border-radius:6px;pointer-events:none;display:none;white-space:normal;text-align:left;}
+
+/* 前台 */
+.front-wrap{flex:1;display:flex;justify-content:center;align-items:flex-start;gap:24px;padding:20px;background:#1f2329;overflow:auto;}
+.phone{width:375px;height:calc(100vh - 84px);min-height:600px;border-radius:28px;border:6px solid #2d2d2d;position:relative;overflow:hidden;flex-shrink:0;background:#000;color:#fff;}
+.app-container{width:100%;height:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;}
+.app-container::-webkit-scrollbar{display:none;}
+.text-gold{background:linear-gradient(180deg,#FFF6D3 0%,#D8A246 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.bg-gold-gradient{background:linear-gradient(180deg,#FDE19F 0%,#B48325 100%);box-shadow:inset 0 2px 4px rgba(255,255,255,.4),0 4px 10px rgba(0,0,0,.5);}
+.bg-silver-gradient{background:linear-gradient(180deg,#E6E6E6 0%,#999 100%);box-shadow:inset 0 2px 4px rgba(255,255,255,.6),0 4px 10px rgba(0,0,0,.5);}
+.hero-bg{background:radial-gradient(circle at 50% 30%,#4A2711 0%,#000 80%);}
+.gauge-container{position:relative;width:280px;height:140px;margin:0 auto;overflow:hidden;}
+.gauge-arc{position:absolute;top:0;left:0;width:280px;height:280px;border-radius:50%;border:2px dashed #D8A246;border-bottom-color:transparent;border-left-color:transparent;transform:rotate(-45deg);}
+.gauge-label{position:absolute;font-size:10px;color:#D8A246;transform:translate(-50%,-50%);}
+.gauge-label.cur{font-weight:bold;font-size:12px;color:#FFE8A1;}
+.gold-table{width:100%;border-collapse:collapse;text-align:center;font-size:11px;}
+.gold-table th,.gold-table td{border:1px solid #73531F;padding:8px 2px;}
+.gold-table th{color:#D8A246;font-weight:normal;}
+.gold-table td{color:#E2E2E2;}
+.sim{width:300px;background:#fff;border-radius:10px;padding:16px;font-size:13px;color:#374151;flex-shrink:0;}
+.sim input,.sim select{border:1px solid #d1d5db;border-radius:4px;padding:3px 6px;width:100%;}
+
+/* 需求说明 */
+.prd-wrap{flex:1;overflow-y:auto;background:#f0f2f5;padding:24px;}
+.prd{max-width:960px;margin:0 auto;background:#fff;border-radius:8px;padding:32px 40px;font-size:14px;line-height:1.8;color:#374151;}
+.prd h1{font-size:22px;font-weight:bold;margin-bottom:4px;color:#111827;}
+.prd h2{font-size:17px;font-weight:bold;margin:28px 0 10px;padding-left:10px;border-left:4px solid #1890ff;color:#111827;}
+.prd h3{font-size:15px;font-weight:bold;margin:18px 0 6px;color:#1f2937;}
+.prd ol,.prd ul{padding-left:22px;}
+.prd ol{list-style:decimal;}.prd ul{list-style:disc;}
+.prd li{margin:3px 0;}
+.prd table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13px;}
+.prd th,.prd td{border:1px solid #e5e7eb;padding:6px 10px;text-align:left;vertical-align:top;}
+.prd th{background:#f9fafb;font-weight:600;}
+.prd .tag{display:inline-block;background:#e6f4ff;color:#1677ff;border-radius:4px;padding:0 6px;font-size:12px;margin-right:4px;}
+.prd .chg{background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:12px 16px;}
+</style>
 </head>
 <body>
 
-    <!-- 侧边栏菜单 -->
-    <div class="sidebar">
-        <div class="sidebar-logo">代理后台</div>
-        
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-house main-icon"></i>首页</span></div>
-        
-        <div class="menu-group">
-            <div class="menu-item">
-                <span class="item-left"><i class="fa-solid fa-users main-icon"></i>会员管理</span>
-                <i class="fa-solid fa-chevron-up arrow"></i>
-            </div>
-            <div class="sub-menu">
-                <a href="#" class="sub-item">会员列表</a>
-                <a href="#" class="sub-item">层级管理</a>
-                <a href="#" class="sub-item">用户银行卡列表</a>
-                <a href="#" class="sub-item">用户USDT列表</a>
-                <a href="#" class="sub-item">用户钱包列表</a>
-                <a href="#" class="sub-item">用户支付宝列表</a>
-                <a href="#" class="sub-item">登录查询</a>
-                <a href="#" class="sub-item">用户签到记录</a>
-            </div>
-        </div>
+<div class="proto-nav">
+  <span class="ttl"><i class="fa-solid fa-layer-group mr-1"></i>VIP彩金原型</span>
+  <div class="proto-tab on" data-view="v-admin">后台 · VIP彩金配置</div>
+  <div class="proto-tab" data-view="v-front">前台 · 升级模式</div>
+  <div class="proto-tab" data-view="v-prd">需求说明</div>
+</div>
 
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-id-card main-icon"></i>VIP会员卡</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        
-        <!-- 选中的 VIP彩金 菜单 -->
-        <div class="menu-group">
-            <div class="menu-item active">
-                <span class="item-left"><i class="fa-solid fa-coins main-icon"></i>VIP彩金</span>
-                <i class="fa-solid fa-chevron-up arrow"></i>
-            </div>
-            <div class="sub-menu">
-                <a href="#" class="sub-item active">VIP彩金配置</a>
-                <a href="#" class="sub-item">VIP彩金记录</a>
-            </div>
-        </div>
+<!-- ==================== 后台 ==================== -->
+<div class="view on" id="v-admin">
+  <div class="sidebar">
+    <div class="sidebar-logo">代理后台</div>
+    <div class="menu-item"><span><i class="fa-solid fa-house main-icon"></i>首页</span></div>
+    <div class="menu-item"><span><i class="fa-solid fa-users main-icon"></i>会员管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div class="menu-item"><span><i class="fa-solid fa-id-card main-icon"></i>VIP会员卡</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div>
+      <div class="menu-item active"><span><i class="fa-solid fa-coins main-icon"></i>VIP彩金</span><i class="fa-solid fa-chevron-up arrow"></i></div>
+      <div class="sub-menu">
+        <a href="#" class="sub-item active">VIP彩金配置</a>
+        <a href="#" class="sub-item">VIP彩金记录</a>
+      </div>
+    </div>
+    <div class="menu-item"><span><i class="fa-solid fa-wallet main-icon"></i>财务管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div class="menu-item"><span><i class="fa-solid fa-gamepad main-icon"></i>游戏管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div class="menu-item"><span><i class="fa-solid fa-sitemap main-icon"></i>代理系统</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div class="menu-item"><span><i class="fa-solid fa-chart-line main-icon"></i>报表查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div class="menu-item"><span><i class="fa-solid fa-gift main-icon"></i>活动管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div class="menu-item"><span><i class="fa-solid fa-clock-rotate-left main-icon"></i>日志查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+    <div class="menu-item"><span><i class="fa-solid fa-gear main-icon"></i>系统管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+  </div>
 
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-wallet main-icon"></i>财务管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gamepad main-icon"></i>游戏管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-sitemap main-icon"></i>代理系统</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-chart-line main-icon"></i>报表查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-comments main-icon"></i>聊天群组</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-video main-icon"></i>主播管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-database main-icon"></i>数据统计</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-file-export main-icon"></i>导出管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gift main-icon"></i>活动管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-clock-rotate-left main-icon"></i>日志查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-key main-icon"></i>验证码查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-envelope main-icon"></i>短信模板管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-tower-broadcast main-icon"></i>渠道管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-rectangle-ad main-icon"></i>广告位管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gear main-icon"></i>系统管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+  <div class="main-content">
+    <div class="header justify-between">
+      <div class="flex items-center space-x-6">
+        <i class="fa-solid fa-outdent text-xl text-gray-700"></i>
+        <div class="text-gray-600">余额 <span class="text-red-400">340246.92</span></div>
+      </div>
+      <div class="flex items-center space-x-6">
+        <div class="text-red-400 pl-4 border-l border-gray-200">到期时间: 2030-12-27</div>
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white"><i class="fa-solid fa-user"></i></div>
+          <span class="text-gray-600">ben</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 右侧主体内容 -->
-    <div class="main-content">
-        <!-- 顶部标题导航 -->
-        <div class="header justify-between">
-            <!-- 左侧：收缩图标与余额 -->
-            <div class="flex items-center space-x-6">
-                <i class="fa-solid fa-outdent text-xl cursor-pointer text-gray-700"></i>
-                <div class="text-gray-600">余额 <span class="text-red-400">340246.92</span></div>
-            </div>
-            
-            <!-- 右侧：快捷按钮、到期时间、账户头像 -->
-            <div class="flex items-center space-x-6">
-                <!-- 快捷操作按钮 -->
-                <div class="flex space-x-4">
-                    <button class="bg-[#4096ff] hover:bg-blue-500 text-white px-5 py-1.5 rounded-full text-sm">人工存款</button>
-                    <div class="relative">
-                        <button class="bg-[#4096ff] hover:bg-blue-500 text-white px-5 py-1.5 rounded-full text-sm flex items-center space-x-1">
-                            <i class="fa-regular fa-bell"></i><span>会员出款</span>
-                        </button>
-                        <span class="absolute -top-1.5 -right-3 bg-[#ff4d4f] text-white text-[10px] px-1.5 py-0.5 rounded-full border border-white z-10">10000+</span>
-                    </div>
-                    <div class="relative">
-                        <button class="bg-[#4096ff] hover:bg-blue-500 text-white px-5 py-1.5 rounded-full text-sm flex items-center space-x-1">
-                            <i class="fa-regular fa-bell"></i><span>免提直充</span>
-                        </button>
-                        <span class="absolute -top-1.5 -right-1 bg-[#ff4d4f] text-white text-[10px] px-1.5 py-0.5 rounded-full border border-white z-10">22</span>
-                    </div>
-                </div>
-
-                <!-- 到期时间 -->
-                <div class="text-red-400 pl-4 border-l border-gray-200">到期时间: 2030-12-27</div>
-                
-                <!-- 账户信息 (最右侧) -->
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white"><i class="fa-solid fa-user"></i></div>
-                    <span class="text-gray-600">ben</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 页面内主体 -->
-        <div class="page-body">
-
-    <!-- 顶部操作栏 -->
-    <div class="flex justify-between items-center mb-4 bg-white p-4 rounded shadow-sm">
+    <div class="page-body">
+      <div class="flex justify-between items-center mb-4 bg-white p-4 rounded shadow-sm">
         <div class="flex items-center space-x-4">
-            <div class="flex items-center">
-                <label for="level-search" class="mr-2 font-medium">等级</label>
-                <input type="text" id="level-search" placeholder="输入等级" class="border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">查询</button>
-            <button onclick="openModal('add-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">新增</button>
-            <button onclick="openModal('public-config-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">公共配置</button>
+          <div class="flex items-center">
+            <label class="mr-2 font-medium">等级</label>
+            <input type="text" id="level-search" placeholder="输入等级" class="border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          </div>
+          <button onclick="renderAdmin()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded">查询</button>
+          <button onclick="openForm()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded">新增</button>
+          <button onclick="openCfg()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded">公共配置</button>
         </div>
         <div class="flex space-x-2">
-            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded transition duration-150">重置</button>
-            <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition duration-150" title="刷新">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-            </button>
+          <button onclick="document.getElementById('level-search').value='';renderAdmin()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded">重置</button>
+          <button onclick="renderAdmin()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded" title="刷新"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
-    </div>
+      </div>
 
-    <!-- 数据表格 -->
-    <div class="bg-white rounded shadow-sm overflow-hidden overflow-x-auto">
+      <div class="bg-white rounded shadow-sm overflow-x-auto">
         <table class="min-w-full text-center whitespace-nowrap">
-            <thead class="bg-gray-50 border-b">
-                <tr>
-                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">等级</th>
-                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">总存款</th>
-                    <th colspan="4" class="px-4 py-2 font-medium text-gray-500 border-b border-r border-gray-200">晋级奖励</th>
-                    <th colspan="4" class="px-4 py-2 font-medium text-gray-500 border-b border-r border-gray-200">月工资</th>
-                    <th colspan="4" class="px-4 py-2 font-medium text-gray-500 border-b border-r border-gray-200">周工资</th>
-                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">状态</th>
-                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">创建时间</th>
-                    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500">操作</th>
-                </tr>
-                <tr>
-                    <!-- 晋级奖励子字段 -->
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当日充值</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当日打码</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">晋级奖励</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs border-r border-gray-200 bg-gray-100">日累计封顶</th>
-                    <!-- 月工资子字段 -->
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当月充值</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当月打码</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">月工资</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs border-r border-gray-200 bg-gray-100">月累计封顶</th>
-                    <!-- 周工资子字段 -->
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当周充值</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">当周打码</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100">周工资</th>
-                    <th class="px-3 py-2 font-medium text-gray-500 text-xs border-r border-gray-200 bg-gray-100">周累计封顶</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">1</td>
-                    <td class="px-4 py-3">100</td>
-                    <td class="px-4 py-3">40</td><td class="px-4 py-3">200</td><td class="px-4 py-3 text-red-500">10</td><td class="px-4 py-3 border-r border-gray-100">30</td>
-                    <td class="px-4 py-3">100</td><td class="px-4 py-3">1000</td><td class="px-4 py-3 text-red-500">100</td><td class="px-4 py-3 border-r border-gray-100">500</td>
-                    <td class="px-4 py-3">100</td><td class="px-4 py-3">1000</td><td class="px-4 py-3 text-red-500">30</td><td class="px-4 py-3 border-r border-gray-100">150</td>
-                    <td class="px-4 py-3 text-gray-600">开启</td>
-                    <td class="px-4 py-3 text-gray-500">2026-07-07 15:01:18</td>
-                    <td class="px-4 py-3 space-x-2">
-                        <button onclick="openModal('edit-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">修改</button>
-                        <button onclick="openModal('delete-modal')" class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">删除</button>
-                    </td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">2</td>
-                    <td class="px-4 py-3">500</td>
-                    <td class="px-4 py-3">80</td><td class="px-4 py-3">500</td><td class="px-4 py-3 text-red-500">50</td><td class="px-4 py-3 border-r border-gray-100">100</td>
-                    <td class="px-4 py-3">500</td><td class="px-4 py-3">5000</td><td class="px-4 py-3 text-red-500">300</td><td class="px-4 py-3 border-r border-gray-100">1000</td>
-                    <td class="px-4 py-3">300</td><td class="px-4 py-3">3000</td><td class="px-4 py-3 text-red-500">100</td><td class="px-4 py-3 border-r border-gray-100">300</td>
-                    <td class="px-4 py-3 text-gray-600">开启</td>
-                    <td class="px-4 py-3 text-gray-500">2026-07-08 10:20:00</td>
-                    <td class="px-4 py-3 space-x-2">
-                        <button onclick="openModal('edit-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">修改</button>
-                        <button onclick="openModal('delete-modal')" class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">删除</button>
-                    </td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3">3</td>
-                    <td class="px-4 py-3">1000</td>
-                    <td class="px-4 py-3">150</td><td class="px-4 py-3">1000</td><td class="px-4 py-3 text-red-500">120</td><td class="px-4 py-3 border-r border-gray-100">300</td>
-                    <td class="px-4 py-3">1000</td><td class="px-4 py-3">10000</td><td class="px-4 py-3 text-red-500">800</td><td class="px-4 py-3 border-r border-gray-100">2500</td>
-                    <td class="px-4 py-3">600</td><td class="px-4 py-3">6000</td><td class="px-4 py-3 text-red-500">250</td><td class="px-4 py-3 border-r border-gray-100">800</td>
-                    <td class="px-4 py-3 text-gray-600">开启</td>
-                    <td class="px-4 py-3 text-gray-500">2026-07-09 14:15:30</td>
-                    <td class="px-4 py-3 space-x-2">
-                        <button onclick="openModal('edit-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">修改</button>
-                        <button onclick="openModal('delete-modal')" class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">删除</button>
-                    </td>
-                </tr>
-            </tbody>
+          <thead class="bg-gray-50 border-b" id="adm-thead"></thead>
+          <tbody class="divide-y divide-gray-200" id="adm-tbody"></tbody>
         </table>
-        <!-- 分页 -->
         <div class="flex justify-end items-center p-4 border-t bg-gray-50">
-            <span class="mr-4 text-gray-500">共 3 条</span>
-            <select class="border border-gray-300 rounded px-2 py-1 mr-4 bg-white">
-                <option>50条/页</option>
-                <option>100条/页</option>
-            </select>
-            <div class="flex items-center space-x-2">
-                <button class="px-2 py-1 border rounded text-gray-400 cursor-not-allowed">&lt;</button>
-                <button class="px-2 py-1 border rounded text-blue-500 border-blue-500 font-bold">1</button>
-                <button class="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100">&gt;</button>
-                <span class="ml-2">前往</span>
-                <input type="text" value="1" class="border border-gray-300 rounded w-10 text-center mx-1">
-                <span>页</span>
-            </div>
+          <span class="mr-4 text-gray-500" id="adm-count">共 0 条</span>
+          <select class="border border-gray-300 rounded px-2 py-1 mr-4 bg-white"><option>50条/页</option><option>100条/页</option></select>
+          <div class="flex items-center space-x-2">
+            <button class="px-2 py-1 border rounded text-gray-400 cursor-not-allowed">&lt;</button>
+            <button class="px-2 py-1 border rounded text-blue-500 border-blue-500 font-bold">1</button>
+            <button class="px-2 py-1 border rounded text-gray-600">&gt;</button>
+            <span class="ml-2">前往</span><input type="text" value="1" class="border border-gray-300 rounded w-10 text-center mx-1"><span>页</span>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-  
+<!-- 弹窗：新增/修改 -->
+<div id="form-modal" class="modal">
+  <div class="modal-content relative" style="width:90%;max-width:900px;">
+    <div class="flex justify-between items-center border-b pb-3 mb-4">
+      <h3 class="text-lg font-semibold" id="form-title">添加等级配置</h3>
+      <button onclick="closeModal('form-modal')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="space-y-6 max-h-[70vh] overflow-y-auto px-2 text-sm">
+      <div class="grid grid-cols-2 gap-6">
+        <div class="flex items-center"><label class="w-28 text-right pr-4"><span class="text-red-500">*</span> 等级<span class="q" data-tip="正整数，需与已有等级连续，新增时只能填写当前最高等级+1；保存后不可修改">?</span></label><input id="f-lv" type="text" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
+        <div class="flex items-center"><label class="w-28 text-right pr-4"><span class="text-red-500">*</span> 总存款<span class="q" data-tip="会员累计充值达到该金额即晋升至此等级；需大于上一等级、小于下一等级的总存款">?</span></label><input id="f-dep" type="text" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
+      </div>
+      <div class="border-t border-gray-200 pt-4">
+        <h4 class="font-medium text-gray-700 mb-3 border-l-4 border-blue-500 pl-2">奖励配置</h4>
+        <div class="grid grid-cols-3 gap-x-6 gap-y-4" id="form-groups"></div>
+      </div>
+      <div class="flex items-center">
+        <label class="w-28 text-right pr-4"><span class="text-red-500">*</span> 状态<span class="q" data-tip="关闭后前台不展示该等级，会员不可领取该等级的晋级奖励及周/月工资；会员等级晋升不受影响">?</span></label>
+        <label class="flex items-center mr-4 cursor-pointer"><input type="radio" name="f-on" value="1" class="mr-2" checked> 开启</label>
+        <label class="flex items-center cursor-pointer"><input type="radio" name="f-on" value="0" class="mr-2"> 关闭</label>
+      </div>
+    </div>
+    <div class="flex justify-end items-center space-x-3 pt-4 border-t mt-6">
+      <span id="form-err" class="text-red-500 text-sm mr-auto"></span>
+      <button onclick="closeModal('form-modal')" class="border border-gray-300 px-4 py-2 rounded text-gray-600">关闭</button>
+      <button onclick="saveForm()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">提交</button>
+    </div>
+  </div>
+</div>
 
-    <!-- 模态框: 添加 -->
-    <div id="add-modal" class="modal">
-        <div class="modal-content relative max-w-4xl" style="width: 90%;">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-semibold">添加等级配置</h3>
-                <button onclick="closeModal('add-modal')" class="text-gray-400 hover:text-gray-600">&times;</button>
-            </div>
-            <form class="space-y-6 max-h-[70vh] overflow-y-auto px-2">
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 等级:</label><input type="text" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
-                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 总存款:</label><input type="text" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
-                </div>
-                
-                <div class="border-t border-gray-200 pt-4">
-                    <h4 class="font-medium text-gray-700 mb-3 border-l-4 border-blue-500 pl-2">奖励配置</h4>
-                    <div class="grid grid-cols-3 gap-x-8 gap-y-4">
-                        <!-- 晋级奖励(恢复普通背景，修改为“日累计封顶”) -->
-                        <div class="bg-gray-50 p-3 rounded">
-                            <div class="font-medium mb-2 text-center text-gray-600">晋级奖励</div>
-                            <div class="space-y-2">
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日充值:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日打码:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">晋级奖励:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">日累计封顶:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                            </div>
-                        </div>
-                        <!-- 月工资 -->
-                        <div class="bg-gray-50 p-3 rounded">
-                            <div class="font-medium mb-2 text-center text-gray-600">月工资</div>
-                            <div class="space-y-2">
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月充值:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月打码:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月工资:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月累计封顶:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                            </div>
-                        </div>
-                        <!-- 周工资 -->
-                        <div class="bg-gray-50 p-3 rounded">
-                            <div class="font-medium mb-2 text-center text-gray-600">周工资</div>
-                            <div class="space-y-2">
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周充值:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周打码:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周工资:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周累计封顶:</label><input type="text" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center mt-4">
-                    <label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 状态:</label>
-                    <div class="flex space-x-4">
-                        <label class="flex items-center text-blue-500 cursor-pointer"><input type="radio" name="status-add" class="mr-2" checked> 开启</label>
-                        <label class="flex items-center cursor-pointer text-gray-600"><input type="radio" name="status-add" class="mr-2"> 关闭</label>
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 pt-4 border-t mt-6 sticky bottom-0 bg-white">
-                    <button type="button" onclick="closeModal('add-modal')" class="border border-gray-300 px-4 py-2 rounded text-gray-600">关闭</button>
-                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">提交</button>
-                </div>
-            </form>
+<!-- 弹窗：公共配置 -->
+<div id="cfg-modal" class="modal">
+  <div class="modal-content relative" style="width:90%;max-width:960px;">
+    <div class="flex justify-between items-center border-b pb-3 mb-4">
+      <h3 class="text-lg font-semibold">VIP公共设置</h3>
+      <button onclick="closeModal('cfg-modal')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+    </div>
+    <div class="max-h-[70vh] overflow-y-auto pr-4 space-y-6 text-sm">
+      <div>
+        <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">全局配置</h4>
+        <div class="flex items-center ml-4">
+          <label class="w-40 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 稽核倍数<span class="q" data-tip="会员领取的彩金需完成「彩金金额 × 稽核倍数」的有效投注后方可提现；填 0 表示不需要稽核">?</span></label>
+          <input id="c-audit" type="text" class="border border-gray-300 rounded px-3 py-1.5 w-32 text-center">
         </div>
-    </div>
+      </div>
+      <div id="cfg-sections"></div>
 
-    <!-- 模态框: 修改 -->
-    <div id="edit-modal" class="modal">
-        <div class="modal-content relative max-w-4xl" style="width: 90%;">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-semibold">修改等级配置</h3>
-                <button onclick="closeModal('edit-modal')" class="text-gray-400 hover:text-gray-600">&times;</button>
-            </div>
-            <form class="space-y-6 max-h-[70vh] overflow-y-auto px-2">
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 等级:</label><input type="text" value="1" class="flex-1 border border-gray-300 rounded px-3 py-1.5 bg-gray-100" readonly></div>
-                    <div class="flex items-center"><label class="w-24 text-right pr-4"><span class="text-red-500">*</span> 总存款:</label><input type="text" value="100" class="flex-1 border border-gray-300 rounded px-3 py-1.5"></div>
-                </div>
-                <div class="border-t border-gray-200 pt-4">
-                    <h4 class="font-medium text-gray-700 mb-3 border-l-4 border-blue-500 pl-2">奖励配置</h4>
-                    <div class="grid grid-cols-3 gap-x-8 gap-y-4">
-                        <div class="bg-gray-50 p-3 rounded">
-                            <div class="font-medium mb-2 text-center text-gray-600">晋级奖励</div>
-                            <div class="space-y-2">
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日充值:</label><input type="text" value="40" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当日打码:</label><input type="text" value="200" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">晋级奖励:</label><input type="text" value="10.00" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">日累计封顶:</label><input type="text" value="30" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded">
-                            <div class="font-medium mb-2 text-center text-gray-600">月工资</div>
-                            <div class="space-y-2">
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月充值:</label><input type="text" value="100" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当月打码:</label><input type="text" value="1000" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月工资:</label><input type="text" value="100.00" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">月累计封顶:</label><input type="text" value="500" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded">
-                            <div class="font-medium mb-2 text-center text-gray-600">周工资</div>
-                            <div class="space-y-2">
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周充值:</label><input type="text" value="100" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">当周打码:</label><input type="text" value="1000" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周工资:</label><input type="text" value="30.00" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                                <div class="flex items-center"><label class="w-24 text-right pr-2 text-xs">周累计封顶:</label><input type="text" value="150" class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-3 pt-4 border-t mt-6 sticky bottom-0 bg-white">
-                    <button type="button" onclick="closeModal('edit-modal')" class="border border-gray-300 px-4 py-2 rounded text-gray-600">关闭</button>
-                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">提交</button>
-                </div>
-            </form>
+      <div class="pt-4 border-t border-gray-200">
+        <div class="flex items-center mb-3 space-x-2">
+          <span class="font-bold text-gray-700 text-base">文案内容</span><span class="q" data-tip="展示在前台「活动详情」顶部">?</span>
         </div>
-    </div>
-
-    <!-- 模态框: VIP公共设置 -->
-    <div id="public-config-modal" class="modal">
-        <div class="modal-content relative max-w-5xl" style="width: 90%;">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg font-semibold">VIP公共设置</h3>
-                <button onclick="closeModal('public-config-modal')" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-            </div>
-            
-            <div class="max-h-[70vh] overflow-y-auto pr-4 space-y-6">
-                <!-- 基础公共配置项 -->
-                <div>
-                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">全局配置</h4>
-                    <div class="flex items-center mb-4 ml-4">
-                        <label class="w-24 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 稽核倍数</label>
-                        <input type="text" value="1.00" class="border border-gray-300 rounded px-3 py-1.5 w-32 text-center">
-                        <span class="text-gray-400 text-xs ml-3">0.00表示不需要稽核</span>
-                    </div>
-                </div>
-
-                <!-- 晋级奖励配置 (新增) -->
-                <div>
-                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">晋级奖励配置</h4>
-                    <div class="space-y-3 ml-4">
-                        <div class="flex items-center">
-                            <label class="w-32 text-right pr-4 text-gray-600">晋级时是否重复领取</label>
-                            <label class="mr-4"><input type="radio" name="upgrade_repeat" class="mr-1"> 可重复领取(含跨级部分)</label>
-                            <label class="text-blue-500"><input type="radio" name="upgrade_repeat" checked class="mr-1"> 只能领取最高一档</label>
-                        </div>
-                        <div class="flex items-center">
-                            <label class="w-32 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 奖励领取过期天数</label>
-                            <input type="text" value="30" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">
-                            <span class="text-gray-400 text-xs ml-3">0表示不过期</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 每周工资配置 (去掉了领取时间) -->
-                <div>
-                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">每周工资配置</h4>
-                    <div class="space-y-3 ml-4">
-                        <div class="flex items-center">
-                            <label class="w-32 text-right pr-4 text-gray-600">晋级时是否重复领取</label>
-                            <label class="mr-4"><input type="radio" name="weekly_repeat" class="mr-1"> 可重复领取(含跨级部分)</label>
-                            <label class="text-blue-500"><input type="radio" name="weekly_repeat" checked class="mr-1"> 只能领取最高一档</label>
-                        </div>
-                        <div class="flex items-center">
-                            <label class="w-32 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 奖励领取过期天数</label>
-                            <input type="text" value="7" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">
-                            <span class="text-gray-400 text-xs ml-3">0表示不过期</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 每月工资配置 (去掉了领取时间) -->
-                <div>
-                    <h4 class="font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">每月工资配置</h4>
-                    <div class="space-y-3 ml-4">
-                        <div class="flex items-center">
-                            <label class="w-32 text-right pr-4 text-gray-600">晋级时是否重复领取</label>
-                            <label class="mr-4"><input type="radio" name="monthly_repeat" class="mr-1"> 可重复领取(含跨级部分)</label>
-                            <label class="text-blue-500"><input type="radio" name="monthly_repeat" checked class="mr-1"> 只能领取最高一档</label>
-                        </div>
-                        <div class="flex items-center">
-                            <label class="w-32 text-right pr-4 text-gray-600"><span class="text-red-500">*</span> 奖励领取过期天数</label>
-                            <input type="text" value="30" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">
-                            <span class="text-gray-400 text-xs ml-3">0表示不过期</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 富文本编辑器UI重制 -->
-                <div class="mt-8 pt-4 border-t border-gray-200">
-                    <!-- 顶部颜色选择条 -->
-                    <div class="flex items-center mb-3 space-x-2 text-sm">
-                        <span class="font-bold text-gray-700 mr-2 text-base">文案内容</span>
-                        <span class="text-gray-500">文字颜色</span>
-                        <div class="flex space-x-1 p-1">
-                            <div class="w-5 h-5 bg-black rounded-sm border border-gray-300 cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-red-500 rounded-sm border border-gray-300 cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-yellow-200 rounded-sm border border-gray-300 cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-blue-500 rounded-sm border border-gray-300 cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-green-500 rounded-sm border border-gray-300 cursor-pointer"></div>
-                            <div class="w-6 h-6 bg-red-400 border border-gray-300 rounded flex items-center justify-center cursor-pointer ml-1">
-                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
-                        </div>
-                        
-                        <span class="text-gray-500 ml-6">背景颜色</span>
-                        <div class="flex space-x-1 p-1">
-                            <div class="w-5 h-5 bg-white border border-gray-300 rounded-sm cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-orange-50 border border-gray-300 rounded-sm cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-pink-50 border border-gray-300 rounded-sm cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-blue-50 border border-gray-300 rounded-sm cursor-pointer"></div>
-                            <div class="w-5 h-5 bg-green-50 border border-gray-300 rounded-sm cursor-pointer"></div>
-                            <div class="w-6 h-6 bg-orange-50 border border-gray-300 rounded flex items-center justify-center cursor-pointer ml-1">
-                                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 编辑器主体框 -->
-                    <div class="border rounded border-gray-300">
-                        <div class="bg-white border-b divide-y divide-gray-200">
-                            <!-- 第一行 -->
-                            <div class="flex flex-wrap text-gray-500 text-sm px-1 py-1">
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>正文</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 font-serif font-bold text-lg leading-none">“</button>
-                                <div class="border-r border-gray-300 mx-1 my-2"></div>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 font-bold text-lg leading-none">B</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 underline text-lg leading-none">U</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 italic text-lg leading-none">I</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>⋯</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 border-b-2 border-gray-400 pb-1"><span>A</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 bg-gray-200 rounded-sm m-0.5"><span>A</span><span class="text-[10px]">▼</span></button>
-                                <div class="border-r border-gray-300 mx-1 my-2"></div>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 text-gray-400"><span>默认字号</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 text-gray-400"><span>默认字体</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1 text-gray-400"><span>默认行高</span><span class="text-[10px]">▼</span></button>
-                            </div>
-                            <!-- 第二行 -->
-                            <div class="flex flex-wrap text-gray-500 text-sm px-1 py-1">
-                                <button class="px-3 py-1.5 hover:bg-gray-100">≡</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100">1.</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100">☑</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>≣</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>⇥</span><span class="text-[10px]">▼</span></button>
-                                <div class="border-r border-gray-300 mx-1 my-2"></div>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>☺</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100">🔗</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>🖼</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 flex items-center space-x-1"><span>▦</span><span class="text-[10px]">▼</span></button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100">&lt;/&gt;</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100">—</button>
-                                <div class="border-r border-gray-300 mx-1 my-2"></div>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 text-gray-300">↩</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100 text-gray-300">↪</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100">⛶</button>
-                                <button class="px-3 py-1.5 hover:bg-gray-100">&lt;/&gt;</button>
-                            </div>
-                        </div>
-                        
-                        <div class="p-4 min-h-[150px] outline-none leading-relaxed" contenteditable="true">
-                            <h2 style="color: #ff9900; font-weight: bold; font-size: 16px;">👑 VIP 尊享特权</h2>
-                            <p style="margin-top: 8px;">VIP福利全面升级，周工资、月工资惊喜不断！晋级即发丰厚奖励！</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex justify-end space-x-3 pt-4 border-t mt-6 bg-gray-50 -mx-5 -mb-5 p-4 rounded-b-lg">
-                <button type="button" onclick="closeModal('public-config-modal')" class="border border-gray-300 bg-white px-5 py-2 rounded text-gray-600 hover:bg-gray-50 shadow-sm">取消</button>
-                <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded shadow-sm">确认提交</button>
-            </div>
+        <div class="border rounded border-gray-300">
+          <div class="bg-white border-b flex flex-wrap text-gray-500 text-sm px-1 py-1">
+            <button class="px-3 py-1.5 hover:bg-gray-100">正文 ▾</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100 font-bold">B</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100 underline">U</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100 italic">I</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100">A ▾</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100">默认字号 ▾</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100">≡</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100">1.</button>
+            <button class="px-3 py-1.5 hover:bg-gray-100"><i class="fa-solid fa-link"></i></button>
+            <button class="px-3 py-1.5 hover:bg-gray-100"><i class="fa-regular fa-image"></i></button>
+            <button class="px-3 py-1.5 hover:bg-gray-100">&lt;/&gt;</button>
+          </div>
+          <div id="c-content" class="p-4 min-h-[120px] outline-none leading-relaxed" contenteditable="true"></div>
         </div>
+      </div>
     </div>
+    <div class="flex justify-end space-x-3 pt-4 border-t mt-6">
+      <span id="cfg-err" class="text-red-500 text-sm mr-auto self-center"></span>
+      <button onclick="closeModal('cfg-modal')" class="border border-gray-300 bg-white px-5 py-2 rounded text-gray-600">取消</button>
+      <button onclick="saveCfg()" class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded">确认提交</button>
+    </div>
+  </div>
+</div>
 
-<!-- 模态框: 删除确认 -->
-    <div id="delete-modal" class="modal">
-        <div class="modal-content relative" style="width: 400px; padding: 0;">
-            <div class="flex justify-between items-center border-b px-5 py-3">
-                <h3 class="text-base text-gray-700">温馨提示</h3>
-                <button onclick="closeModal('delete-modal')" class="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
-            </div>
-            <div class="p-6 pb-5">
-                <div class="flex items-center space-x-3 mb-8 ml-2 mt-2">
-                    <div class="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-sm shrink-0">!</div>
-                    <p class="text-gray-600 text-sm">确定删除这条数据？ 是否继续</p>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('delete-modal')" class="border border-gray-300 bg-white px-4 py-1.5 rounded text-gray-600 text-sm hover:bg-gray-50">取消</button>
-                    <button type="button" onclick="closeModal('delete-modal')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm">确定</button>
-                </div>
-            </div>
+<!-- 弹窗：删除 -->
+<div id="delete-modal" class="modal">
+  <div class="modal-content relative" style="width:400px;padding:0;">
+    <div class="flex justify-between items-center border-b px-5 py-3">
+      <h3 class="text-base text-gray-700">温馨提示</h3>
+      <button onclick="closeModal('delete-modal')" class="text-gray-400 hover:text-gray-600 text-lg">&times;</button>
+    </div>
+    <div class="p-6 pb-5">
+      <div class="flex items-center space-x-3 mb-8 ml-2 mt-2">
+        <div class="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-sm shrink-0">!</div>
+        <p class="text-gray-600 text-sm" id="del-msg">确定删除这条数据？ 是否继续</p>
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button onclick="closeModal('delete-modal')" class="border border-gray-300 bg-white px-4 py-1.5 rounded text-gray-600 text-sm">取消</button>
+        <button id="del-ok" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 后台轻提示 -->
+<div id="adm-toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-white border shadow-lg rounded px-4 py-2 text-sm z-[300] hidden"></div>
+
+<!-- ==================== 前台 ==================== -->
+<div class="view" id="v-front">
+  <div class="front-wrap">
+    <div class="phone" id="phone">
+      <div id="dragBall1" class="absolute z-50 flex items-center justify-center bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] w-14 h-14 rounded-full text-xs font-bold shadow-[0_0_15px_rgba(212,160,84,0.6)] cursor-move select-none text-center leading-tight" style="right:12px;top:120px;">充值<br>有奖</div>
+      <div id="dragBall2" class="absolute z-50 flex items-center justify-center bg-[#1a1612] border-2 border-[#d4a054] text-[#d4a054] w-14 h-14 rounded-full text-[11px] leading-tight shadow-[0_0_10px_rgba(212,160,84,0.3)] cursor-move select-none text-center" style="right:12px;top:190px;">领取<br>记录</div>
+
+      <div class="app-container" id="app"></div>
+
+      <!-- 领取记录弹窗 -->
+      <div id="recordModal" class="absolute inset-0 bg-black/80 z-[100] hidden flex-col items-center justify-center">
+        <div class="w-[340px] bg-[#1a1612] border border-[#d4a054] rounded-xl relative flex flex-col mt-10 shadow-2xl">
+          <div class="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#2a2015] border border-[#d4a054] px-6 py-1.5 rounded-md text-[#d4a054] font-bold whitespace-nowrap">♠ 领取记录 ♠</div>
+          <div class="flex text-[#d4a054] text-xs font-bold pt-10 pb-3 px-4 border-b border-[#3e3427]">
+            <div class="flex-[3] text-left">日期</div><div class="flex-[2] text-center">金额</div><div class="flex-[2] text-center">类型</div><div class="flex-[3] text-right">详情</div>
+          </div>
+          <div class="overflow-y-auto max-h-[300px] text-xs text-gray-300" id="recordList"></div>
         </div>
+        <button id="closeRecordBtn" class="mt-8 w-10 h-10 rounded-full border border-[#d4a054] text-[#d4a054] flex items-center justify-center text-2xl bg-[#1a1612]">×</button>
+      </div>
+      <div id="toast" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-6 py-3 rounded-lg text-sm z-[200] opacity-0 pointer-events-none transition-opacity duration-300 border border-[#d4a054]">领取成功</div>
     </div>
 
-    <!-- 需求说明 (前端可见) -->
-    <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-5 shadow-sm mb-10" id="prd-requirements">
-        <h2 class="text-base font-bold text-yellow-800 mb-3 flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            需求说明（研发必读，实际前端不展示给用户看）
-        </h2>
-        <ol class="list-decimal list-inside space-y-2 text-yellow-700 text-sm">
-            <li><strong class="font-semibold text-yellow-800">金额显示规则：</strong> 所有的金额字段（充值、打码、工资、封顶等）前端展示时，默认删除无效数字0（例如 10.00 展示为 10，10.50 展示为 10.5）。</li>
-            <li><strong class="font-semibold text-yellow-800">输入框限制：</strong> 弹窗中带 <span class="text-red-500">*</span> 号的为必填项。等级必须为连续正整数；各项金额（充值、打码、奖励、封顶）必须为大于等于 0 的数字，输入限制至多10位数字，且最多允许输入两位小数。</li>
-            <li><strong class="font-semibold text-yellow-800">关键字段含义：</strong> 
-                <ul class="list-disc list-inside ml-5 mt-1 space-y-1 text-yellow-700">
-                    <li><span class="font-medium text-yellow-800">当日充值 / 当日打码：</span> 触发或领取对应奖励所必须满足的单日充值和有效投注门槛条件。</li>
-                    <li><span class="font-medium text-yellow-800">晋级奖励：</span> 达到对应等级条件后，发放给玩家的彩金奖励。</li>
-                    <li><span class="font-medium text-yellow-800">日/周/月累计封顶：</span> 限制玩家在该周期内，领取该项奖励的最大总金额上限，防止超发。</li>
-                </ul>
-            </li>
-            <li><strong class="font-semibold text-yellow-800">公共配置含义：</strong> 
-                <ul class="list-disc list-inside ml-5 mt-1 space-y-1 text-yellow-700">
-                    <li><span class="font-medium text-yellow-800">稽核倍数：</span> 玩家提现该笔福利彩金前需要完成的流水倍数（填 0 意味着免稽核直接可提）。</li>
-                    <li><span class="font-medium text-yellow-800">晋级时是否重复领取：</span> 控制跨级晋升时，是叠加领取所有途径等级的奖励，还是只发最高级别的奖励。</li>
-                    <li><span class="font-medium text-yellow-800">奖励领取过期天数：</span> 逾期未领取的奖励将自动失效无法领取，设置为 0 则表示永久有效。</li>
-                </ul>
-            </li>
-            <li><strong class="font-semibold text-yellow-800">删除交互：</strong> 点击删除按钮须弹出二次确认框，点击“确定”后再请求接口并刷新当前列表。</li>
-        </ol>
+    <!-- 演示参数 -->
+    <div class="sim">
+      <div class="font-bold text-gray-800 mb-1"><i class="fa-solid fa-sliders mr-1 text-blue-500"></i>演示参数（仅原型）</div>
+      <div class="text-xs text-gray-400 mb-3">修改会员数据或日期，查看前台各按钮状态；后台配置修改后此处实时联动。</div>
+      <div class="space-y-2">
+        <div><div class="text-gray-500 text-xs mb-0.5">模拟日期</div><input type="date" id="s-date"><div class="text-xs text-blue-500 mt-0.5" id="s-week"></div></div>
+        <div><div class="text-gray-500 text-xs mb-0.5">累计总充值（决定等级）</div><input type="number" id="s-total"></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><div class="text-gray-500 text-xs mb-0.5">当日充值</div><input type="number" id="s-day-r"></div>
+          <div><div class="text-gray-500 text-xs mb-0.5">当日打码</div><input type="number" id="s-day-b"></div>
+          <div><div class="text-gray-500 text-xs mb-0.5">上周充值</div><input type="number" id="s-lastweek-r"></div>
+          <div><div class="text-gray-500 text-xs mb-0.5">上周打码</div><input type="number" id="s-lastweek-b"></div>
+          <div><div class="text-gray-500 text-xs mb-0.5">上月充值</div><input type="number" id="s-lastmonth-r"></div>
+          <div><div class="text-gray-500 text-xs mb-0.5">上月打码</div><input type="number" id="s-lastmonth-b"></div>
+        </div>
+        <button onclick="resetClaims()" class="w-full mt-2 border border-gray-300 rounded py-1.5 text-gray-600 hover:bg-gray-50">重置领取状态</button>
+      </div>
     </div>
+  </div>
+</div>
 
-</div> <!-- page-body 结束 -->
-    </div> <!-- main-content 结束 -->
+<!-- ==================== 需求说明 ==================== -->
+<div class="view" id="v-prd">
+  <div class="prd-wrap">
+    <div class="prd">
+      <h1>VIP彩金（晋级奖励 / 周工资 / 月工资）需求说明</h1>
+      <div class="text-gray-400 text-xs">更新：2026-11-05 · 包含后台「VIP彩金配置」与前台「升级模式」页面</div>
 
-    <script>
-        // 简单的模态框控制逻辑
-        function openModal(id) {
-            document.getElementById(id).style.display = 'block';
-        }
+      <h2>一、后台 · VIP彩金配置列表</h2>
+      <ol>
+        <li><b>列表字段：</b>等级、总存款；晋级奖励（充值要求、打码要求、晋级奖励）；月工资（充值要求、打码要求、月工资）；周工资（充值要求、打码要求、周工资）；状态、创建时间、操作（修改 / 删除）。按等级从小到大排序。</li>
+        <li><b>表头随配置变化：</b>各奖励下的「充值 / 打码」表头按公共配置中的统计周期显示，例如月工资选「上月」时显示「上月充值 / 上月打码」。</li>
+        <li><b>表头提示：</b>「晋级奖励 / 月工资 / 周工资」后带「?」，悬停显示该奖励的领取时间、统计周期与过期规则，内容由公共配置自动生成。例：
+          <ul><li>月工资：每月1号领取，过期不可领取；领取条件按上月充值/打码统计</li>
+          <li>周工资：每周一领取，过期不可领取；领取条件按上周充值/打码统计</li></ul></li>
+        <li><b>金额展示：</b>所有金额去掉无效的 0，如 10.00 显示 10，10.50 显示 10.5。</li>
+        <li><b>查询：</b>按等级精确查询；「重置」清空条件并刷新列表。</li>
+      </ol>
 
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
+      <h2>二、后台 · 新增 / 修改等级</h2>
+      <table>
+        <tr><th style="width:140px">项目</th><th>规则</th></tr>
+        <tr><td>等级 <span class="text-red-500">*</span></td><td>正整数，等级需连续。新增时只能填当前最高等级 + 1（无等级时为 1）；修改时不可改。</td></tr>
+        <tr><td>总存款 <span class="text-red-500">*</span></td><td>会员累计充值达到该金额即晋升到此等级。需大于上一等级、小于下一等级的总存款。</td></tr>
+        <tr><td>充值要求 / 打码要求</td><td>领取该项奖励需满足的充值金额、有效投注门槛，统计周期取公共配置。填 0 表示无该项要求。</td></tr>
+        <tr><td>晋级奖励 / 月工资 / 周工资</td><td>发放金额。填 0 表示该等级无此奖励，前台显示「暂无」。</td></tr>
+        <tr><td>状态 <span class="text-red-500">*</span></td><td>默认开启。关闭后前台不展示该等级，会员不可领取该等级的各项奖励；会员等级晋升不受影响。</td></tr>
+        <tr><td>输入限制</td><td>金额类均为 ≥ 0 的数字，整数部分最多 10 位，最多 2 位小数；不填按 0 处理。</td></tr>
+      </table>
+      <h3>删除</h3>
+      <ul><li>点击删除弹出二次确认，确定后删除并刷新列表。</li>
+      <li>为保证等级连续，只能删除当前最高等级；删除其他等级时提示「请先删除更高等级」。</li></ul>
 
-        // 点击模态框外部区域关闭
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
-    </script>
+      <h2>三、后台 · 公共配置</h2>
+      <table>
+        <tr><th style="width:150px">配置项</th><th style="width:190px">选项 / 默认</th><th>说明</th></tr>
+        <tr><td>稽核倍数 <span class="text-red-500">*</span></td><td>默认 1</td><td>领取的彩金需完成「彩金金额 × 倍数」的有效投注后方可提现，0 表示不需要稽核。三类奖励共用。</td></tr>
+        <tr><td colspan="3" class="bg-gray-50 font-semibold">晋级奖励配置</td></tr>
+        <tr><td>领取条件统计周期</td><td>当日 / 上周 / 上月，默认当日</td><td>判断充值、打码要求时统计的时间范围（定义见第四节）。</td></tr>
+        <tr><td>跨级领取</td><td>可领取途经所有等级 / 只能领取最高一档，默认可领取途经所有等级</td><td>一次晋升多个等级时，是每个途经等级的晋级奖励都可领，还是只可领到达的最高等级奖励。</td></tr>
+        <tr><td>奖励领取过期天数 <span class="text-red-500">*</span></td><td>默认 30</td><td>从达到该等级起算，逾期未领取的晋级奖励失效；0 表示永久有效。</td></tr>
+        <tr><td colspan="3" class="bg-gray-50 font-semibold">周工资配置 / 月工资配置（规则相同）</td></tr>
+        <tr><td>领取条件统计周期</td><td>当日 / 上周 / 上月；周工资默认上周，月工资默认上月</td><td>判断充值、打码要求时统计的时间范围。</td></tr>
+        <tr><td>领取时间</td><td>随时可领取 / 指定日期领取；默认指定：周工资每周一，月工资每月1号</td><td>指定日期时：周工资可选周一至周日；月工资可选 1–28 号（保证每个月都有该日）。</td></tr>
+        <tr><td>文案内容</td><td>富文本</td><td>展示在前台「活动详情」顶部。</td></tr>
+      </table>
+
+      <h2>四、领取规则</h2>
+      <h3>4.1 统计周期定义（按站点时区）</h3>
+      <ul>
+        <li><b>当日：</b>领取当天 00:00:00 至领取时刻的累计充值 / 有效投注。</li>
+        <li><b>上周：</b>上一个自然周（周一 00:00:00 至周日 23:59:59）。</li>
+        <li><b>上月：</b>上一个自然月（1号 00:00:00 至月末 23:59:59）。</li>
+        <li>充值、打码两项要求需同时满足才可领取。</li>
+      </ul>
+      <h3>4.2 晋级奖励</h3>
+      <ul>
+        <li>会员累计充值达到某等级总存款即视为达到该等级，该等级晋级奖励进入可领取范围，每个等级只能领取一次。</li>
+        <li>领取时需满足该等级配置的充值、打码要求（按晋级奖励的统计周期计算），未满足时前台显示具体差额要求。</li>
+        <li>跨级晋升：选「可领取途经所有等级」时每级都可领；选「只能领取最高一档」时，低于最高等级且尚未领取的等级显示「不可领取」。</li>
+        <li>达到等级后超过过期天数未领取，该等级显示「已过期」，不可再领。</li>
+        <li>不设领取金额封顶。</li>
+      </ul>
+      <h3>4.3 周工资 / 月工资</h3>
+      <ul>
+        <li>按会员<b>领取时的当前等级</b>发放该等级的周 / 月工资，每个自然周 / 自然月只能领取一次。</li>
+        <li>领取时需满足当前等级配置的充值、打码要求（按各自统计周期计算）。</li>
+        <li>领取时间为「指定日期」时：仅当天可领，当天 23:59:59 未领取即过期，不可补领。</li>
+        <li>领取时间为「随时可领取」时：本周 / 本月内任意时间可领，周期结束未领取即过期。</li>
+        <li>不设领取金额封顶。</li>
+      </ul>
+      <h3>4.4 稽核</h3>
+      <ul><li>每笔领取的彩金按领取时的稽核倍数生成稽核要求，完成后方可提现。</li></ul>
+
+      <h2>五、前台 · 升级模式页面</h2>
+      <h3>5.1 周俸禄 / 月俸禄按钮</h3>
+      <table>
+        <tr><th style="width:150px">状态</th><th>展示</th></tr>
+        <tr><td>可领取</td><td>金色按钮「立即领取」，点击提示「领取成功」后变为已领取。</td></tr>
+        <tr><td>未到领取时间</td><td>灰色，显示「每周一领取」/「每月1号领取」。</td></tr>
+        <tr><td>未达标</td><td>灰色，显示差的条件，例：「需上周充值 1000 / 需上周有效投注 10000」。</td></tr>
+        <tr><td>本期已领取</td><td>灰色，显示「下周再来」/「下月再来」。</td></tr>
+        <tr><td>当前等级无此奖励</td><td>灰色，显示「暂无」。</td></tr>
+      </table>
+      <ul><li>按钮下方展示领取提示，文案由后台配置自动生成，例：「周俸禄每周一领取，月俸禄每月1号领取，过期不可领取」。</li></ul>
+      <h3>5.2 等级可领列表</h3>
+      <ul>
+        <li>展示所有开启的等级，每个等级显示领取条件（含统计周期，例「需当日充值 40 / 需当日有效投注 200」）和晋级奖金额。</li>
+        <li>按钮状态：立即领取 / 未达标 / 已领取 / 不可领取（只领最高一档时）/ 已过期 / 等待升级（未达到该等级）。</li>
+      </ul>
+      <h3>5.3 其他</h3>
+      <ul>
+        <li>顶部表盘、总充值、当前等级卡片（距离下一级的充值差额）按会员实际数据展示。</li>
+        <li>活动详情：上方为后台文案内容；下方表格展示各等级总存款、晋级礼金、周俸禄、月俸禄，金额下方附带领取条件（如「上周充100 / 投1000」），金额为 0 的格子只显示 0。</li>
+        <li>领取记录：展示日期、金额、类型（晋级礼金 / 周俸禄 / 月俸禄）、详情（如「v3-晋级礼金」），按时间倒序。</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div id="gtip"></div>
+
+<script>
+/* ============ 数据 ============ */
+const P={day:'当日',lastweek:'上周',lastmonth:'上月'};
+const WD=['','周一','周二','周三','周四','周五','周六','周日'];
+let levels=[
+ {lv:1,dep:100,  up:{r:40,b:200,a:10},    mon:{r:100,b:1000,a:100},   wk:{r:100,b:1000,a:30},   on:true,ct:'2026-07-07 15:01:18'},
+ {lv:2,dep:500,  up:{r:80,b:500,a:50},    mon:{r:500,b:5000,a:300},   wk:{r:300,b:3000,a:100},  on:true,ct:'2026-07-08 10:20:00'},
+ {lv:3,dep:1000, up:{r:150,b:1000,a:120}, mon:{r:1000,b:10000,a:800}, wk:{r:600,b:6000,a:250},  on:true,ct:'2026-07-09 14:15:30'},
+ {lv:4,dep:3000, up:{r:300,b:2000,a:200}, mon:{r:2000,b:20000,a:1500},wk:{r:1000,b:10000,a:400},on:true,ct:'2026-07-10 09:30:12'},
+ {lv:5,dep:5000, up:{r:500,b:5000,a:300}, mon:{r:3000,b:30000,a:2200},wk:{r:1500,b:15000,a:600},on:true,ct:'2026-07-10 09:32:45'},
+ {lv:6,dep:10000,up:{r:1000,b:10000,a:600},mon:{r:5000,b:50000,a:3800},wk:{r:2500,b:25000,a:1000},on:true,ct:'2026-07-10 09:35:08'},
+];
+let cfg={audit:1,
+ up:{period:'day',cross:'all',expire:30},
+ wk:{period:'lastweek',claim:'fixed',day:1},
+ mon:{period:'lastmonth',claim:'fixed',day:1},
+ content:'<h2 style="color:#ff9900;font-weight:bold;font-size:16px;">👑 VIP 尊享特权</h2><p style="margin-top:8px;">VIP福利全面升级，周工资、月工资惊喜不断！晋级即发丰厚奖励！</p>'};
+let sim={date:'2026-11-02',total:3500,day:{r:500,b:5000},lastweek:{r:1200,b:12000},lastmonth:{r:2500,b:26000}};
+let claimed,records;
+function resetClaims(){
+  claimed={up:new Set([1,2]),wk:{},mon:{}};
+  records=[{d:'2026-10-20',a:50,t:'晋级礼金',x:'v2-晋级礼金'},{d:'2026-10-18',a:10,t:'晋级礼金',x:'v1-晋级礼金'}];
+  renderFront();
+}
+
+/* ============ 工具 ============ */
+const fmt=n=>String(parseFloat(Number(n||0).toFixed(2)));
+const money=n=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const $=id=>document.getElementById(id);
+const sorted=()=>[...levels].sort((a,b)=>a.lv-b.lv);
+const D=s=>new Date(s+'T00:00:00');
+const wday=d=>d.getDay()||7;
+function weekKey(s){const d=D(s);d.setDate(d.getDate()-wday(d)+1);return d.toISOString().slice(0,10);}
+function claimWhen(k){const c=cfg[k];
+  if(c.claim==='any')return k==='wk'?'本周内随时可领取':'本月内随时可领取';
+  return k==='wk'?`每${WD[c.day]}领取`:`每月${c.day}号领取`;}
+function tipOf(k){
+  if(k==='up'){const c=cfg.up;return `达到等级后可领取，每个等级限领一次；领取条件按${P[c.period]}充值/打码统计；跨级晋升${c.cross==='all'?'可领取途经所有等级的奖励':'只能领取最高一档'}；${+c.expire>0?`达到等级后 ${c.expire} 天内未领取则过期`:'永久有效'}`;}
+  return `${claimWhen(k)}，过期不可领取；领取条件按${P[cfg[k].period]}充值/打码统计；按会员领取时的等级发放`;}
+const q=t=>`<span class="q" data-tip="${t}">?</span>`;
+
+/* ============ 视图切换 ============ */
+document.querySelectorAll('.proto-tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.proto-tab').forEach(x=>x.classList.toggle('on',x===t));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===t.dataset.view));
+});
+
+/* ============ 全局提示 ============ */
+const gtip=$('gtip');
+document.addEventListener('mouseover',e=>{const el=e.target.closest('[data-tip]');if(!el)return;
+  gtip.textContent=el.dataset.tip;gtip.style.display='block';const r=el.getBoundingClientRect();
+  let left=r.left+r.width/2-140;left=Math.max(8,Math.min(left,innerWidth-290));
+  gtip.style.left=left+'px';gtip.style.top=(r.bottom+8)+'px';});
+document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip]'))gtip.style.display='none';});
+
+/* ============ 后台 ============ */
+function renderAdmin(){
+  const th='px-3 py-2 font-medium text-gray-500 text-xs bg-gray-100';
+  const g=(name,k)=>`<th colspan="3" class="px-4 py-2 font-medium text-gray-500 border-b border-r border-gray-200">${name}${q(tipOf(k))}</th>`;
+  const sub=(k,label)=>`<th class="${th}">${P[cfg[k].period]}充值</th><th class="${th}">${P[cfg[k].period]}打码</th><th class="${th} border-r border-gray-200">${label}</th>`;
+  $('adm-thead').innerHTML=`<tr>
+    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">等级</th>
+    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">总存款</th>
+    ${g('晋级奖励','up')}${g('月工资','mon')}${g('周工资','wk')}
+    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">状态</th>
+    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500 border-r border-gray-200">创建时间</th>
+    <th rowspan="2" class="px-4 py-3 font-medium text-gray-500">操作</th></tr>
+    <tr>${sub('up','晋级奖励')}${sub('mon','月工资')}${sub('wk','周工资')}</tr>`;
+  const kw=$('level-search').value.trim();
+  const rows=sorted().filter(l=>!kw||String(l.lv)===kw);
+  const cell=(o)=>`<td class="px-4 py-3">${fmt(o.r)}</td><td class="px-4 py-3">${fmt(o.b)}</td><td class="px-4 py-3 text-red-500 border-r border-gray-100">${fmt(o.a)}</td>`;
+  $('adm-tbody').innerHTML=rows.map(l=>`<tr class="hover:bg-gray-50">
+    <td class="px-4 py-3">${l.lv}</td><td class="px-4 py-3">${fmt(l.dep)}</td>
+    ${cell(l.up)}${cell(l.mon)}${cell(l.wk)}
+    <td class="px-4 py-3 ${l.on?'text-gray-600':'text-gray-400'}">${l.on?'开启':'关闭'}</td>
+    <td class="px-4 py-3 text-gray-500">${l.ct}</td>
+    <td class="px-4 py-3 space-x-2">
+      <button onclick="openForm(${l.lv})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">修改</button>
+      <button onclick="askDel(${l.lv})" class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-xs">删除</button>
+    </td></tr>`).join('')||`<tr><td colspan="16" class="py-10 text-gray-400">暂无数据</td></tr>`;
+  $('adm-count').textContent=`共 ${rows.length} 条`;
+}
+function openModal(id){$(id).style.display='block';}
+function closeModal(id){$(id).style.display='none';}
+window.addEventListener('click',e=>{if(e.target.classList.contains('modal'))e.target.style.display='none';});
+function admToast(m){const t=$('adm-toast');t.textContent=m;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),1600);}
+
+let editing=null;
+function openForm(lv){
+  editing=lv??null;const l=levels.find(x=>x.lv===lv);
+  $('form-title').textContent=l?'修改等级配置':'添加等级配置';$('form-err').textContent='';
+  $('f-lv').value=l?l.lv:'';$('f-lv').readOnly=!!l;$('f-lv').classList.toggle('bg-gray-100',!!l);
+  $('f-dep').value=l?fmt(l.dep):'';
+  const grp=(k,name)=>`<div class="bg-gray-50 p-3 rounded">
+    <div class="font-medium mb-2 text-center text-gray-600">${name}${q(tipOf(k))}</div>
+    <div class="space-y-2">
+      <div class="flex items-center"><label class="w-20 text-right pr-2 text-xs">${P[cfg[k].period]}充值</label><input id="f-${k}-r" value="${l?fmt(l[k].r):''}" class="flex-1 min-w-0 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+      <div class="flex items-center"><label class="w-20 text-right pr-2 text-xs">${P[cfg[k].period]}打码</label><input id="f-${k}-b" value="${l?fmt(l[k].b):''}" class="flex-1 min-w-0 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+      <div class="flex items-center"><label class="w-20 text-right pr-2 text-xs">${name}</label><input id="f-${k}-a" value="${l?fmt(l[k].a):''}" class="flex-1 min-w-0 border border-gray-300 rounded px-2 py-1 text-sm"></div>
+    </div></div>`;
+  $('form-groups').innerHTML=grp('up','晋级奖励')+grp('mon','月工资')+grp('wk','周工资');
+  document.querySelector(`input[name=f-on][value="${l&&!l.on?0:1}"]`).checked=true;
+  openModal('form-modal');
+}
+const numOk=v=>/^\d{1,10}(\.\d{1,2})?$/.test(v);
+function saveForm(){
+  const err=m=>{$('form-err').textContent=m;};
+  const lvS=$('f-lv').value.trim(),depS=$('f-dep').value.trim();
+  if(!lvS||!depS)return err('请填写必填项');
+  if(!/^[1-9]\d*$/.test(lvS))return err('等级须为正整数');
+  if(!numOk(depS))return err('总存款须为≥0的数字，最多两位小数');
+  const lv=+lvS,dep=+depS,s=sorted();
+  if(editing===null){const max=s.length?s[s.length-1].lv:0;if(lv!==max+1)return err(`等级须连续，请填写 ${max+1}`);}
+  const prev=s.filter(x=>x.lv<lv).pop(),next=s.find(x=>x.lv>lv);
+  if(prev&&dep<=prev.dep)return err(`总存款须大于 ${prev.lv} 级的 ${fmt(prev.dep)}`);
+  if(next&&dep>=next.dep)return err(`总存款须小于 ${next.lv} 级的 ${fmt(next.dep)}`);
+  const o={};
+  for(const k of['up','mon','wk']){o[k]={};for(const f of['r','b','a']){const v=$(`f-${k}-${f}`).value.trim()||'0';if(!numOk(v))return err('金额须为≥0的数字，最多10位整数、两位小数');o[k][f]=+v;}}
+  const on=document.querySelector('input[name=f-on]:checked').value==='1';
+  if(editing===null){const n=new Date();levels.push({lv,dep,...o,on,ct:'2026-11-05 '+n.toTimeString().slice(0,8)});}
+  else Object.assign(levels.find(x=>x.lv===editing),{dep,...o,on});
+  closeModal('form-modal');admToast('保存成功');renderAll();
+}
+function askDel(lv){
+  const max=Math.max(...levels.map(x=>x.lv));
+  if(lv!==max){admToast('等级须连续，请先删除更高等级');return;}
+  $('del-ok').onclick=()=>{levels=levels.filter(x=>x.lv!==lv);closeModal('delete-modal');admToast('删除成功');renderAll();};
+  openModal('delete-modal');
+}
+
+/* 公共配置 */
+function openCfg(){
+  $('c-audit').value=fmt(cfg.audit);$('cfg-err').textContent='';$('c-content').innerHTML=cfg.content;
+  const radio=(name,val,cur,label)=>`<label class="mr-5 cursor-pointer"><input type="radio" name="${name}" value="${val}" ${cur==val?'checked':''} class="mr-1">${label}</label>`;
+  const row=(label,body,tip,req)=>`<div class="flex items-center min-h-[30px]"><label class="w-40 text-right pr-4 text-gray-600 shrink-0">${req?'<span class="text-red-500">*</span> ':''}${label}${tip?q(tip):''}</label><div class="flex items-center flex-wrap">${body}</div></div>`;
+  const period=k=>row('领取条件统计周期',['day','lastweek','lastmonth'].map(p=>radio(`c-${k}-period`,p,cfg[k].period,P[p])).join(''),'判断该奖励充值、打码要求时统计的时间范围：当日=领取当天0点至领取时刻；上周=上一个自然周；上月=上一个自然月');
+  const claimRow=k=>{const c=cfg[k];
+    const opts=k==='wk'?[1,2,3,4,5,6,7].map(i=>`<option value="${i}" ${c.day==i?'selected':''}>${WD[i]}</option>`).join(''):Array.from({length:28},(_,i)=>`<option value="${i+1}" ${c.day==i+1?'selected':''}>${i+1}号</option>`).join('');
+    return row('领取时间',radio(`c-${k}-claim`,'any',c.claim,'随时可领取')+radio(`c-${k}-claim`,'fixed',c.claim,'指定日期')+`<span class="text-gray-500 mr-1">${k==='wk'?'每周':'每月'}</span><select id="c-${k}-day" class="border border-gray-300 rounded px-2 py-1">${opts}</select>`,
+      k==='wk'?'随时可领取：本周内任意时间可领，周结束未领取则过期；指定日期：仅指定当天可领，过期不可领取':'随时可领取：本月内任意时间可领，月结束未领取则过期；指定日期：仅指定当天可领，过期不可领取（仅可选1–28号）',true);};
+  $('cfg-sections').innerHTML=`
+   <div><h4 class="font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">晋级奖励配置</h4><div class="space-y-3 ml-4">
+     ${period('up')}
+     ${row('跨级领取',radio('c-up-cross','all',cfg.up.cross,'可领取途经所有等级')+radio('c-up-cross','highest',cfg.up.cross,'只能领取最高一档'),'一次晋升多个等级时，是每个途经等级的晋级奖励都可领取，还是只可领取到达的最高等级奖励')}
+     ${row('奖励领取过期天数',`<input id="c-up-expire" value="${cfg.up.expire}" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">`,'从达到该等级起算，逾期未领取的晋级奖励失效；0表示不过期',true)}
+   </div></div>
+   <div><h4 class="font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">周工资配置</h4><div class="space-y-3 ml-4">${period('wk')}${claimRow('wk')}</div></div>
+   <div><h4 class="font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">月工资配置</h4><div class="space-y-3 ml-4">${period('mon')}${claimRow('mon')}</div></div>`;
+  openModal('cfg-modal');
+}
+function saveCfg(){
+  const a=$('c-audit').value.trim(),ex=$('c-up-expire').value.trim();
+  if(!numOk(a))return $('cfg-err').textContent='稽核倍数须为≥0的数字，最多两位小数';
+  if(!/^\d{1,4}$/.test(ex))return $('cfg-err').textContent='过期天数须为≥0的整数';
+  const v=n=>document.querySelector(`input[name=${n}]:checked`).value;
+  cfg.audit=+a;
+  cfg.up={period:v('c-up-period'),cross:v('c-up-cross'),expire:+ex};
+  for(const k of['wk','mon'])cfg[k]={period:v(`c-${k}-period`),claim:v(`c-${k}-claim`),day:+$(`c-${k}-day`).value};
+  cfg.content=$('c-content').innerHTML;
+  closeModal('cfg-modal');admToast('保存成功');renderAll();
+}
+
+/* ============ 前台 ============ */
+const COLORS=['blue','cyan','teal','pink','rose','purple','indigo','orange','amber','red'];
+const met=(k,req)=>sim[cfg[k].period].r>=req.r&&sim[cfg[k].period].b>=req.b;
+const curLv=()=>{let c=0;sorted().forEach(l=>{if(sim.total>=l.dep)c=l.lv;});return c;};
+function needTxt(k,req){const p=P[cfg[k].period],s=sim[cfg[k].period],o=[];
+  if(s.r<req.r)o.push(`需${p}充值 ${fmt(req.r)}`);if(s.b<req.b)o.push(`需${p}有效投注 ${fmt(req.b)}`);return o.join('<br>');}
+
+function salaryBtn(k){
+  const name=k==='wk'?'周俸禄':'月俸禄',cl=curLv(),l=levels.find(x=>x.lv===cl&&x.on);
+  const amt=l?l[k].a:0;
+  const grey=(inner)=>`<div class="flex-1 bg-silver-gradient rounded-xl py-2 px-1 text-center border-b-4 border-gray-500 flex flex-col justify-center items-center min-h-[72px]">
+     <div class="flex items-center gap-1 mb-1"><div class="text-[#333] font-bold text-[15px]">${name}</div><div class="text-[#333] font-bold text-[12px]">${amt?'￥'+fmt(amt):''}</div></div>${inner}</div>`;
+  if(!l||!amt)return grey(`<div class="text-[#666] text-[11px] font-bold">暂无</div>`);
+  const key=k==='wk'?weekKey(sim.date):sim.date.slice(0,7);
+  if(claimed[k][key])return grey(`<div class="text-[#666] text-[11px] font-bold">${k==='wk'?'下周再来':'下月再来'}</div>`);
+  const d=D(sim.date),c=cfg[k];
+  if(c.claim==='fixed'&&(k==='wk'?wday(d)!==c.day:d.getDate()!==c.day))
+    return grey(`<div class="text-[#555] text-[11px] font-bold">${claimWhen(k)}</div>`);
+  if(!met(k,l[k]))return grey(`<div class="text-[#8b2323] text-[9px] bg-black/10 rounded py-1 px-2 leading-tight font-bold w-11/12">${needTxt(k,l[k])}</div>`);
+  return `<div onclick="claimSalary('${k}')" class="flex-1 bg-gold-gradient rounded-xl py-2 px-1 text-center border-b-4 border-[#9c6f1a] cursor-pointer active:translate-y-1 flex flex-col justify-center items-center min-h-[72px]">
+     <div class="flex items-center gap-1 mb-1.5"><div class="text-[#3e2708] font-bold text-[15px]">${name}</div><div class="text-[#8b2323] font-bold text-[13px]">￥${fmt(amt)}</div></div>
+     <div class="bg-[#8b2323] text-[#FDE19F] text-[11px] px-4 py-1 rounded-full font-bold w-10/12">立即领取</div></div>`;
+}
+function upBtn(l,cl){
+  const g=t=>`<button class="bg-[#6b7280] text-gray-300 text-xs px-4 py-1.5 rounded-md">${t}</button>`;
+  if(l.lv>cl)return g('等待升级');
+  if(claimed.up.has(l.lv))return `<button class="bg-[#6b7280] text-white text-xs px-4 py-1.5 rounded-md">已领取</button>`;
+  if(!l.up.a)return g('暂无');
+  if(cfg.up.cross==='highest'&&l.lv<cl)return g('不可领取');
+  if(!met('up',l.up))return g('未达标');
+  return `<button onclick="claimUp(${l.lv})" class="bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] font-bold text-xs px-4 py-1.5 rounded-md shadow">立即领取</button>`;
+}
+function renderFront(){
+  if(!claimed)return;
+  const ls=sorted().filter(l=>l.on),cl=curLv(),n=ls.length;
+  // 表盘
+  const gauge=ls.map((l,i)=>{const ang=Math.PI*(0.93-(n<2?0.43:0.86*i/(n-1)));const x=140+122*Math.cos(ang),y=140-122*Math.sin(ang)+4;
+    return `<div class="gauge-label ${l.lv===cl?'cur':''}" style="left:${x}px;top:${Math.max(y,10)}px">V${l.lv}</div>`;}).join('');
+  const next=sorted().find(l=>l.lv>cl);
+  const curDep=(sorted().find(l=>l.lv===cl)||{dep:0}).dep;
+  const pct=next?Math.min(100,(sim.total-curDep)/(next.dep-curDep)*100):100;
+  const salaryHint=[['wk','周俸禄'],['mon','月俸禄']].map(([k,nm])=>`${nm}${claimWhen(k)}`).join('，')+'，过期不可领取';
+  const reqLine=(k,o)=>o.r||o.b?`<span class="text-[8px] text-gray-500 block leading-[10px] mt-0.5">${P[cfg[k].period].slice(1)}充${fmt(o.r)}<br>投${fmt(o.b)}</span>`:'';
+  const td=(k,o)=>o.a?`<td class="py-1">${fmt(o.a)}<br>${reqLine(k,o)}</td>`:`<td class="py-2">0</td>`;
+  $('app').innerHTML=`
+  <header class="sticky top-0 w-full bg-[#151515] h-12 flex items-center px-4 z-40 border-b border-[#333]">
+    <button class="text-gray-300 w-8 h-8 flex items-center"><i class="fa-solid fa-chevron-left"></i></button>
+    <h1 class="flex-1 text-center text-[16px] font-medium text-gray-200 pr-8">升级模式</h1>
+  </header>
+  <section class="hero-bg w-full pt-6 pb-6 px-4 relative">
+    <div class="text-center mt-2">
+      <h2 class="text-4xl font-black text-gold tracking-widest" style="-webkit-text-stroke:1px #5c3a00;">升级模式</h2>
+      <div class="mt-2"><span class="bg-[#3A1F0B] text-[#D8A246] text-[10px] px-3 py-1 rounded-full border border-[#73531F]">充值永久累计 等级俸禄 终生有效</span></div>
+    </div>
+    <div class="gauge-container mt-6"><div class="gauge-arc"></div>${gauge}
+      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 border border-[#D8A246] rounded-full px-4 py-1 bg-[#1A0B02] text-[#D8A246] text-[12px]">总充值</div></div>
+    <div class="bg-gold-gradient rounded-full py-3 mt-1 mb-4 flex justify-center border-2 border-[#FFE8A1]"><span class="text-[#4A2D00] text-2xl font-black">￥ ${money(sim.total)}</span></div>
+    <div class="flex gap-2 px-1 mt-2">${salaryBtn('wk')}${salaryBtn('mon')}</div>
+    <div class="text-[10px] text-[#D8A246]/80 text-center mt-2 px-2"><i class="fa-regular fa-clock mr-1"></i>${salaryHint}</div>
+    <div class="mt-5 bg-gradient-to-b from-[#5c3311] to-[#2b1706] rounded-xl p-4 border border-[#8b5a2b]">
+      <div class="flex justify-between items-center mb-3"><div class="text-gold text-2xl font-bold italic">VIP ${cl}</div>
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#D8A246] to-[#FFF6D3] flex items-center justify-center"><i class="fa-solid fa-star text-[#4A2D00] text-sm"></i></div></div>
+      <div class="w-full bg-[#1A0B02] h-2 rounded-full overflow-hidden border border-[#3A1F0B]"><div class="bg-gold-gradient h-full rounded-full" style="width:${pct}%"></div></div>
+      <div class="text-gray-400 text-[10px] mt-2">${next?`下一级距离 <span class="text-[#D8A246]">￥ ${money(next.dep-sim.total)}</span> 充值`:'已达最高等级'}</div>
+    </div>
+  </section>
+  <section class="mt-2 px-4 mb-6">
+    <div class="flex justify-center mb-4"><div class="bg-[#2a2015] border border-[#d4a054] px-6 py-1 rounded-md text-[#d4a054] font-bold">♠ 等级可领 ♠</div></div>
+    <div class="bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl p-4 h-[350px] overflow-y-auto space-y-3">
+      ${ls.map((l,i)=>{const c=COLORS[(l.lv-1)%COLORS.length];const reach=l.lv<=cl;
+        const need=reach&&!claimed.up.has(l.lv)&&!met('up',l.up)&&!(cfg.up.cross==='highest'&&l.lv<cl);
+        return `<div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
+        <div class="flex items-center"><div class="w-10 h-10 rounded-full bg-${c}-500/20 flex items-center justify-center mr-3 border border-${c}-500/50"><span class="text-${c}-400 font-bold">v${l.lv}</span></div>
+          <div><div class="text-white font-bold text-lg">v${l.lv}</div>
+          <div class="${need?'text-red-400':'text-gray-400'} text-[9px] mt-1 leading-tight">${l.up.r||l.up.b?`需${P[cfg.up.period]}充值 ${fmt(l.up.r)}<br>需${P[cfg.up.period]}有效投注 ${fmt(l.up.b)}`:'无领取条件'}</div></div></div>
+        <div class="flex flex-col items-end"><div class="text-[#d4a054] text-xs mb-1">晋级奖 <span class="text-lg font-bold">${fmt(l.up.a)}</span></div>${upBtn(l,cl)}</div></div>`;}).join('')}
+    </div>
+  </section>
+  <section class="px-4 py-4 mt-2">
+    <div class="flex items-center justify-center gap-2 mb-4"><span class="text-[#D8A246] text-[10px]">◆</span><h3 class="text-[#D8A246] font-bold text-[15px] tracking-widest">活动详情</h3><span class="text-[#D8A246] text-[10px]">◆</span></div>
+    <div class="mb-4 text-sm leading-relaxed bg-[#2a2015] p-3 rounded-lg border border-[#3e3427] text-gray-300">${cfg.content}</div>
+    <div class="border border-[#73531F] p-1 rounded-lg bg-[#0D0D0D]"><table class="gold-table">
+      <thead><tr class="bg-[#1A1A1A]"><th>VIP等级</th><th>总存款</th><th>晋级礼金</th><th>周俸禄</th><th>月俸禄</th></tr></thead>
+      <tbody>${ls.map((l,i)=>`<tr class="${i%2?'bg-[#151515]':''}"><td class="py-2">V${l.lv}</td><td class="py-2">${fmt(l.dep)}+</td>${td('up',l.up)}${td('wk',l.wk)}${td('mon',l.mon)}</tr>`).join('')}</tbody></table></div>
+  </section>
+  <section class="px-6 py-6 pb-12">
+    <h4 class="text-center text-[#D8A246] text-[12px] mb-3">注意事项</h4>
+    <p class="text-gray-500 text-[10px] leading-relaxed text-justify">同一IP地址，同一银行账户、同一电话号码、均视为同一人。只可领取一次。如发现任何利用或个人以不诚实的方式套取红利、或恶意刷流水等非法行为，公司保留冻结、取消该玩家个人账户及账户结余的权利。</p>
+  </section>`;
+  $('recordList').innerHTML=records.map((r,i)=>`<div class="flex py-3 px-4 border-b border-[#2a2015] items-center ${i%2?'':'bg-[#2a2015]/20'}"><div class="flex-[3]">${r.d}</div><div class="flex-[2] text-center text-[#d4a054]">${money(r.a)}</div><div class="flex-[2] text-center">${r.t}</div><div class="flex-[3] text-right">${r.x}</div></div>`).join('')+'<div class="text-center py-6 text-gray-600">没有更多了</div>';
+  const d=D(sim.date);$('s-week').textContent=`${WD[wday(d)]} · 当前等级 VIP${cl}`;
+}
+function toast(){const t=$('toast');t.classList.replace('opacity-0','opacity-100');setTimeout(()=>t.classList.replace('opacity-100','opacity-0'),1500);}
+function claimUp(lv){const l=levels.find(x=>x.lv===lv);claimed.up.add(lv);records.unshift({d:sim.date,a:l.up.a,t:'晋级礼金',x:`v${lv}-晋级礼金`});toast();renderFront();}
+function claimSalary(k){const l=levels.find(x=>x.lv===curLv());const key=k==='wk'?weekKey(sim.date):sim.date.slice(0,7);
+  claimed[k][key]=1;const nm=k==='wk'?'周俸禄':'月俸禄';records.unshift({d:sim.date,a:l[k].a,t:nm,x:`v${l.lv}-${nm}`});toast();renderFront();}
+
+/* 演示参数绑定 */
+function bindSim(){
+  $('s-date').value=sim.date;$('s-total').value=sim.total;
+  ['day','lastweek','lastmonth'].forEach(p=>{$(`s-${p}-r`).value=sim[p].r;$(`s-${p}-b`).value=sim[p].b;});
+  document.querySelectorAll('.sim input').forEach(i=>i.addEventListener('input',()=>{
+    sim.date=$('s-date').value||sim.date;sim.total=+$('s-total').value||0;
+    ['day','lastweek','lastmonth'].forEach(p=>{sim[p].r=+$(`s-${p}-r`).value||0;sim[p].b=+$(`s-${p}-b`).value||0;});
+    renderFront();}));
+}
+/* 悬浮球拖拽 + 记录弹窗 */
+function makeDraggable(el,onTap){let down=false,moved=false,sx,sy,sl,st;
+  const pt=e=>e.touches?e.touches[0]:e;
+  el.addEventListener('mousedown',s);el.addEventListener('touchstart',s,{passive:false});
+  function s(e){down=true;moved=false;const p=pt(e);sx=p.clientX;sy=p.clientY;sl=el.offsetLeft;st=el.offsetTop;el.style.right='auto';el.style.left=sl+'px';}
+  const m=e=>{if(!down)return;const p=pt(e);const dx=p.clientX-sx,dy=p.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;if(!moved)return;e.preventDefault();
+    el.style.left=Math.max(0,Math.min(sl+dx,375-12-56))+'px';el.style.top=Math.max(48,st+dy)+'px';};
+  const u=()=>{if(down&&!moved&&onTap)onTap();down=false;};
+  document.addEventListener('mousemove',m);document.addEventListener('touchmove',m,{passive:false});
+  document.addEventListener('mouseup',u);document.addEventListener('touchend',u);}
+makeDraggable($('dragBall1'));
+makeDraggable($('dragBall2'),()=>{$('recordModal').classList.replace('hidden','flex');});
+$('closeRecordBtn').onclick=()=>$('recordModal').classList.replace('flex','hidden');
+
+function renderAll(){renderAdmin();renderFront();}
+bindSim();resetClaims();renderAdmin();
+</script>
 </body>
 </html>
