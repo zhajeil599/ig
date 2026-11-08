@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>支付栏目手续费配置 · 交互原型</title>
+<style>
+body{margin:0;background:#e9ebf0;font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif}
+.tabs{position:sticky;top:0;z-index:20;background:#1f2329;display:flex;flex-wrap:wrap;gap:4px;padding:8px 12px}
+.tabs button{background:transparent;color:#c9cdd4;border:0;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit}
+.tabs button.on{background:#409eff;color:#fff}
+.tabs .grp{color:#8f959e;font-size:12px;align-self:center;padding:0 6px 0 12px}
+section{display:none;padding:20px}
+section.on{display:block}
+.qtip{position:relative;display:inline-flex}
+.qtip .tip{display:none;position:absolute;left:22px;bottom:22px;width:320px;background:#303133;color:#fff;border-radius:4px;padding:10px 12px;font-size:12px;line-height:1.7;z-index:5;text-align:left;font-weight:400}
+.qtip:hover .tip,.qtip:focus-within .tip{display:block}
+.ph{font-family:'PingFang SC','Microsoft YaHei',Arial,sans-serif}
+.ph *{box-sizing:border-box}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;padding:7px 2px 6px;min-height:66px;border-radius:6px;background:#2a2b30;border:1.5px solid transparent;cursor:pointer;color:#fff;font-family:inherit;overflow:hidden}
+.tile.on{border-color:#ff4d6d;background:#3a1820}
+.tile svg,.tile .noimg{width:36px;height:36px;border-radius:6px;object-fit:cover;display:block}
+.tile .noimg{background:#4a4b52}
+.tile .nm{font-size:11px;line-height:14px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
+.rib{position:absolute;top:6px;left:-19px;width:64px;transform:rotate(-45deg);background:linear-gradient(90deg,#ff7a45,#ff4d6d);color:#ffe27a;font-size:9px;line-height:13px;text-align:center;font-weight:600;pointer-events:none}
+.feetag{font-size:9.5px;line-height:13px;color:#ffc46b;background:rgba(255,196,107,.15);border-radius:4px;padding:0 4px;white-space:nowrap}
+.sec{font-weight:600;font-size:14px;border-left:3px solid #ff4d6d;padding-left:7px;line-height:14px}
+.inp{display:flex;align-items:center;background:#1e1f24;border-radius:8px;padding:0 12px;height:44px;gap:8px}
+.inp input{flex:1;background:transparent;border:0;color:#fff;font-size:15px;outline:none;min-width:0;font-family:inherit}
+.amtbtn{height:40px;border-radius:6px;font-size:15px;cursor:pointer;font-family:inherit;color:#ff4d6d;background:transparent;border:1px solid #555}
+.amtbtn.on{border-color:#ff4d6d;background:#3a1820}
+.amtbtn{color:#fff}.amtbtn.on{color:#ff6b84}
+.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(0,0,0,.82);color:#fff;font-size:13px;padding:10px 16px;border-radius:8px;max-width:260px;text-align:center;display:none;z-index:9}
+</style>
+</head>
+<body>
+<nav class="tabs" aria-label="原型页面">
+<button type="button" data-t="spec" class="on">需求说明</button>
+<span class="grp">后台</span>
+<button type="button" data-t="col">支付栏目</button>
+<button type="button" data-t="orders">线上入款</button>
+<button type="button" data-t="report">充值报表</button>
+<span class="grp">前端</span>
+<button type="button" data-t="h5rec">充值中心</button>
+<button type="button" data-t="h5list">交易记录</button>
+</nav>
+
+<section id="spec" class="on"><div style="background:#fff;border-radius:8px;max-width:900px;margin:0 auto"><div style="box-sizing: border-box; padding: 48px 56px; color: #1f2329; font-size: 14px; line-height: 1.75; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="font-size: 12px; color: #646a73; letter-spacing: 1px">商户后台 · 支付管理</div>
+<h1 style="margin: 0; font-size: 28px; line-height: 1.3">支付栏目新增用户手续费配置</h1>
+<div style="font-size: 13px; color: #646a73">需求方：自来也（PHP）· 2026-11-08</div>
+</div>
+<div style="background: #f2f6fc; border-radius: 8px; padding: 16px 20px">
+<div style="font-weight: 600">目标</div>
+<div>支付宝、微信这类在线充值通道成本高。商户可对指定支付栏目向用户加收手续费，引导用户改用钱包充值。订单金额、到账金额、用户累计充值等原有口径都不变，只在订单上新增「手续费」和「实际支付金额」。</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 18px">一、后台配置（支付栏目新增 / 修改）</h2>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px">
+<li>新增「用户手续费」，三选一：不收取（默认）/ 固定金额 / 百分比。</li>
+<li>固定金额：每笔订单收取固定金额，单位元，大于 0，最多两位小数。</li>
+<li>百分比：按充值金额的比例收取，大于 0 且不超过 100，最多两位小数。</li>
+<li>适用范围：除银商充值类外，所有支付栏目都显示该配置。系统不区分人民币通道和钱包通道，所以虚拟币钱包这类栏目也能配置，商户一般不配。</li>
+<li>银商充值类栏目不显示该配置（不生成充值订单）。</li>
+<li>内嵌钱包不在支付栏目中配置，不支持手续费，本需求不改动。</li>
+<li>固定金额渠道提醒：有的支付渠道只收几个固定金额（如只收 300）。栏目开启手续费后，用户选 300 实际要付 306，这类渠道收不了。保存栏目时，若开启了手续费且该栏目下有只收固定金额的渠道，弹窗提醒「该栏目下有固定金额渠道：xxx。开启手续费后，这些渠道将无法匹配，用户可能看到暂无可用通道。」，可选择「返回修改」或「仍然保存」。</li>
+<li>修改后只对之后新发起的订单生效，已生成的订单不变。</li>
+<li>支付栏目列表新增「用户手续费」列：不收取显示「—」，固定金额显示「2.00 元/笔」，百分比显示「2%」，银商充值类栏目显示「不支持」。</li>
+<li>后台统一叫「用户手续费」，与托管支付订单里的托管平台手续费区分。</li>
+</ol>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 18px">二、计算规则</h2>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px">
+<li>手续费 = 固定金额；或 = 充值金额 × 百分比，四舍五入到分。</li>
+<li>实际支付金额 = 充值金额 + 手续费；向三方发起支付时按实际支付金额下单，支付渠道也按实际支付金额匹配。</li>
+<li>虚拟币/钱包类栏目配置后，对该栏目下所有支付渠道生效。</li>
+<li>单笔上下限、固定金额按钮的判断仍按充值金额。</li>
+<li>赠送金额仍按「充值金额 × 真实优惠比例」计算，不含手续费。</li>
+<li>三方回调的支付金额与实际支付金额不一致时，沿用现有处理方式。</li>
+</ol>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="border: 1px solid #dee0e3; border-radius: 8px; padding: 12px 16px"><div style="font-weight: 600">例 1：百分比 2%</div><div>充值 100.00 → 手续费 2.00</div><div>实际支付 102.00，到账 100.00</div></div>
+<div style="border: 1px solid #dee0e3; border-radius: 8px; padding: 12px 16px"><div style="font-weight: 600">例 2：固定 2 元/笔</div><div>充值 50.00 → 手续费 2.00</div><div>实际支付 52.00，到账 50.00</div></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 18px">三、订单与统计口径</h2>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px">
+<li>订单金额、到账金额都等于充值金额，不变；订单新增「手续费」「实际支付金额」。</li>
+<li>用户累计充值、首充判断、VIP 等级、充值稽核打码量、报表里的充值总额，都按充值金额，不受手续费影响。</li>
+<li>不收手续费的订单（含历史订单）：手续费显示 0.00，实际支付金额 = 充值金额。</li>
+</ol>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 18px">四、各端改动</h2>
+<table style="border-collapse: collapse; width: 100%; font-size: 13px">
+<thead><tr style="background: #f5f6f7"><th style="text-align: left; padding: 8px 10px; border: 1px solid #dee0e3; width: 150px">页面</th><th style="text-align: left; padding: 8px 10px; border: 1px solid #dee0e3">改动</th></tr></thead>
+<tbody>
+<tr><td style="padding: 8px 10px; border: 1px solid #dee0e3">后台 · 支付栏目</td><td style="padding: 8px 10px; border: 1px solid #dee0e3">新增/修改弹窗加「用户手续费」配置；列表加「用户手续费」列</td></tr>
+<tr><td style="padding: 8px 10px; border: 1px solid #dee0e3">后台 · 线上入款</td><td style="padding: 8px 10px; border: 1px solid #dee0e3">金额列加「用户手续费」「实际支付金额」；顶部统计加成功订单的手续费合计、实际支付合计；小计/总计行、导出同步</td></tr>
+<tr><td style="padding: 8px 10px; border: 1px solid #dee0e3">后台 · 充值报表</td><td style="padding: 8px 10px; border: 1px solid #dee0e3">在「充值总额」后加「实际支付总额」「手续费总额」两列；总计行、导出同步</td></tr>
+<tr><td style="padding: 8px 10px; border: 1px solid #dee0e3">前端 · 充值中心</td><td style="padding: 8px 10px; border: 1px solid #dee0e3">收费栏目图标标注手续费；选中后金额下实时显示手续费和实际支付金额；按钮显示实际支付金额；提示「使用钱包充值免手续费」，一键切到内嵌钱包</td></tr>
+<tr><td style="padding: 8px 10px; border: 1px solid #dee0e3">前端 · 交易记录</td><td style="padding: 8px 10px; border: 1px solid #dee0e3">有手续费的充值记录多显示一行「手续费 · 实际支付」</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div></section>
+
+<section id="col"><div style="max-width:1400px;margin:0 auto 12px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:10px 14px;font-size:13px;color:#614700;line-height:1.7"><b>需求说明：</b>支付栏目新增「用户手续费」：不收取 / 固定金额 / 百分比。系统不区分人民币通道和钱包通道，所以「虚拟币钱包」这类栏目也能配置，只是一般不配；银商充值类栏目不显示该配置。保存时若开启了手续费且栏目下有只收固定金额的渠道，弹窗提醒（可试：修改「支付宝」或「虚拟币钱包」→ 开启手续费 → 提交）。提交后前端充值中心同步生效。</div><div style="max-width:1400px;margin:0 auto;border-radius:6px;overflow:hidden"><div style="min-height: 900px; display: flex; flex-wrap: wrap; background: #f0f2f5; font-family: 'PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif; font-size: 13px; color: #303133; position: relative">
+<nav aria-label="侧边菜单" style="flex: 1 1 200px; max-width: 200px; background: #304156; color: #bfcbd9; display: flex; flex-direction: column">
+<div style="height: 50px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 600; background: #2b3a4d">test渠道</div>
+<div style="padding: 14px 20px">首页</div>
+<div style="padding: 14px 20px">会员管理</div>
+<div style="padding: 14px 20px; color: #ffffff">财务管理</div>
+<div style="padding: 12px 32px; color: #ffffff">支付管理</div>
+<div style="padding: 10px 44px">第三方代付</div>
+<div style="padding: 10px 44px; color: #409eff; background: #263445">支付栏目</div>
+<div style="padding: 10px 44px">支付商户配置</div>
+<div style="padding: 10px 44px">支付渠道管理</div>
+<div style="padding: 10px 44px">钱包类型</div>
+<div style="padding: 10px 44px">支付错误日志</div>
+<div style="padding: 12px 32px">充值管理</div>
+<div style="padding: 12px 32px">提现管理</div>
+<div style="padding: 14px 20px">报表查询</div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<div style="height: 50px; background: #ffffff; border-bottom: 1px solid #e6e6e6; display: flex; align-items: center; padding: 0 20px; gap: 8px">
+<span style="color: #909399">财务管理 / 支付管理 /</span><span>支付栏目</span>
+</div>
+<div style="margin: 16px; background: #ffffff; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 8px">
+<button type="button" style="background: #409eff; color: #ffffff; border: 0; border-radius: 4px; padding: 8px 16px; font-size: 13px; cursor: pointer" onclick="openDlg(null)">新增</button>
+</div>
+<div style="overflow-x: auto">
+<table style="border-collapse: collapse; width: 100%; min-width: 1100px">
+<thead>
+<tr style="background: #f5f7fa; color: #606266">
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">ID</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">商户</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">客户端显示名称</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">真实优惠百分比</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">用户端显示优惠百分比</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; background: #ecf5ff; color: #337ecc">用户手续费 <span style="font-size: 11px; background: #409eff; color: #ffffff; border-radius: 3px; padding: 0 4px">新</span></th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">支付方式</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">显示设备</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">排序</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">状态</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600">操作</th>
+</tr>
+</thead>
+<tbody id="colRows">
+
+</tbody>
+</table>
+</div>
+</div>
+</main>
+
+
+<div id="dlg" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.45);align-items:flex-start;justify-content:center;padding-top:48px">
+<div role="dialog" aria-label="修改支付栏目" style="width:640px;max-width:92%;background:#fff;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.18)">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #ebeef5"><div id="dlgTitle" style="font-size:16px;font-weight:600">修改</div><button type="button" aria-label="关闭" onclick="closeDlg()" style="border:0;background:transparent;font-size:18px;color:#909399;cursor:pointer;min-width:32px;min-height:32px">×</button></div>
+<div style="padding:20px 28px;display:flex;flex-direction:column;gap:14px;font-size:13px;color:#303133">
+<div style="display:flex;align-items:center;gap:12px"><label for="fName" style="width:150px;text-align:right;color:#606266">名称：</label><input id="fName" style="flex:1;border:1px solid #dcdfe6;border-radius:4px;padding:7px 10px"></div>
+<div style="display:flex;align-items:center;gap:12px"><label for="fCate" style="width:150px;text-align:right;color:#606266">支付方式：</label><select id="fCate" onchange="onCateChange()" style="flex:1;border:1px solid #dcdfe6;border-radius:4px;padding:7px 10px;background:#fff"></select></div>
+<div style="display:flex;align-items:center;gap:12px"><label for="fReal" style="width:150px;text-align:right;color:#606266">真实优惠比例：</label><input id="fReal" style="flex:1;border:1px solid #dcdfe6;border-radius:4px;padding:7px 10px"></div>
+<div style="display:flex;align-items:center;gap:12px"><label for="fShow" style="width:150px;text-align:right;color:#606266">用户端显示优惠比例：</label><input id="fShow" style="flex:1;border:1px solid #dcdfe6;border-radius:4px;padding:7px 10px"></div>
+<div style="display:flex;align-items:center;gap:12px"><label for="fMin" style="width:150px;text-align:right;color:#606266">单笔下限：</label><input id="fMin" style="flex:1;border:1px solid #dcdfe6;border-radius:4px;padding:7px 10px"></div>
+<div style="display:flex;align-items:center;gap:12px"><label for="fMax" style="width:150px;text-align:right;color:#606266">单笔上限：</label><input id="fMax" style="flex:1;border:1px solid #dcdfe6;border-radius:4px;padding:7px 10px"></div>
+<div id="feeArea" style="background:#f7fbff;border:1px dashed #a0cfff;border-radius:6px;padding:12px 0;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="width:162px;display:flex;justify-content:flex-end;align-items:center;gap:4px;color:#606266">用户手续费<span class="qtip"><button type="button" aria-label="用户手续费说明" style="width:16px;height:16px;border-radius:50%;border:1px solid #909399;background:#fff;color:#909399;font-size:11px;line-height:14px;padding:0;cursor:help">?</button><span class="tip" role="tooltip">用户充值时额外支付的费用，不计入到账金额和累计充值。百分比按充值金额计算，四舍五入到分；固定金额按每笔订单收取。对该栏目下所有支付渠道生效，钱包类栏目同样适用。修改后只对新发起的订单生效。</span></span>：</div>
+<div style="display:flex;gap:18px;align-items:center">
+<label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="ft" value="none" onchange="setFt(this.value)">不收取</label>
+<label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="ft" value="fixed" onchange="setFt(this.value)">固定金额</label>
+<label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="radio" name="ft" value="pct" onchange="setFt(this.value)">百分比</label>
+</div></div>
+<div id="feeValRow" style="display:flex;align-items:center;gap:12px"><label id="feeValLabel" for="fFee" style="width:162px;text-align:right;color:#606266"></label><div style="display:flex;border:1px solid #dcdfe6;border-radius:4px;overflow:hidden;width:220px"><input id="fFee" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')" style="flex:1;border:0;padding:7px 10px;min-width:0"><span id="feeUnit" style="background:#f5f7fa;border-left:1px solid #dcdfe6;padding:7px 12px;color:#909399"></span></div></div>
+</div>
+<div style="display:flex;align-items:center;gap:12px"><span style="width:150px;text-align:right;color:#606266">状态：</span><label style="display:flex;gap:6px;align-items:center"><input type="radio" name="st" checked>启用</label><label style="display:flex;gap:6px;align-items:center"><input type="radio" name="st">禁用</label></div>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;border-top:1px solid #ebeef5"><button type="button" onclick="closeDlg()" style="border:1px solid #dcdfe6;background:#fff;border-radius:4px;padding:8px 18px;cursor:pointer">关 闭</button><button type="button" onclick="saveDlg(false)" style="border:0;background:#409eff;color:#fff;border-radius:4px;padding:8px 18px;cursor:pointer">提交</button></div>
+</div></div>
+<div id="cf" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.35);align-items:flex-start;justify-content:center;padding-top:180px;z-index:6">
+<div role="alertdialog" aria-label="固定金额渠道提醒" style="width:440px;max-width:90%;background:#fff;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:20px 22px;font-size:13px;color:#303133;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:10px;align-items:center;font-size:15px;font-weight:600"><span style="width:20px;height:20px;border-radius:50%;background:#e6a23c;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px">!</span>提示</div>
+<div style="line-height:1.7">该栏目下有固定金额渠道：<ul id="cfList" style="margin:6px 0;padding-left:18px"></ul>开启手续费后，这些渠道将无法匹配，用户可能看到「暂无可用通道」。</div>
+<div style="display:flex;justify-content:flex-end;gap:10px"><button type="button" onclick="document.getElementById('cf').style.display='none'" style="border:1px solid #dcdfe6;background:#fff;border-radius:4px;padding:7px 16px;cursor:pointer">返回修改</button><button type="button" onclick="saveDlg(true)" style="border:0;background:#409eff;color:#fff;border-radius:4px;padding:7px 16px;cursor:pointer">仍然保存</button></div>
+</div></div>
+<div id="amsg" style="display:none;position:absolute;top:20px;left:50%;transform:translateX(-50%);background:#f0f9eb;border:1px solid #e1f3d8;color:#67c23a;border-radius:4px;padding:8px 16px;font-size:13px;z-index:7"></div>
+</div></div></section>
+
+<section id="orders"><div style="max-width:1400px;margin:0 auto 12px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:10px 14px;font-size:13px;color:#614700;line-height:1.7"><b>需求说明：</b>金额列新增「用户手续费」「实际支付金额」；顶部统计新增成功订单的手续费合计、实际支付合计；小计、总计、导出同步。充值金额、优惠金额口径不变。</div><div style="max-width:1400px;margin:0 auto;border-radius:6px;overflow:hidden"><div style="min-height: 900px; display: flex; flex-wrap: wrap; background: #f0f2f5; font-family: 'PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif; font-size: 13px; color: #303133">
+<nav aria-label="侧边菜单" style="flex: 1 1 200px; max-width: 200px; background: #304156; color: #bfcbd9; display: flex; flex-direction: column">
+<div style="height: 50px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 600; background: #2b3a4d">test渠道</div>
+<div style="padding: 14px 20px">首页</div>
+<div style="padding: 14px 20px">会员管理</div>
+<div style="padding: 14px 20px; color: #ffffff">财务管理</div>
+<div style="padding: 12px 32px">支付管理</div>
+<div style="padding: 12px 32px; color: #ffffff">充值管理</div>
+<div style="padding: 10px 44px; color: #409eff; background: #263445">线上入款</div><div style="padding: 10px 44px">托管支付订单</div>
+<div style="padding: 12px 32px">提现管理</div>
+<div style="padding: 14px 20px; color: #bfcbd9">报表查询</div>
+
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<div style="height: 50px; background: #ffffff; border-bottom: 1px solid #e6e6e6; display: flex; align-items: center; padding: 0 20px; gap: 8px"><span style="color: #909399">财务管理 / 充值管理 /</span><span>线上入款</span></div>
+<div style="margin: 16px; background: #ffffff; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; color: #606266">
+<span>用户ID</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; width: 120px; color: #c0c4cc">输入用户ID</span>
+<span>订单号</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; width: 140px; color: #c0c4cc">输入订单号</span>
+<span>支付方式</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; width: 110px; color: #c0c4cc">支付方式</span>
+<span>状态</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; width: 90px; color: #c0c4cc">请选择</span>
+<span>创建时间</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px">2026-11-08 00:00:00 - 2026-11-08 23:59:59</span>
+<button type="button" style="background: #409eff; color: #ffffff; border: 0; border-radius: 4px; padding: 7px 16px">查询</button>
+<button type="button" style="background: #ffffff; border: 1px solid #dcdfe6; border-radius: 4px; padding: 7px 16px">导出线上入款列表</button>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center">
+<span>申请中金额：72.00</span><span>客服已处理金额：0.00</span><span>成功金额：100.00</span><span>失败金额：20.00</span>
+<span style="background: #ecf5ff; color: #337ecc; border-radius: 4px; padding: 3px 8px">成功手续费金额：2.00</span>
+<span style="background: #ecf5ff; color: #337ecc; border-radius: 4px; padding: 3px 8px">成功实际支付金额：102.00</span>
+</div>
+<div style="overflow-x: auto">
+<table style="border-collapse: collapse; width: 100%; min-width: 1280px; text-align: center">
+<thead><tr style="background: #f5f7fa; color: #606266">
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">商户</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">订单号</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">用户ID</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">会员层级</th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap; background: #ecf5ff; color: #337ecc">金额<span style="font-size: 11px; background: #409eff; color: #ffffff; border-radius: 3px; padding: 0 4px; margin-left: 4px">新</span></th>
+<th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">状态</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付分类</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付平台</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付方式</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付渠道</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">首充</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">申请时间/处理时间</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">操作人</th>
+</tr></thead>
+<tbody>
+
+<tr>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">test渠道</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">20261108151203001</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">100039429</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">渠道1 5000以上…</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; background: #f7fbff; text-align: left; line-height: 1.8; white-space: nowrap">
+<div>充值金额：100.00</div>
+<div>优惠金额：3.70</div>
+<div style="color: #337ecc">用户手续费：2.00</div>
+<div style="color: #337ecc; font-weight: 600">实际支付金额：102.00</div>
+</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; color: #67c23a">成功</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">线上存款</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">微信</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试代收通道渠道</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">否</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; white-space: nowrap">2026-11-08 15:12:03<br>2026-11-08 15:12:40</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle"></td>
+</tr>
+
+<tr>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">test渠道</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">20261108151530002</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">100039429</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">渠道1 5000以上…</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; background: #f7fbff; text-align: left; line-height: 1.8; white-space: nowrap">
+<div>充值金额：50.00</div>
+<div>优惠金额：0.00</div>
+<div style="color: #337ecc">用户手续费：2.00</div>
+<div style="color: #337ecc; font-weight: 600">实际支付金额：52.00</div>
+</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; color: #e6a23c">申请中</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">线上存款</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试代收通道</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">支付宝100-500</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">支付宝100-500</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">否</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; white-space: nowrap">2026-11-08 15:15:30<br></td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle"></td>
+</tr>
+
+<tr>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">test渠道</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">20261108143926065</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">100039429</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">渠道1 5000以上…</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; background: #f7fbff; text-align: left; line-height: 1.8; white-space: nowrap">
+<div>充值金额：22.00</div>
+<div>优惠金额：3.30</div>
+<div style="color: #337ecc">用户手续费：0.00</div>
+<div style="color: #337ecc; font-weight: 600">实际支付金额：22.00</div>
+</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; color: #e6a23c">申请中</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">虚拟币充值</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">no 钱包11</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试22</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">否</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; white-space: nowrap">2026-11-08 14:39:26<br></td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle"></td>
+</tr>
+
+<tr>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">test渠道</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">20261108143819787</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">100039429</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">渠道1 5000以上…</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; background: #f7fbff; text-align: left; line-height: 1.8; white-space: nowrap">
+<div>充值金额：20.00</div>
+<div>优惠金额：2.20</div>
+<div style="color: #337ecc">用户手续费：0.00</div>
+<div style="color: #337ecc; font-weight: 600">实际支付金额：20.00</div>
+</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; color: #f56c6c">失败</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">线上存款</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试代收通道</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试1</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">测试代收111</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle">否</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; white-space: nowrap">2026-11-08 14:38:19<br>2026-11-08 16:38:20</td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle"></td>
+</tr>
+
+<tr style="background: #fafafa">
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; font-weight: 600">小计</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle"></td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle"></td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle"></td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle; text-align: left; line-height: 1.8; white-space: nowrap"><div>充值 192.00</div><div>优惠送 9.20</div><div style="color: #337ecc">用户手续费 4.00</div><div style="color: #337ecc; font-weight: 600">实际支付 196.00</div></td>
+<td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; vertical-align: middle" colspan="8"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+</div></section>
+<section id="report"><div style="max-width:1400px;margin:0 auto 12px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:10px 14px;font-size:13px;color:#614700;line-height:1.7"><b>需求说明：</b>「充值总额」后新增「实际支付总额」「手续费总额」两列；总计行、导出同步。充值总额仍按充值金额统计。</div><div style="max-width:1400px;margin:0 auto;border-radius:6px;overflow:hidden"><div style="min-height: 900px; display: flex; flex-wrap: wrap; background: #f0f2f5; font-family: 'PingFang SC','Microsoft YaHei','Helvetica Neue',Arial,sans-serif; font-size: 13px; color: #303133">
+<nav aria-label="侧边菜单" style="flex: 1 1 200px; max-width: 200px; background: #304156; color: #bfcbd9; display: flex; flex-direction: column">
+<div style="height: 50px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 600; background: #2b3a4d">test渠道</div>
+<div style="padding: 14px 20px">首页</div>
+<div style="padding: 14px 20px">会员管理</div>
+<div style="padding: 14px 20px">财务管理</div>
+<div style="padding: 14px 20px">游戏管理</div>
+<div style="padding: 14px 20px">代理系统</div>
+<div style="padding: 14px 20px; color: #ffffff">报表查询</div>
+<div style="padding: 10px 32px">游戏记录</div>
+<div style="padding: 10px 32px">游戏报表</div>
+<div style="padding: 10px 32px">提现报表</div>
+<div style="padding: 10px 32px; color: #409eff; background: #263445">充值报表</div>
+<div style="padding: 10px 32px">资金明细</div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<div style="height: 50px; background: #ffffff; border-bottom: 1px solid #e6e6e6; display: flex; align-items: center; padding: 0 20px; gap: 8px"><span style="color: #909399">报表查询 /</span><span>充值报表</span></div>
+<div style="margin: 16px; background: #ffffff; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; color: #606266">
+<span>支付分类</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; width: 110px; color: #c0c4cc">选择支付分类</span>
+<span>支付平台</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; width: 110px; color: #c0c4cc">选择支付平台</span>
+<span>支付方式</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px; width: 110px; color: #c0c4cc">选择支付方式</span>
+<span>到账时间</span><span style="border: 1px solid #dcdfe6; border-radius: 4px; padding: 6px 10px">2026-11-08 00:00:00 - 2026-11-08 23:59:59</span>
+<button type="button" style="background: #409eff; color: #ffffff; border: 0; border-radius: 4px; padding: 7px 16px">查询</button>
+<button type="button" style="background: #ffffff; border: 1px solid #dcdfe6; border-radius: 4px; padding: 7px 16px">导出充值报表</button>
+</div>
+<div style="overflow-x: auto">
+<table style="border-collapse: collapse; width: 100%; min-width: 1500px; text-align: center">
+<thead><tr style="background: #f5f7fa; color: #606266"><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">序号</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付分类</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付类型</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付平台</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">支付方式</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">充值总额</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap; background: #ecf5ff; color: #337ecc">实际支付总额<span style="font-size: 11px; background: #409eff; color: #ffffff; border-radius: 3px; padding: 0 4px; margin-left: 4px">新</span></th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap; background: #ecf5ff; color: #337ecc">手续费总额<span style="font-size: 11px; background: #409eff; color: #ffffff; border-radius: 3px; padding: 0 4px; margin-left: 4px">新</span></th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">充值笔数</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">充值人数</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">成功笔数</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">成功率</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">十元级充值总额/人数</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">百元级充值总额/人数</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">千元级充值总额/人数</th><th style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; font-weight: 600; white-space: nowrap">万元级充值总额/人数</th></tr></thead>
+<tbody>
+<tr><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">1</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">线上充值</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">线上</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">测试</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">微信</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">1,000.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">1,020.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">20.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">12</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">5</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">10</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">83.3%</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">100.00 / 2</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">900.00 / 3</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td></tr>
+<tr><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">2</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">线上充值</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">线上</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">测试代收通道</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">支付宝100-500</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">500.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">520.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">20.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">15</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">6</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">10</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">66.7%</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">500.00 / 6</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td></tr>
+<tr><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">3</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">虚拟币充值</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">虚拟币</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">测试</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">no 钱包11</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">2,200.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">2,200.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">0.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">8</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">4</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">8</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">100.0%</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">200.00 / 2</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">2,000.00 / 2</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td></tr>
+<tr><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">4</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">人工存款</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">线下</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">—</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">—</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">3,000.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">3,000.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">0.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">3</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">3</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">3</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">100.0%</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">3,000.00 / 3</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td></tr>
+<tr style="background: #fafafa; font-weight: 600"><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">总计</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap"></td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap"></td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap"></td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap"></td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">6,700.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">6,740.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap; background: #f7fbff; font-weight: 600">40.00</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">38</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">18</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">31</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">81.6%</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">800.00 / 10</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">2,900.00 / 5</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">3,000.00 / 3</td><td style="padding: 12px 8px; border-bottom: 1px solid #ebeef5; white-space: nowrap">— / 0</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+</div></section>
+
+<section id="h5rec"><div style="display:flex;flex-wrap:wrap;gap:28px;justify-content:center;align-items:flex-start">
+<div class="ph" style="width:375px;height:812px;border-radius:28px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.25);flex:none;background:#000;color:#fff;font-size:13px;display:flex;flex-direction:column;position:relative">
+<div style="height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;flex:none"><span aria-hidden="true" style="width:56px;font-size:22px">‹</span><span style="font-size:16px;font-weight:600">充值中心</span><span style="width:56px;display:flex;justify-content:flex-end"><span style="background:#4f6bff;border-radius:12px;padding:2px 10px;font-size:12px">客服</span></span></div>
+<div style="flex:1;overflow-y:auto;display:flex;flex-direction:column">
+<div style="margin:2px 12px 0;border-radius:12px 12px 0 0;padding:14px 16px 26px;background:linear-gradient(90deg,#ff5f7e,#ff9a76);display:flex;justify-content:space-between;align-items:flex-start;flex:none"><div><div style="font-size:13px;opacity:.95">我的余额</div><div style="font-size:21px;font-weight:700">8,980.11 <span style="font-size:14px">⟳</span></div></div><div style="display:flex;flex-direction:column;gap:6px;margin-right:-16px"><button type="button" onclick="go('h5list')" style="background:#ffe9ee;color:#ff4d6d;border:0;border-radius:12px 0 0 12px;padding:3px 14px;font-size:12px;cursor:pointer">交易记录</button><span style="background:#ffe9ee;color:#ff4d6d;border-radius:12px 0 0 12px;padding:3px 14px;font-size:12px">提现</span></div></div>
+<div style="background:#111216;border-radius:14px 14px 0 0;margin-top:-14px;padding:14px 10px 16px;display:flex;flex-direction:column;gap:12px;flex:1">
+<div class="sec">支付方式</div>
+<div id="mGrid" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px"></div>
+<div id="panel" style="display:flex;flex-direction:column;gap:12px"></div>
+</div>
+</div>
+<div id="payBar" style="padding:8px 12px 10px;flex:none;background:#111216"><button id="payBtn" type="button" onclick="submitPay()" style="width:100%;height:46px;border-radius:23px;border:0;font-size:16px;font-weight:600;cursor:pointer;color:#fff;background:linear-gradient(90deg,#ff4d6d,#ff8a65)"></button></div>
+<div style="height:52px;flex:none;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center;text-align:center;font-size:11px;color:#9a9ca5;background:#111216;border-top:1px solid #222">
+<span>视频</span><span>抖阴</span><span>聊天</span><span>活动</span><span>游戏</span><span>我的</span></div>
+<div id="toast" class="toast" role="status"></div>
+</div>
+<div style="flex:1 1 320px;max-width:440px;background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:16px 18px;font-size:13px;color:#614700;line-height:1.7"><div style="font-weight:600;font-size:15px;margin-bottom:8px">需求说明 · 充值中心</div><ol style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px"><li>每种类型展示一个支付方式，交互按类型区分：<br>· 支付宝 / 微信 / USDT / 数字人民币 / 银联扫码 / 综合收款：输入金额或选固定金额<br>· 虚拟币钱包：先选支付渠道，再选金额<br>· 人工充值 / 银商充值：选银商跳转，不生成订单<br>· 内嵌钱包：用钱包币兑换（不在支付栏目配置，不支持手续费）</li><li>收手续费的栏目，图标下方标注「手续费 2%」或「手续费 2元/笔」；「送 x%」角标不变。</li><li>选中收费栏目且金额合法时，金额下方实时显示：充值金额、手续费、实际支付、到账金额。手续费 = 固定金额，或充值金额 × 比例（四舍五入到分）。</li><li>虚拟币钱包类栏目也可能被配置手续费（系统不区分通道类型），配置后对该栏目下所有支付渠道生效，展示方式相同。可在后台给「虚拟币钱包」配置后切过来查看。</li><li>单笔上下限、固定金额按钮仍按充值金额判断。</li><li>按钮显示「立即支付 ¥实际支付金额」；不收费栏目保持「立即充值」。</li><li>收费栏目下方提示「使用钱包充值免手续费」，点「去使用」切到排在最前的内嵌钱包；没有内嵌钱包时不显示。</li></ol></div></div></section>
+
+<section id="h5list"><div style="display:flex;flex-wrap:wrap;gap:28px;justify-content:center;align-items:flex-start">
+<div class="ph" style="width:375px;height:812px;border-radius:28px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.25);flex:none;background:#000;color:#fff;font-size:13px;display:flex;flex-direction:column">
+<div style="height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;flex:none"><button type="button" aria-label="返回" onclick="go('h5rec')" style="width:56px;height:44px;background:none;border:0;color:#fff;font-size:22px;text-align:left;cursor:pointer">‹</button><span style="font-size:16px;font-weight:600">交易记录</span><span style="width:56px"></span></div>
+<div style="display:flex;gap:18px;padding:6px 16px 10px;font-size:14px;color:#9a9ca5;flex:none"><span style="color:#fff;font-weight:600;border-bottom:2px solid #ff4d6d;padding-bottom:4px">充值</span><span>提现</span><span>消费</span><span>场馆</span><span>活动</span><span>主播</span></div>
+<div id="recList" style="flex:1;overflow-y:auto;padding:0 12px 14px;display:flex;flex-direction:column;gap:10px"></div></div>
+<div style="flex:1 1 320px;max-width:440px;background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:16px 18px;font-size:13px;color:#614700;line-height:1.7"><div style="font-weight:600;font-size:15px;margin-bottom:8px">需求说明 · 交易记录</div><ol style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px"><li>充值记录的金额仍显示充值金额（= 到账金额）。</li><li>有手续费的记录多显示一行「手续费 · 实际支付」；无手续费的不显示。</li><li>演示：在充值中心提交一笔收费订单后会出现在列表最上方。</li></ol></div></div></section>
+
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>Number(n).toFixed(2);
+const M=[{"id": "inner", "name": "内嵌钱包", "t": 4, "inner": true, "gift": "5", "min": 10, "max": 500000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#7b5cff\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"8\" y=\"11\" width=\"20\" height=\"15\" rx=\"3\"/><path d=\"M8 15h20\"/><path d=\"M22 20.5h2\"/><path d=\"M11 11l11-4 2 4\"/></g></svg>", "remark": "【官方推荐】娱乐充值就选钱包，多重好礼等你拿｜使用钱包充值笔笔加赠最高5%返利（系统自动派送）", "fixCh": []}, {"id": "98", "name": "虚拟币钱包", "cate": "虚拟币钱包", "t": 5, "gift": "3", "real": 3, "cmin": 10, "cmax": 100000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#4f6bff\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><ellipse cx=\"18\" cy=\"12\" rx=\"8\" ry=\"3\"/><path d=\"M10 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6\"/><path d=\"M10 18v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6\"/></g></svg>", "remark": "【官方推荐】使用（虚拟币）钱包充值笔笔加赠5%返利（自动派送5%）支持：微信、支付宝、银行卡自由交易，安全无忧，充提秒到账，让娱乐更简单提现更加方便丰厚！", "ch": [{"n": "万币钱包", "min": 10, "max": 1000, "fixed": [10, 50, 80, 100, 300, 500], "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#5865f2\"/><text x=\"18\" y=\"23.4\" text-anchor=\"middle\" font-size=\"15\" font-weight=\"700\" fill=\"#fff\" font-family=\"PingFang SC,Microsoft YaHei,Arial\">万</text></svg>"}, {"n": "365钱包", "min": 20, "max": 2000, "fixed": [20, 50, 100, 300, 600, 800], "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#e8590c\"/><text x=\"18\" y=\"22.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"700\" fill=\"#fff\" font-family=\"PingFang SC,Microsoft YaHei,Arial\">365</text></svg>"}, {"n": "988钱包", "min": 30, "max": 100, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#2f9e44\"/><text x=\"18\" y=\"22.0\" text-anchor=\"middle\" font-size=\"11\" font-weight=\"700\" fill=\"#fff\" font-family=\"PingFang SC,Microsoft YaHei,Arial\">988</text></svg>"}], "fixCh": ["万币钱包（只收 10/50/80/100/300/500）", "365钱包（只收 20/50/100/300/600/800）"]}, {"id": "201", "name": "USDT", "cate": "USDT", "t": 1, "gift": "", "real": 0, "min": 10, "max": 50000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#1f9e7a\"/><circle cx=\"18\" cy=\"18\" r=\"10\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><text x=\"18\" y=\"22.7\" text-anchor=\"middle\" font-size=\"13\" font-weight=\"700\" fill=\"#fff\" font-family=\"PingFang SC,Microsoft YaHei,Arial\">U</text></svg>", "remark": "【温馨提示】：USDT充值请在订单规定时间内完成支付，重复，修改金额方式等导致无法追回自行承担！", "fixCh": []}, {"id": "109", "name": "人工充值", "cate": "银商充值1", "t": 3, "gift": "1", "cmin": 10, "cmax": 10000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#ff8a3d\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"18\" cy=\"14\" r=\"4.5\"/><path d=\"M10 27c1-4.5 4.2-7 8-7s7 2.5 8 7\"/></g></svg>", "remark": "请选择下方银商联系充值，到账后由银商为您上分。", "fixCh": []}, {"id": "88", "name": "支付宝", "cate": "支付宝", "t": 1, "gift": "", "real": 0, "min": 10, "max": 2000, "fixed": [10, 50, 100, 300, 500], "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#1677ff\"/><text x=\"18\" y=\"24.1\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#fff\" font-family=\"PingFang SC,Microsoft YaHei,Arial\">支</text></svg>", "remark": "【温馨提示】：支付宝充值请在订单规定时间内完成支付，重复，修改金额方式等导致无法追回自行承担！", "fee": ["fixed", "2"], "fixCh": ["支付宝-精彩（只收 100/200/500/1000）", "支付宝-漫威（只收 10/30/50/100/200/500/1000）"]}, {"id": "87", "name": "微信", "cate": "微信", "t": 1, "gift": "5.55", "real": 3.7, "min": 30, "max": 200, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#07c160\"/><text x=\"18\" y=\"24.1\" text-anchor=\"middle\" font-size=\"17\" font-weight=\"700\" fill=\"#fff\" font-family=\"PingFang SC,Microsoft YaHei,Arial\">微</text></svg>", "remark": "【温馨提示】：微信充值请在订单规定时间内完成支付，重复，修改金额方式等导致无法追回自行承担！", "fee": ["pct", "2"], "fixCh": []}, {"id": "92", "name": "数字人民币", "cate": "数字人民币", "t": 1, "gift": "", "real": 0, "min": 100, "max": 5000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#d4380d\"/><circle cx=\"18\" cy=\"18\" r=\"10\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><text x=\"18\" y=\"23.0\" text-anchor=\"middle\" font-size=\"14\" font-weight=\"700\" fill=\"#fff\" font-family=\"PingFang SC,Microsoft YaHei,Arial\">¥</text></svg>", "remark": "【温馨提示】：数字人民币充值请在订单规定时间内完成支付，重复，修改金额方式等导致无法追回自行承担！", "fixCh": []}, {"id": "202", "name": "银联扫码", "cate": "银联扫码", "t": 1, "gift": "1", "real": 1, "min": 10, "max": 5000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#0a7a8a\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 13V9h4M23 9h4v4M27 23v4h-4M13 27H9v-4\"/><path d=\"M12 18h12\"/></g></svg>", "remark": "【温馨提示】：银联扫码充值请在订单规定时间内完成支付，重复，修改金额方式等导致无法追回自行承担！", "fee": ["pct", "1"], "fixCh": []}, {"id": "100", "name": "银商充值", "cate": "银商充值1", "t": 3, "gift": "2", "cmin": 100, "cmax": 10000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#c99a2e\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 15l2-6h14l2 6\"/><path d=\"M9 15c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3\"/><path d=\"M11 18v9h14v-9\"/></g></svg>", "remark": "请选择下方银商联系充值，到账后由银商为您上分。", "fixCh": []}, {"id": "203", "name": "综合收款", "cate": "综合收款", "t": 1, "gift": "", "real": 0, "min": 10, "max": 10000, "icon": "<svg viewBox=\"0 0 36 36\" width=\"36\" height=\"36\" aria-hidden=\"true\"><rect width=\"36\" height=\"36\" rx=\"8\" fill=\"#5b6b8c\"/><g fill=\"#fff\"><rect x=\"9\" y=\"9\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"20\" y=\"9\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"9\" y=\"20\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"20\" y=\"20\" width=\"3\" height=\"3\"/><rect x=\"24\" y=\"24\" width=\"3\" height=\"3\"/><rect x=\"20\" y=\"24\" width=\"3\" height=\"3\" opacity=\".6\"/><rect x=\"24\" y=\"20\" width=\"3\" height=\"3\" opacity=\".6\"/></g></svg>", "remark": "【温馨提示】：综合收款充值请在订单规定时间内完成支付，重复，修改金额方式等导致无法追回自行承担！", "fixCh": []}], YS=[{"n": "小欣欣", "r": "农", "lv": 1}, {"n": "财神爷", "r": "13213", "lv": 5}, {"n": "糖糖", "r": "建", "lv": 2}], TYPES={"1": "线上支付", "2": "公司入款", "3": "银商充值", "4": "钱包支付", "5": "虚拟币/钱包"};
+M.forEach(m=>{m.ft=m.fee?m.fee[0]:'none';m.fv=m.fee?m.fee[1]:'';});
+function go(t){document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===t));document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));window.scrollTo(0,0);if(t==='h5list')renderList();if(t==='h5rec')renderMethods();}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+/* ---------- 后台：支付栏目 ---------- */
+const MER={'103':'test渠道,mengduo69,卡卡西测试跟随渠道','111':'test渠道,test2渠道,beita00','131':'test渠道,mengduo69,卡卡西测试跟随渠道','167':'test渠道,mengduo69','169':'test渠道','170':'test渠道','174':'test渠道,mengduo69','175':'test渠道,mengduo69'};
+const COLS=M.filter(m=>!m.inner);
+const canFee=m=>m.t!==3;
+const feeText=m=>!canFee(m)?'<span style="color:#c0c4cc">不支持</span>':m.ft==='pct'?m.fv+'%':m.ft==='fixed'?money(m.fv)+' 元/笔':'—';
+const TD='padding:12px 8px;border-bottom:1px solid #ebeef5;white-space:nowrap';
+const BTN=(bg,txt,on)=>`<button type="button" ${on?`onclick="${on}"`:''} style="background:${bg};color:#fff;border:0;border-radius:3px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap">${txt}</button>`;
+function renderCols(){$('colRows').innerHTML=COLS.map(m=>`<tr style="text-align:center"><td style="${TD}">${m.id}</td><td style="${TD};max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${'全部'}</td><td style="${TD}">${m.name}</td><td style="${TD}">${money(m.real||0)}%</td><td style="${TD}">${money(m.gift||0)}%</td><td style="${TD};background:#f7fbff;font-weight:600">${feeText(m)}</td><td style="${TD}">${m.cate}<div style="font-size:11px;color:#909399">${TYPES[m.t]}</div></td><td style="${TD}">安卓与IOS</td><td style="${TD}">1</td><td style="${TD}">启用</td><td style="${TD}"><div style="display:flex;gap:6px;justify-content:center">${BTN('#f56c6c','关闭')}${BTN('#409eff','修改',`openDlg('${m.id}')`)}${BTN('#f56c6c','删除')}</div></td></tr>`).join('');}
+const CATES=[...new Map(COLS.map(m=>[m.cate,m.t])).entries()];
+$('fCate').innerHTML=CATES.map(([c,t])=>`<option value="${c}">${c}（${TYPES[t]}）</option>`).join('');
+let cur=null;
+function setFt(t){document.querySelectorAll('input[name=ft]').forEach(i=>i.checked=i.value===t);$('feeValRow').style.display=t==='none'?'none':'flex';$('feeValLabel').textContent=t==='pct'?'手续费比例：':'手续费金额：';$('feeUnit').textContent=t==='pct'?'%':'元/笔';if(t!=='none'&&!$('fFee').value)$('fFee').value='2';}
+function onCateChange(){const t=new Map(CATES).get($('fCate').value);$('feeArea').style.display=t===3?'none':'flex';}
+function openDlg(id){cur=COLS.find(m=>m.id===id)||null;$('dlgTitle').textContent=cur?'修改':'新增';$('fName').value=cur?cur.name:'';$('fCate').value=cur?cur.cate:CATES[0][0];$('fReal').value=cur?money(cur.real||0):'';$('fShow').value=cur?money(cur.gift||0):'';$('fMin').value=cur?(cur.cmin!=null?cur.cmin:(cur.min!=null?cur.min:'')):'';$('fMax').value=cur?(cur.cmax!=null?cur.cmax:(cur.max!=null?cur.max:'')):'';$('fFee').value=cur?cur.fv:'';setFt(cur?cur.ft:'none');onCateChange();$('dlg').style.display='flex';}
+function closeDlg(){$('dlg').style.display='none';}
+function saveDlg(force){if(cur&&canFee(cur)){const t=document.querySelector('input[name=ft]:checked').value;const v=$('fFee').value;if(t!=='none'&&!(Number(v)>0)){msg('请输入大于 0 的手续费');return;}if(t==='pct'&&Number(v)>100){msg('百分比不能超过 100');return;}
+ if(!force&&t!=='none'&&cur.fixCh.length){$('cfList').innerHTML=cur.fixCh.map(c=>'<li>'+c+'</li>').join('');$('cf').style.display='flex';return;}
+ cur.ft=t;cur.fv=t==='none'?'':v;renderCols();}$('cf').style.display='none';closeDlg();msg('保存成功');}
+let mt;function msg(t){const e=$('amsg');e.textContent=t;e.style.display='block';clearTimeout(mt);mt=setTimeout(()=>e.style.display='none',1600);}
+renderCols();
+/* ---------- 前端：充值中心 ---------- */
+const S={id:'87',ch:0,amount:'',open:false};
+const ruleText=m=>m.ft==='pct'?m.fv+'%':m.ft==='fixed'?m.fv+'元/笔':'';
+const hasFee=m=>canFee(m)&&m.ft!=='none'&&Number(m.fv)>0;
+const curM=()=>M.find(m=>m.id===S.id);
+function src(m){const c=m.t===5?(m.ch||[])[S.ch]:null;if(m.t===5)return c?{min:c.min,max:c.max,fixed:c.fixed}:null;return {min:m.min,max:m.max,fixed:m.fixed};}
+function tile(m,on,click){return `<button type="button" class="tile${on?' on':''}" aria-pressed="${on}" onclick="${click}">${m.icon||'<span class="noimg"></span>'}${m.gift&&Number(m.gift)>0?`<span class="rib">送${m.gift}%</span>`:''}<span class="nm">${m.name}</span>${hasFee(m)?`<span class="feetag">手续费 ${ruleText(m)}</span>`:''}</button>`;}
+function renderMethods(){$('mGrid').innerHTML=M.map(m=>tile(m,m.id===S.id,`pickM('${m.id}')`)).join('');renderPanel();}
+function pickM(id){S.id=id;S.ch=0;S.amount='';S.open=false;const s=src(curM());if(s&&s.fixed)S.amount=String(s.fixed[0]);renderMethods();}
+function pickCh(i){S.ch=i;S.amount='';const s=src(curM());if(s&&s.fixed)S.amount=String(s.fixed[0]);renderPanel();}
+function calc(){const m=curM(),s=src(m);if(!s)return {m,valid:false,amt:0,fee:0,pay:0};const amt=Number(S.amount);const valid=S.amount!==''&&!isNaN(amt)&&amt>=s.min&&amt<=s.max;const fee=!hasFee(m)?0:m.ft==='pct'?Math.round(amt*Number(m.fv))/100:Number(m.fv);return {m,s,amt,valid,fee,pay:Math.round((amt+fee)*100)/100};}
+function remarkHtml(m){const parts=(m.remark||'').split('｜').map(t=>`<div>${t}</div>`).join('');return `<div style="display:flex;justify-content:flex-end"><button type="button" onclick="S.open=!S.open;renderPanel()" style="border:1px solid #ff4d6d;color:#ff4d6d;background:transparent;border-radius:12px;padding:1px 10px;font-size:12px;cursor:pointer;font-family:inherit">${S.open?'收起':'展开'} ${S.open?'︿':'﹀'}</button></div><div style="font-size:12px;line-height:1.6;color:#e6e6e6;${S.open?'':'max-height:58px;overflow:hidden'}">${parts}</div>`;}
+function walletTarget(){return M.find(x=>x.inner);}
+function amountHtml(m,s){if(!s)return `<div class="sec">请选择充值金额</div>`;if(s.fixed)return `<div class="sec">请选择充值金额</div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">${s.fixed.map(a=>`<button type="button" class="amtbtn${String(a)===S.amount?' on':''}" onclick="S.amount='${a}';renderPanel()">${a}</button>`).join('')}</div>`;
+ return `<div class="sec">充值金额</div><div class="inp"><span style="color:#ccc">¥</span><label for="amt" style="position:absolute;left:-9999px">充值金额</label><input id="amt" inputmode="decimal" placeholder="${s.min}-${s.max}" value="${S.amount}" oninput="this.value=this.value.replace(/[^0-9.]/g,'');S.amount=this.value;renderFee()"></div>`;}
+function renderPanel(){const m=curM(),s=src(m);let h='';
+ if(m.t===4){h+=`<div style="display:flex;align-items:center;justify-content:space-between;background:#1e1f24;border-radius:8px;padding:10px 12px"><span>钱包币余额：<b style="color:#ff4d6d">0</b> ⟳</span><button type="button" onclick="toast('请先绑定手机号并注册钱包')" style="background:linear-gradient(90deg,#ffd27a,#ffb347);color:#5a3200;border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer;font-family:inherit">进入钱包</button></div>`+remarkHtml(m)+`<div class="sec">充值金额</div><div class="inp"><span style="color:#ccc">¥</span><label for="amt" style="position:absolute;left:-9999px">充值金额</label><input id="amt" inputmode="decimal" placeholder="${m.min}-${m.max}" value="${S.amount}" oninput="this.value=this.value.replace(/[^0-9.]/g,'');S.amount=this.value"></div>`;}
+ else if(m.t===3){h+=remarkHtml(m)+`<div class="sec">支付渠道</div>`+YS.map(y=>`<div style="display:flex;gap:10px;background:#1e1f24;border-radius:8px;padding:10px"><span style="width:60px;height:60px;border-radius:30px;background:#3a3b42;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#ffd27a">${y.n.slice(0,1)}</span><div style="flex:1;display:flex;flex-direction:column;gap:4px;min-width:0"><div style="display:flex;justify-content:space-between"><b style="font-size:14px">${y.n}</b><span style="color:#ffc53d;letter-spacing:1px">${'★'.repeat(y.lv)}</span></div><div style="font-size:12px;color:#ccc">${y.r}</div><button type="button" onclick="toast('跳转银商：${y.n}')" style="height:30px;border:0;border-radius:6px;background:linear-gradient(90deg,#ff8a65,#ff4d6d);color:#fff;font-weight:600;cursor:pointer;font-family:inherit">立即充值</button></div></div>`).join('');}
+ else{h+=remarkHtml(m);if(m.t===5){h+=`<div class="sec">支付渠道</div><div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px">${(m.ch||[]).map((c,i)=>tile({name:c.n,icon:c.icon,gift:m.gift},i===S.ch,`pickCh(${i})`)).join('')}</div>`;}
+  h+=amountHtml(m,s)+`<div id="feeBox"></div>`;}
+ $('panel').innerHTML=h;$('payBar').style.display=m.t===3?'none':'block';renderFee();}
+function renderFee(){const v=calc(),m=v.m,box=$('feeBox');const b=$('payBtn');
+ b.textContent=hasFee(m)&&v.valid?'立即支付 ¥'+money(v.pay):'立即充值';
+ if(!box)return;if(!(hasFee(m)&&v.valid)){box.innerHTML=hasFee(m)?walletHint():'';return;}
+ box.innerHTML=`<div style="background:#1e1f24;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;font-size:13px">
+<div style="display:flex;justify-content:space-between"><span style="color:#aaa">充值金额</span><span>¥${money(v.amt)}</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:#aaa">手续费（${ruleText(m)}）</span><span style="color:#ffc46b">+¥${money(v.fee)}</span></div>
+<div style="height:1px;background:#2c2c34"></div>
+<div style="display:flex;justify-content:space-between;font-size:15px;font-weight:600"><span>实际支付</span><span>¥${money(v.pay)}</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:#aaa">到账金额</span><span>¥${money(v.amt)}</span></div></div>`+walletHint();}
+function walletHint(){const w=walletTarget();if(!w)return '';return `<div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(110,124,255,.12);border:1px solid rgba(110,124,255,.35);border-radius:8px;padding:9px 12px"><span style="font-size:12px;color:#c9cdff">使用钱包充值免手续费</span><button type="button" onclick="pickM('${w.id}')" style="background:#6e7cff;color:#fff;border:0;border-radius:14px;padding:6px 12px;font-size:12px;min-height:30px;cursor:pointer;white-space:nowrap;font-family:inherit">去使用</button></div>`;}
+let tt;function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(tt);tt=setTimeout(()=>e.style.display='none',1600);}
+function submitPay(){const v=calc(),m=v.m;
+ if(m.t===5&&!(m.ch||[]).length){toast('请选择支付渠道');return;}
+ if(m.t===4){const a=Number(S.amount);if(!(a>=m.min&&a<=m.max)){toast('请输入'+m.min+'-'+m.max+'的金额');return;}toast('钱包币余额不足');return;}
+ if(!v.valid){toast(v.s&&v.s.fixed?'请选择充值金额':'请输入'+v.s.min+'-'+v.s.max+'的金额');return;}
+ const p=n=>String(n).padStart(2,'0');const d=new Date();const ts=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+ ORDERS.unshift({no:ts.replace(/\D/g,'')+String(Math.floor(Math.random()*1e6)).padStart(6,'0'),type:m.t===5?'虚拟币充值':'线上充值',st:'申请中',amt:v.amt,fee:v.fee,gift:Math.round(v.amt*(m.real||0))/100,t:ts});
+ toast('提交成功，正在跳转支付');setTimeout(()=>go('h5list'),900);}
+/* ---------- 前端：交易记录 ---------- */
+const ORDERS=[
+ {no:'20261108143926065029789',type:'虚拟币充值',st:'申请中',amt:22,fee:0,gift:3.30,t:'2026-11-08 14:39:26'},
+ {no:'20261108143819787002394',type:'线上充值',st:'申请中',amt:20,fee:0,gift:2.20,t:'2026-11-08 14:38:19'},
+ {no:'20261108120130112003311',type:'线上充值',st:'成功',amt:100,fee:2,gift:3.70,t:'2026-11-08 12:01:30'},
+ {no:'20261024110105013291',type:'人工充值',st:'成功',amt:1000,fee:0,gift:0,t:'2026-10-24 11:01:05'}];
+const stColor=s=>s==='成功'?'#5bd38b':s==='失败'?'#ff7a7a':'#ffc46b';
+function renderList(){$('recList').innerHTML=ORDERS.map(o=>`<div style="background:#1e1f24;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between"><span style="font-weight:600">${o.type}</span><span style="color:${stColor(o.st)};font-size:13px">${o.st}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:#aaa">订单号：${o.no}</span><span style="font-size:16px;font-weight:700">+${money(o.amt)}</span></div>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa"><span>时间：${o.t}</span>${o.gift?`<span>赠送金额+${money(o.gift)}</span>`:''}</div>
+${o.fee>0?`<div style="font-size:12px;color:#ffc46b">手续费 ${money(o.fee)} · 实际支付 ${money(o.amt+o.fee)}</div>`:''}</div>`).join('');}
+renderMethods();renderList();
+</script>
+</body>
+</html>
