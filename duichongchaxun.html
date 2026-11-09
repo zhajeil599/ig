@@ -74,7 +74,7 @@
         /* 任务列表 */
         .task-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .task-toolbar > div:last-child { display: flex; align-items: center; gap: 8px; }
-        .task-filter { height: 28px; width: 150px; padding: 0 10px; border: 1px solid #dcdfe6; border-radius: 3px; font-size: 13px; box-sizing: border-box; outline: none; }
+        .task-filter { height: 28px; width: 160px; padding: 0 10px; border: 1px solid #dcdfe6; border-radius: 3px; font-size: 13px; box-sizing: border-box; outline: none; }
         .task-filter:focus { border-color: #409eff; }
         .btn-plain {
             height: 28px; padding: 0 12px; border: 1px solid #dcdfe6; background: #fff; border-radius: 3px;
@@ -324,6 +324,7 @@
                 </i>
             </div>
             <div>
+                <input type="text" id="taskNoFilter" class="task-filter" placeholder="任务编号" onkeydown="if(event.key==='Enter')searchTasks()">
                 <input type="text" id="taskTargetFilter" class="task-filter" placeholder="目标会员ID" onkeydown="if(event.key==='Enter')searchTasks()">
                 <button class="btn-plain" onclick="searchTasks()">查询</button>
                 <button class="btn-plain" onclick="resetTasks()" style="margin-right:16px">重置</button>
@@ -395,8 +396,11 @@
                 <br>- 同一后台账号已有相同查询条件（彩种、当前期数、目标会员、追溯历史期数、命中对冲期数均相同）的任务在排队或处理中，提示"相同条件的查询任务正在处理中，请勿重复提交"，不生成任务。
                 <br>- 同一后台账号同时排队或处理中的任务最多 3 个，超出时提示"当前已有 3 个查询任务正在处理，请等待完成后再提交"。</li>
             <li><strong>任务列表：</strong>展示本商户后台账号提交的查询任务，按提交时间倒序，分页展示。列表内容：任务编号、查询条件（彩种、当前期数、目标会员、追溯历史期数、命中对冲期数）、提交人、提交时间及完成时间、状态、结果、操作。</li>
-            <li><strong>按目标会员ID查询：</strong>任务列表上方提供"目标会员ID"输入框及【查询】【重置】按钮，输入完整会员ID后点击【查询】（或回车），列表只显示该目标会员的查询任务；无匹配时显示"暂无查询任务"。点击【重置】清空输入并恢复全部任务。【刷新】保留当前查询条件。</li>
-            <li><strong>任务状态：</strong>排队中 → 处理中（展示处理进度）→ 已完成 / 失败；已完成的任务超过 7 天变为已过期，超过 30 天从列表自动删除。列表中存在排队中或处理中的任务时自动刷新状态，也可点击【刷新】手动更新。</li>
+            <li><strong>任务查询：</strong>任务列表上方提供"任务编号"、"目标会员ID"两个输入框及【查询】【重置】按钮。<br>
+                - 任务编号、目标会员ID均为精确匹配，需输入完整内容；可单独使用，也可同时填写（同时满足）。<br>
+                - 点击【查询】或回车后，列表只显示符合条件的任务；无匹配时显示"暂无查询任务"（包括已超过 30 天被删除的任务）。<br>
+                - 点击【重置】清空输入并恢复全部任务；【刷新】保留当前查询条件。</li>
+            <li><strong>任务状态：</strong>排队中 → 处理中（展示处理进度）→ 已完成 / 失败；已完成的任务超过 7 天变为已过期。列表中存在排队中或处理中的任务时自动刷新状态，也可点击【刷新】手动更新。</li>
             <li><strong>结果列：</strong>已完成的任务直接显示命中的疑似对冲关系个数及涉及期数；没有命中时显示"未命中"。其他状态显示"—"。</li>
             <li><strong>操作列：</strong>
                 <br>- 已完成：【查看结果】，进入查询结果页（未命中也可进入，结果页显示空状态提示）。
@@ -404,7 +408,8 @@
                 <br>- 失败：状态旁"?"悬浮显示失败原因；操作为【重新提交】，按原查询条件生成一条新任务，原失败任务保留。
                 <br>- 已过期：提示"结果已过期"，需重新提交查询。</li>
             <li><strong>查询结果页：</strong>顶部展示本次任务的任务编号、查询条件及结果生成时间。结果为任务完成时的数据，之后不再变化；如需最新数据，请重新提交查询。结果页的列表、筛选、详情、规则说明交互见下方第二部分。</li>
-            <li><strong>结果保留：</strong>查询结果保留 7 天，过期后不可查看。</li>
+            <li><strong>结果保留：</strong>查询结果保留 7 天，过期后不可查看，任务在列表中显示为"已过期"。</li>
+            <li><strong>任务记录保留：</strong>任务记录（含已完成、已过期、失败的任务）自提交之日起保留 30 天，超过 30 天后自动从任务列表删除，不可再查看或通过任务编号查到。排队中、处理中的任务不受影响。</li>
         </ul>
 
         <h5>二、对冲判定与结果展示</h5>
@@ -765,19 +770,21 @@
         }
     }
 
-    let taskTargetKey = '';
+    let taskTargetKey = '', taskNoKey = '';
     function searchTasks() {
+        taskNoKey = document.getElementById('taskNoFilter').value.trim();
         taskTargetKey = document.getElementById('taskTargetFilter').value.trim();
         renderTasks();
     }
     function resetTasks() {
+        document.getElementById('taskNoFilter').value = '';
         document.getElementById('taskTargetFilter').value = '';
-        taskTargetKey = '';
+        taskNoKey = taskTargetKey = '';
         renderTasks();
     }
 
     function renderTasks() {
-        const list = taskTargetKey ? tasks.filter(t => t.target === taskTargetKey) : tasks;
+        const list = tasks.filter(t => (!taskNoKey || t.no === taskNoKey) && (!taskTargetKey || t.target === taskTargetKey));
         document.getElementById('taskCount').textContent = `共 ${list.length} 条`;
         document.getElementById('taskBody').innerHTML = list.length ? list.map(t => `
             <tr class="${t.no === highlightNo ? 'row-new' : ''}">
