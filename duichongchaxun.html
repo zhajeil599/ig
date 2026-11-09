@@ -160,8 +160,6 @@
 
         .filter-row { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
         .filter-row .chip-list { flex: 1; margin-bottom: 0; }
-        .filter-row .play-filter { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #606266; white-space: nowrap; }
-        .filter-row select { height: 30px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 8px; font-size: 13px; min-width: 150px; }
 
         .btn-detail {
             background-color: #409eff; border: none; color: white; cursor: pointer;
@@ -365,13 +363,6 @@
             </div>
             <div class="filter-row">
                 <div class="chip-list" id="chipList"></div>
-                <div class="play-filter">
-                    对冲玩法
-                    <i class="help-icon">?
-                        <span class="tooltip-text">只看在所选玩法上出现疑似对冲的期数。下拉只列出本次结果中出现过对冲的玩法，括号内为涉及期数。</span>
-                    </i>
-                    <select id="playFilter" onchange="setPlayFilter(this.value)"></select>
-                </div>
             </div>
             <table class="main-table">
                 <thead id="tableHead"></thead>
@@ -428,7 +419,6 @@
             <li><strong>列表列固定，不按玩法分列：</strong>部分彩种可对冲玩法很多（如六合彩两面盘有正码一~六、特码、正码所有，共 46 个选项），按选项分列会导致列表过宽、大部分格子为空。因此所有彩种统一为固定 5 列：期数、会员账户、疑似对冲投注、其他投注、操作。<br>
                 - <strong>疑似对冲投注：</strong>只列出该会员在本组对冲关系中参与疑似对冲的投注，每项显示"玩法位置·选项 + 金额"（如"正码一·大 ¥100"、"特码·尾小 ¥100"），金额为该会员本期在该选项上的投注总额并高亮。同一对冲关系在本期多个玩法上都对冲时，在同一格内按玩法顺序依次排列。<br>
                 - <strong>其他投注：</strong>该会员本期除本组"疑似对冲投注"以外的投注金额合计（包括其他对冲关系中的投注、对冲玩法中未命中对冲的投注，以及豹子、特码号码等非对冲玩法），无则留空；明细在详情中查看。</li>
-            <li><strong>按对冲玩法筛选：</strong>结果页右上方提供"对冲玩法"下拉，选项只列出本次结果中出现过疑似对冲的玩法位置（如正码一、特码、正码所有），括号内显示涉及期数；选中后只看在该玩法上出现疑似对冲的期数。可与对冲关系筛选同时使用。</li>
             <li><strong>"疑似"文案：</strong>查询结果仅为按规则筛出的疑似对冲，由商户自行判断。页面中所有描述判定结果的文案均需带"疑似"，包括：任务列表结果列、结果汇总、对冲关系筛选项、对冲标签、详情标题、本期对冲关系、注单明细中的对冲标记。功能名称（对冲查询、对冲规则说明）、查询条件名称及任务状态不加。</li>
             <li><strong>商户区分：</strong>与目标会员同商户（包括子商户）的会员，整行数据红色字体，账号完整显示，括号内显示所属商户名；其他商户的会员，整行数据黄色字体，账号只显示前2位+***+后4位，括号内显示"其他"。</li>
             <li><strong>账号保护：</strong>其他商户会员的完整账号在页面、详情及任务结果中均不得出现，一律显示脱敏账号。</li>
@@ -511,7 +501,7 @@
                 </ul>
 
                 <h4>七、列表里显示哪些玩法</h4>
-                列表里每一组是一期里的一个对冲关系。同一期如果有好几个对冲关系（比如 B 一个人跟目标会员对冲，C+D 又组合对冲），这一期会分成好几组显示。<br>"疑似对冲投注"一列只显示本组这个对冲关系里的投注，例如"正码一·大 ¥100"，金额标黄，目标会员和对冲会员上下对照看。<br>这个会员这一期的其他投注合计放在"其他投注"一列，具体下了什么点"详情"查看。<br>玩法多的彩种（如六合彩），可以用右上方"对冲玩法"下拉只看某个玩法，比如只看"特码"。
+                列表里每一组是一期里的一个对冲关系。同一期如果有好几个对冲关系（比如 B 一个人跟目标会员对冲，C+D 又组合对冲），这一期会分成好几组显示。<br>"疑似对冲投注"一列只显示本组这个对冲关系里的投注，例如"正码一·大 ¥100"，金额标黄，目标会员和对冲会员上下对照看。<br>这个会员这一期的其他投注合计放在"其他投注"一列，具体下了什么点"详情"查看。<br>
 
                 <h4>八、哪些玩法算"相反"</h4>
                 <ul>
@@ -592,7 +582,7 @@
     };
     const CYCLE = ['P1', 'P2', 'P6', 'P5', 'P3', 'P4', 'P7', 'P1', 'P2', null, 'P5', 'P6', 'P1', 'P3', 'P2', 'P4', 'P7', 'P1'];
 
-    const state = { cfg: null, lottery: '', issues: [], rels: {}, filterKey: null, playKey: '', page: 1, pageSize: 5 };
+    const state = { cfg: null, lottery: '', issues: [], rels: {}, filterKey: null, page: 1, pageSize: 5 };
 
     /* ========== 工具函数 ========== */
     const mask = id => id.length > 6 ? id.slice(0, 2) + '***' + id.slice(-4) : id;
@@ -602,8 +592,6 @@
     const optName = (cfg, p, s) => s === 0 ? cfg.pairs[p].a : cfg.pairs[p].b;
     // 列表中的玩法简称：有位置的显示"位置·选项"（如 正码一·大），无位置的直接显示选项
     const cellLabel = (cfg, p, s) => (cfg.pairs[p].pos ? cfg.pairs[p].pos + '·' : '') + optName(cfg, p, s);
-    // 按对冲玩法筛选的分组键：有位置按位置（正码一/特码…），否则按玩法组（大小/单双…）
-    const playKeyOf = (cfg, p) => cfg.pairs[p].pos || cfg.pairs[p].g;
     const pad = n => String(n).padStart(2, '0');
     const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
@@ -819,7 +807,7 @@
         const t = tasks.find(x => x.no === no);
         const r = t.result;
         MEMBERS.T.id = t.target;
-        Object.assign(state, { cfg: r.cfg, lottery: t.lottery, issues: r.issues, rels: r.rels, filterKey: null, playKey: '', page: 1 });
+        Object.assign(state, { cfg: r.cfg, lottery: t.lottery, issues: r.issues, rels: r.rels, filterKey: null, page: 1 });
 
         const sep = '<span class="sep">|</span>';
         document.getElementById('resultCond').innerHTML =
@@ -837,7 +825,6 @@
             document.getElementById('summaryText').innerHTML =
                 `追溯 <b>${t.N}</b> 期（${r.first} ~ ${r.current}），命中对冲期数 ≥ <b>${t.M}</b> 期的疑似对冲关系 <b style="color:#f56c6c">${r.relCount}</b> 个，涉及 <b>${r.issues.length}</b> 期`;
             renderChips();
-            renderPlayFilter();
             renderHead();
             renderTable();
             panel.style.display = 'block';
@@ -870,22 +857,6 @@
         state.filterKey = k;
         state.page = 1;
         renderChips();
-        renderTable();
-    }
-
-    // 对冲玩法筛选：只列本次结果中出现过对冲的玩法，按玩法定义顺序
-    function renderPlayFilter() {
-        const cfg = state.cfg;
-        const cnt = {};
-        state.issues.forEach(it => new Set(it.rels.map(r => playKeyOf(cfg, r.p))).forEach(k => cnt[k] = (cnt[k] || 0) + 1));
-        const keys = [...new Set(cfg.pairs.map((_, p) => playKeyOf(cfg, p)))].filter(k => cnt[k]);
-        document.getElementById('playFilter').innerHTML =
-            `<option value="">全部</option>` + keys.map(k => `<option value="${k}">${k}（${cnt[k]}期）</option>`).join('');
-    }
-
-    function setPlayFilter(k) {
-        state.playKey = k;
-        state.page = 1;
         renderTable();
     }
 
@@ -925,7 +896,7 @@
         const recs = [];
         state.issues.forEach(it => {
             const keys = [...new Set(it.rels
-                .filter(r => (!state.filterKey || r.key === state.filterKey) && (!state.playKey || playKeyOf(cfg, r.p) === state.playKey))
+                .filter(r => (!state.filterKey || r.key === state.filterKey))
                 .map(r => r.key))].sort((a, b) => order.indexOf(a) - order.indexOf(b));
             keys.forEach(k => recs.push({ it, key: k, rels: it.rels.filter(r => r.key === k) }));
         });
