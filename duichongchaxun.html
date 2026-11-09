@@ -193,6 +193,8 @@
 
         .rel-box { background: #fafafa; border: 1px solid #ebeef5; border-radius: 4px; padding: 10px 14px; margin-bottom: 12px; }
         .rel-box .rel-title { font-size: 13px; color: #303133; font-weight: bold; margin-bottom: 6px; }
+        .chg, .chg strong { color: #f56c6c; }
+        .rel-line .diff { color: #e6a23c; margin-left: 4px; }
         .rel-line { font-size: 12px; color: #606266; line-height: 22px; }
         .rel-line .arrow { color: #909399; margin: 0 6px; }
         .c-same { color: #f56c6c; }
@@ -405,11 +407,15 @@
         <h5>二、对冲判定与结果展示</h5>
         <ul>
             <li><strong>查询范围：</strong>以【当前期数】为起点往前推 N 期（含当前期，N=追溯历史期数），检索目标会员在这些期内的注单，与全平台（含其他商户）同彩种同期注单进行比对。</li>
-            <li><strong>单人对冲：</strong>同一彩种、同一期、同一可对冲玩法下，其他会员投注了与目标会员相反的选项（如大/小、单/双），且金额与目标会员在该选项上的金额相等，即判定为对冲。<br>
+            <li><strong>单人对冲：</strong>同一彩种、同一期、同一可对冲玩法下，其他会员投注了与目标会员相反的选项（如大/小、单/双），且金额与目标会员在该选项上的金额相等<span class="chg">或在允许浮动范围内（见下方"金额浮动范围"）</span>，即判定为对冲。<br>
                 - 只要任意一个玩法满足即算，不要求双方投注玩法个数相同，双方的其他玩法不影响判定。例：目标会员下大100、双50、豹子20，对方只下小100，算对冲。</li>
-            <li><strong>组合对冲：</strong>同一期、同一玩法下，两名会员都投注了与目标会员相反的选项，且两人金额之和等于目标会员金额，判定为组合对冲。最多只按 2 人组合判定。<br>
-                - 单个会员金额已与目标会员相等的，按单人对冲处理，不再参与组合。<br>
+            <li><strong>组合对冲：</strong>同一期、同一玩法下，两名会员都投注了与目标会员相反的选项，且两人金额之和等于目标会员金额<span class="chg">或在允许浮动范围内</span>，判定为组合对冲。最多只按 2 人组合判定。<br>
+                - 单个会员金额已与目标会员相等<span class="chg">或在浮动范围内</span>的，按单人对冲处理，不再参与组合。<br>
                 - 同一期可能出现多个组合（如目标下小100，B、C、D 各下大50，则 B+C、B+D、C+D 均为组合），每个组合分别判定、分别统计。</li>
+            <li><span class="chg"><strong>金额浮动范围：</strong>为识别"庄下 100、闲下 99"这类故意错开少量金额的对冲，金额比对允许按目标会员的投注金额上下浮动。浮动范围由系统固定，商户不需要配置，查询条件中也不提供该项。<br>
+                - 判断依据为目标会员本期在该选项上的投注总额；单人对冲比对对方金额，组合对冲比对两人金额之和；浮动范围含边界值。<br>
+                - 统一按目标会员金额的 ±3% 浮动，即对方金额在目标金额的 97% ~ 103% 之间（含边界）均算对冲。例：目标 100，对方 97 ~ 103；目标 50，对方 48.5 ~ 51.5；目标 1000，对方 970 ~ 1030。<br>
+                - 金额存在差额的对冲，在详情的"本期对冲关系"中显示差额（如"差 ¥1"）；列表不单独标注，双方金额上下对照可直接看出。</span></li>
             <li><strong>命中对冲期数（累计，不要求连续）：</strong>按"对冲关系"分别统计——单人对冲按同一会员统计，组合对冲按同一对会员组合统计。某对冲关系在 N 期内与目标会员形成对冲的期数累计 ≥ M（M=命中对冲期数）时列出。同一期内同一对冲关系在多个玩法上都对冲，只计 1 期。</li>
             <li><strong>列表展示：</strong>以"一期内的一个对冲关系"为一组展示。同一期存在多个对冲关系（如单人对冲 B、组合对冲 C+D）时，该期按关系拆成多组展示，期数不唯一。记录按期数倒序，同一期内按上方对冲关系的顺序排列；同一期的多组之间用虚线分隔，不同期之间用实线分隔。<br>
                 - 每组首行为目标会员，其后为该对冲关系的会员（单人对冲 1 人，组合对冲 2 人）；期数、操作单元格在组内合并。<br>
@@ -478,32 +484,37 @@
                 <div class="eg">查询结果保留 7 天，过期后需要重新提交。查询失败的任务可以点【重新提交】再查一次。</div>
 
                 <h4>二、什么是对冲</h4>
-                同一个彩种、同一期，目标会员下了一边（比如"大"），另一个会员下了相反的一边（"小"），而且金额一样，就算一次对冲。这样两人不管开什么都一输一赢，只是在刷流水。
-                <div class="eg">例：第088期，A 下"大"100元，B 下"小"100元 → A 和 B 对冲。</div>
+                同一个彩种、同一期，目标会员下了一边（比如"大"），另一个会员下了相反的一边（"小"），而且金额一样或相差很少，就算一次对冲。这样两人不管开什么都一输一赢，只是在刷流水。
+                <div class="eg">例：第088期，A 下"大"100元，B 下"小"100元 → A 和 B 对冲；B 下"小"99元，也算对冲。</div>
 
-                <h4>三、只要有一个玩法对上就算</h4>
-                不需要两人下的玩法一模一样，只要其中一个玩法是反着下、金额一样，就算对冲。其他玩法不影响。
+                <h4>三、金额相差多少还算对冲</h4>
+                有些会员会故意错开一点金额（比如一个下 100，一个下 99）来躲避检查，所以系统会自动允许一定的差额，不需要自己设置。
+                <div class="eg">统一允许上下差 3%。例：目标下 100，对方下 97 ~ 103 都算；目标下 1000，对方下 970 ~ 1030 都算。</div>
+                组合对冲按两人加起来的金额比对，同样允许差 3%。有差额的对冲，在"详情"里会显示差了多少。
+
+                <h4>四、只要有一个玩法对上就算</h4>
+                不需要两人下的玩法一模一样，只要其中一个玩法是反着下、金额一样（或在允许差额内），就算对冲。其他玩法不影响。
                 <div class="eg">例：A 下了"大"100、"双"50、"豹子"20，B 只下了"小"100 → 也算对冲。点"详情"可以看到双方这一期下的所有注单。</div>
 
-                <h4>四、两个人凑一起也算（组合对冲）</h4>
-                两个会员都下了相反的一边，两人金额加起来刚好等于目标会员的金额，也算对冲，叫"组合对冲"。最多只看两个人的组合。
+                <h4>五、两个人凑一起也算（组合对冲）</h4>
+                两个会员都下了相反的一边，两人金额加起来等于目标会员的金额（或在上面的允许差额内），也算对冲，叫"组合对冲"。最多只看两个人的组合。
                 <div class="eg">例：A 下"小"100，B 下"大"50，C 下"大"50 → B+C 组合对冲，列表里 B 和 C 后面会标"疑似组合对冲1"。<br>
                     如果同一期还有 D 下"大"50，那 B+D、C+D 也都会算成组合，分别打上不同的组合标签；一个人参与了几个组合就会有几个标签。</div>
 
-                <h4>五、命中对冲期数怎么算</h4>
+                <h4>六、命中对冲期数怎么算</h4>
                 在"追溯历史期数"里，同一个对象（某一个会员，或者某两个会员的固定组合）跟目标会员对冲的期数加起来，达到"命中对冲期数"就会列出来。<strong>不需要连续</strong>，同一期在多个玩法上对冲也只算 1 期。
                 <div class="eg">例：追溯 50 期、命中对冲期数填 10。B 在这 50 期里有 12 期跟 A 对冲 → 列出；C 只有 6 期 → 不列出。</div>
 
-                <h4>六、颜色和账号怎么看</h4>
+                <h4>七、颜色和账号怎么看</h4>
                 <ul>
                     <li><span class="c-same">红色</span>：跟目标会员同一个商户（包括子商户）的会员，显示完整账号和商户名。</li>
                     <li><span class="c-other">黄色</span>：其他商户的会员，账号只显示前2位和后4位（如 60***1022），商户显示为"其他"，但仍可以查看详情。</li>
                 </ul>
 
-                <h4>七、列表里显示哪些玩法</h4>
+                <h4>八、列表里显示哪些玩法</h4>
                 列表里每一组是一期里的一个对冲关系。同一期如果有好几个对冲关系（比如 B 一个人跟目标会员对冲，C+D 又组合对冲），这一期会分成好几组显示。<br>"疑似对冲投注"一列只显示本组这个对冲关系里的投注，例如"正码一·大 ¥100"，金额标黄，目标会员和对冲会员上下对照看。<br>这个会员这一期的其他投注合计放在"其他投注"一列，具体下了什么点"详情"查看。<br>
 
-                <h4>八、哪些玩法算"相反"</h4>
+                <h4>九、哪些玩法算"相反"</h4>
                 <ul>
                     <li>快三、鱼虾蟹、PC28、一分六合彩：大 / 小、单 / 双</li>
                     <li>香港/澳门六合彩等：两面盘的正码一~六、特码各自的大 / 小、单 / 双、尾大 / 尾小，正码所有的总和大 / 总和小、总和单 / 总和双（红绿蓝波是三选一，不算）</li>
@@ -580,7 +591,9 @@
         P6: [{ m: 'T', p: 20, s: 0, amt: 100 }, { m: 'T', p: 7, s: 1, amt: 60 }, { m: 'T', p: 3, s: 0, amt: 30 }, { m: 'T', x: 1, amt: 30 }, { m: 'M1', p: 20, s: 1, amt: 100 }, { m: 'O2', p: 7, s: 0, amt: 60 }, { m: 'O2', x: 1, amt: 10 }],
         P7: [{ m: 'T', p: 21, s: 0, amt: 200 }, { m: 'T', p: 18, s: 1, amt: 50 }, { m: 'M2', p: 21, s: 1, amt: 120 }, { m: 'O1', p: 21, s: 1, amt: 80 }, { m: 'M1', p: 21, s: 1, amt: 80 }, { m: 'M1', p: 18, s: 0, amt: 50 }]
     };
-    const CYCLE = ['P1', 'P2', 'P6', 'P5', 'P3', 'P4', 'P7', 'P1', 'P2', null, 'P5', 'P6', 'P1', 'P3', 'P2', 'P4', 'P7', 'P1'];
+    // P8：金额错开少量的对冲（目标 100 / 对方 99；目标 300 / 组合 150+147）
+    PATTERNS.P8 = [{ m: 'T', p: 0, s: 0, amt: 100 }, { m: 'T', p: 1, s: 1, amt: 300 }, { m: 'T', x: 1, amt: 10 }, { m: 'M1', p: 0, s: 1, amt: 99 }, { m: 'M2', p: 1, s: 0, amt: 150 }, { m: 'O1', p: 1, s: 0, amt: 147 }];
+    const CYCLE = ['P8', 'P2', 'P6', 'P5', 'P3', 'P4', 'P7', 'P1', 'P2', null, 'P5', 'P6', 'P1', 'P3', 'P2', 'P4', 'P7', 'P8'];
 
     const state = { cfg: null, lottery: '', issues: [], rels: {}, filterKey: null, page: 1, pageSize: 5 };
 
@@ -595,6 +608,11 @@
     const pad = n => String(n).padStart(2, '0');
     const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
+    // 金额浮动范围：固定为目标会员金额的 ±3%（含边界），系统内置，商户不可配置
+    function tolerance(t) {
+        return t * 0.03 + 1e-9;
+    }
+
     // 找出某一期的对冲关系（单人 + 最多2人组合）
     function findRelations(bets, cfg) {
         const rels = [];
@@ -606,13 +624,15 @@
                 bets.filter(b => b.m !== 'T' && !b.x && b.p === p && b.s === 1 - s)
                     .forEach(b => opp[b.m] = (opp[b.m] || 0) + b.amt);
                 const ms = Object.keys(opp);
-                ms.forEach(m => { if (opp[m] === t) rels.push({ type: 'S', members: [m], p, s, amt: t, parts: [opp[m]] }); });
-                const small = ms.filter(m => opp[m] < t);
+                const tol = tolerance(t);
+                const near = v => Math.abs(v - t) <= tol;
+                ms.forEach(m => { if (near(opp[m])) rels.push({ type: 'S', members: [m], p, s, amt: t, parts: [opp[m]], sum: opp[m] }); });
+                const small = ms.filter(m => opp[m] < t - tol);
                 for (let i = 0; i < small.length; i++) {
                     for (let j = i + 1; j < small.length; j++) {
-                        if (opp[small[i]] + opp[small[j]] === t) {
+                        if (near(opp[small[i]] + opp[small[j]])) {
                             const pair = [small[i], small[j]].sort((a, b) => MEMBERS[a].id.localeCompare(MEMBERS[b].id));
-                            rels.push({ type: 'C', members: pair, p, s, amt: t, parts: pair.map(m => opp[m]) });
+                            rels.push({ type: 'C', members: pair, p, s, amt: t, parts: pair.map(m => opp[m]), sum: opp[small[i]] + opp[small[j]] });
                         }
                     }
                 }
@@ -964,10 +984,12 @@
             const info = state.rels[r.key];
             const group = cfg.pairs[r.p].g;
             const left = r.members.map((m, i) => `${accSpan(MEMBERS[m])} ${money(r.parts[i])}`).join(' + ');
-            const sumTxt = r.type === 'C' ? ` = ${money(r.amt)}` : '';
+            const sumTxt = r.type === 'C' ? ` = ${money(r.sum)}` : '';
+            const diff = r.sum - r.amt;
+            const diffTxt = diff ? `<span class="diff">（差 ${money(Math.abs(diff))}）</span>` : '';
             return `<div class="rel-line"><span class="tag ${info.type === 'S' ? 'tag-single' : 'tag-combo'}" style="margin:0 6px 0 0">${info.label}</span>
                 ${left}${sumTxt} 下【${group}】${optName(cfg, r.p, 1 - r.s)}
-                <span class="arrow">⇄</span> 目标会员 ${accSpan(MEMBERS.T)} 下【${group}】${optName(cfg, r.p, r.s)} ${money(r.amt)}</div>`;
+                <span class="arrow">⇄</span> 目标会员 ${accSpan(MEMBERS.T)} 下【${group}】${optName(cfg, r.p, r.s)} ${money(r.amt)}${diffTxt}</div>`;
         }).join('');
 
         const ms = issueMembers(it);
