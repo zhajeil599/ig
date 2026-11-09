@@ -325,10 +325,8 @@
             </div>
             <div>
                 <input type="text" id="taskNoFilter" class="task-filter" placeholder="任务编号" onkeydown="if(event.key==='Enter')searchTasks()">
-                <input type="text" id="taskTargetFilter" class="task-filter" placeholder="目标会员ID" onkeydown="if(event.key==='Enter')searchTasks()">
                 <button class="btn-plain" onclick="searchTasks()">查询</button>
                 <button class="btn-plain" onclick="resetTasks()" style="margin-right:16px">重置</button>
-                <span class="sub" id="taskCount" style="margin-right:10px"></span>
                 <button class="btn-plain" onclick="renderTasks()">刷新</button>
             </div>
         </div>
@@ -347,6 +345,7 @@
             </thead>
             <tbody id="taskBody"></tbody>
         </table>
+        <div class="pager" id="taskPager"></div>
     </div>
 
     <!-- ================= 页面二：查询结果列表 ================= -->
@@ -395,11 +394,11 @@
                 <br>- 所选彩种暂无可对冲玩法时，直接提示"该彩种暂无可对冲玩法"，不生成任务。
                 <br>- 同一后台账号已有相同查询条件（彩种、当前期数、目标会员、追溯历史期数、命中对冲期数均相同）的任务在排队或处理中，提示"相同条件的查询任务正在处理中，请勿重复提交"，不生成任务。
                 <br>- 同一后台账号同时排队或处理中的任务最多 3 个，超出时提示"当前已有 3 个查询任务正在处理，请等待完成后再提交"。</li>
-            <li><strong>任务列表：</strong>展示本商户后台账号提交的查询任务，按提交时间倒序，分页展示。列表内容：任务编号、查询条件（彩种、当前期数、目标会员、追溯历史期数、命中对冲期数）、提交人、提交时间及完成时间、状态、结果、操作。</li>
-            <li><strong>任务查询：</strong>任务列表上方提供"任务编号"、"目标会员ID"两个输入框及【查询】【重置】按钮。<br>
-                - 任务编号、目标会员ID均为精确匹配，需输入完整内容；可单独使用，也可同时填写（同时满足）。<br>
+            <li><strong>任务列表：</strong>展示本商户后台账号提交的查询任务，按提交时间倒序，分页展示，每页 10 条，列表底部显示总条数及翻页。新提交任务后自动回到第 1 页。列表内容：任务编号、查询条件（彩种、当前期数、目标会员、追溯历史期数、命中对冲期数）、提交人、提交时间及完成时间、状态、结果、操作。</li>
+            <li><strong>任务查询：</strong>任务列表上方提供"任务编号"输入框及【查询】【重置】按钮。<br>
+                - 任务编号为精确匹配，需输入完整编号。<br>
                 - 点击【查询】或回车后，列表只显示符合条件的任务；无匹配时显示"暂无查询任务"（包括已超过 30 天被删除的任务）。<br>
-                - 点击【重置】清空输入并恢复全部任务；【刷新】保留当前查询条件。</li>
+                - 点击【重置】清空输入并恢复全部任务；【刷新】保留当前查询条件及页码。</li>
             <li><strong>任务状态：</strong>排队中 → 处理中（展示处理进度）→ 已完成 / 失败；已完成的任务超过 7 天变为已过期。列表中存在排队中或处理中的任务时自动刷新状态，也可点击【刷新】手动更新。</li>
             <li><strong>结果列：</strong>已完成的任务直接显示命中的疑似对冲关系个数及涉及期数；没有命中时显示"未命中"。其他状态显示"—"。</li>
             <li><strong>操作列：</strong>
@@ -674,7 +673,14 @@
         { no: 'HQ2026110218051201', lottery: '一分快三', issue: '20261006088', target: '601691087', N: 50, M: 10, operator: 'admin01', submitAt: '2026-11-02 18:05:12', finishAt: '2026-11-02 18:06:47', status: 'done' },
         { no: 'HQ2026110217304001', lottery: '一分赛车', issue: '20261006060', target: '601691055', N: 30, M: 15, operator: 'ops_lily', submitAt: '2026-11-02 17:30:40', finishAt: '2026-11-02 17:31:22', status: 'done' },
         { no: 'HQ2026110215122001', lottery: '百人牛牛', issue: '20261006020', target: '601690012', N: 500, M: 20, operator: 'admin01', submitAt: '2026-11-02 15:12:20', finishAt: '2026-11-02 15:22:20', status: 'failed', reason: '查询数据量过大，处理超时。建议缩小追溯历史期数后重新提交。' },
-        { no: 'HQ2026102611080501', lottery: '一分时时彩', issue: '20261019045', target: '601691087', N: 100, M: 10, operator: 'admin01', submitAt: '2026-10-26 11:08:05', finishAt: '2026-10-26 11:09:30', status: 'expired' }
+        { no: 'HQ2026102611080501', lottery: '一分时时彩', issue: '20261019045', target: '601691087', N: 100, M: 10, operator: 'admin01', submitAt: '2026-10-26 11:08:05', finishAt: '2026-10-26 11:09:30', status: 'expired' },
+        { no: 'HQ2026102516204401', lottery: '香港六合彩', issue: '2026120', target: '601691087', N: 30, M: 5, operator: 'admin01', submitAt: '2026-10-25 16:20:44', finishAt: '2026-10-25 16:21:30', status: 'expired' },
+        { no: 'HQ2026102414031801', lottery: '一分赛车', issue: '20261017033', target: '601690512', N: 50, M: 10, operator: 'admin01', submitAt: '2026-10-24 14:03:18', finishAt: '2026-10-24 14:04:02', status: 'expired' },
+        { no: 'HQ2026102310452201', lottery: '极速百家乐', issue: '20261016088', target: '601690512', N: 80, M: 15, operator: 'admin01', submitAt: '2026-10-23 10:45:22', finishAt: '2026-10-23 10:46:10', status: 'expired' },
+        { no: 'HQ2026102217125001', lottery: 'PC28', issue: '3302105', target: '601688821', N: 50, M: 10, operator: 'admin01', submitAt: '2026-10-22 17:12:50', finishAt: '2026-10-22 17:13:21', status: 'expired' },
+        { no: 'HQ2026102111300901', lottery: '三分快三', issue: '20261014120', target: '601688821', N: 40, M: 8, operator: 'admin01', submitAt: '2026-10-21 11:30:09', finishAt: '2026-10-21 11:30:55', status: 'expired' },
+        { no: 'HQ2026102009154701', lottery: '一分11选5', issue: '20261013066', target: '601691087', N: 60, M: 12, operator: 'admin01', submitAt: '2026-10-20 09:15:47', finishAt: '2026-10-20 09:16:40', status: 'expired' },
+        { no: 'HQ2026101915481201', lottery: '澳门六合彩', issue: '2026291', target: '601690033', N: 20, M: 5, operator: 'admin01', submitAt: '2026-10-19 15:48:12', finishAt: '2026-10-19 15:49:01', status: 'expired' }
     ];
     tasks.filter(t => t.status === 'done').forEach(t => t.result = computeResult(t));
 
@@ -702,6 +708,7 @@
         const no = 'HQ' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + pad(++seq);
         tasks.unshift({ ...c, no, operator: OPERATOR, submitAt: fmt(d), finishAt: '', status: 'queued', progress: 0, wait: 3 });
         highlightNo = no;
+        taskPage.page = 1;
         showNotice('查询任务已提交，处理完成后可在下方列表点击【查看结果】');
         renderTasks();
         startTicker();
@@ -770,22 +777,31 @@
         }
     }
 
-    let taskTargetKey = '', taskNoKey = '';
+    let taskNoKey = '';
+    const taskPage = { page: 1, size: 10 };
     function searchTasks() {
         taskNoKey = document.getElementById('taskNoFilter').value.trim();
-        taskTargetKey = document.getElementById('taskTargetFilter').value.trim();
+        taskPage.page = 1;
         renderTasks();
     }
     function resetTasks() {
         document.getElementById('taskNoFilter').value = '';
-        document.getElementById('taskTargetFilter').value = '';
-        taskNoKey = taskTargetKey = '';
+        taskNoKey = '';
+        taskPage.page = 1;
         renderTasks();
     }
+    function goTaskPage(d) { taskPage.page += d; renderTasks(); }
 
     function renderTasks() {
-        const list = tasks.filter(t => (!taskNoKey || t.no === taskNoKey) && (!taskTargetKey || t.target === taskTargetKey));
-        document.getElementById('taskCount').textContent = `共 ${list.length} 条`;
+        const all = tasks.filter(t => !taskNoKey || t.no === taskNoKey);
+        const totalPage = Math.max(1, Math.ceil(all.length / taskPage.size));
+        if (taskPage.page > totalPage) taskPage.page = totalPage;
+        const list = all.slice((taskPage.page - 1) * taskPage.size, taskPage.page * taskPage.size);
+        document.getElementById('taskPager').innerHTML =
+            `<span>共 ${all.length} 条</span>
+             <button ${taskPage.page <= 1 ? 'disabled' : ''} onclick="goTaskPage(-1)">上一页</button>
+             <span>${taskPage.page} / ${totalPage}</span>
+             <button ${taskPage.page >= totalPage ? 'disabled' : ''} onclick="goTaskPage(1)">下一页</button>`;
         document.getElementById('taskBody').innerHTML = list.length ? list.map(t => `
             <tr class="${t.no === highlightNo ? 'row-new' : ''}">
                 <td>${t.no}</td>
