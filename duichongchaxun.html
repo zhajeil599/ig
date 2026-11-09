@@ -132,6 +132,7 @@
         th { background-color: #fafafa; color: #909399; font-weight: bold; white-space: nowrap; }
         td { color: #606266; }
         .main-table tbody tr.group-start td { border-top: 2px solid #dcdfe6; }
+        .main-table tbody tr.group-sub td { border-top: 1px dashed #dcdfe6; }
         .main-table td.acc { text-align: left; white-space: nowrap; }
         .main-table td.amt { font-variant-numeric: tabular-nums; }
         .main-table td.amt.hit { font-weight: bold; background: #fff7e6; }
@@ -147,6 +148,17 @@
         .tag-target { color: #909399; border-color: #d3d4d6; background: #f4f4f5; }
         .tag-single { color: #409eff; border-color: #b3d8ff; background: #ecf5ff; }
         .tag-combo { color: #9254de; border-color: #d3adf7; background: #f9f0ff; }
+
+        /* 疑似对冲投注单元格：只列命中玩法 */
+        .main-table td.hedge-cell { text-align: left; line-height: 1.9; }
+        .hb { display: inline-block; margin-right: 12px; white-space: nowrap; }
+        .hb .pl { color: inherit; }
+        .hb b { background: #fff7e6; padding: 0 4px; border-radius: 2px; margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+        .filter-row { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
+        .filter-row .chip-list { flex: 1; margin-bottom: 0; }
+        .filter-row .play-filter { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #606266; white-space: nowrap; }
+        .filter-row select { height: 30px; border: 1px solid #dcdfe6; border-radius: 4px; padding: 0 8px; font-size: 13px; min-width: 150px; }
 
         .btn-detail {
             background-color: #409eff; border: none; color: white; cursor: pointer;
@@ -241,14 +253,14 @@
                     <option value="一分时时彩">一分时时彩</option>
                     <option value="一分赛车">一分赛车</option>
                     <option value="一分11选5">一分11选5</option>
-                    <option value="一分快三" selected>一分快三</option>
+                    <option value="一分快三">一分快三</option>
                     <option value="一分六合彩">一分六合彩</option>
                     <option value="一分快乐十分">一分快乐十分</option>
                     <option value="鱼虾蟹">鱼虾蟹</option>
                     <option value="百人牛牛">百人牛牛</option>
                     <option value="香港六合彩">香港六合彩</option>
                     <option value="澳门六合彩旧">旧澳门六合彩</option>
-                    <option value="澳门六合彩">新澳门六合彩</option>
+                    <option value="澳门六合彩" selected>新澳门六合彩</option>
                     <option value="正澳门六合彩">正澳门六合彩</option>
                     <option value="三分快三">三分快三</option>
                     <option value="三分六合">三分六合</option>
@@ -345,7 +357,16 @@
                 <div id="summaryText"></div>
                 <div class="legend"><span class="lg-same">本商户（含子商户）</span><span class="lg-other">其他商户</span></div>
             </div>
-            <div class="chip-list" id="chipList"></div>
+            <div class="filter-row">
+                <div class="chip-list" id="chipList"></div>
+                <div class="play-filter">
+                    对冲玩法
+                    <i class="help-icon">?
+                        <span class="tooltip-text">只看在所选玩法上出现疑似对冲的期数。下拉只列出本次结果中出现过对冲的玩法，括号内为涉及期数。</span>
+                    </i>
+                    <select id="playFilter" onchange="setPlayFilter(this.value)"></select>
+                </div>
+            </div>
             <table class="main-table">
                 <thead id="tableHead"></thead>
                 <tbody id="tableBody"></tbody>
@@ -388,25 +409,28 @@
                 - 单个会员金额已与目标会员相等的，按单人对冲处理，不再参与组合。<br>
                 - 同一期可能出现多个组合（如目标下小100，B、C、D 各下大50，则 B+C、B+D、C+D 均为组合），每个组合分别判定、分别统计。</li>
             <li><strong>命中对冲期数（累计，不要求连续）：</strong>按"对冲关系"分别统计——单人对冲按同一会员统计，组合对冲按同一对会员组合统计。某对冲关系在 N 期内与目标会员形成对冲的期数累计 ≥ M（M=命中对冲期数）时列出。同一期内同一对冲关系在多个玩法上都对冲，只计 1 期。</li>
-            <li><strong>列表展示：</strong>按期数倒序，每期一组（期数、操作单元格合并），组内首行为目标会员，其后为该期命中的对冲会员；按该彩种的对冲玩法分列展示各会员的投注金额，参与对冲的金额加粗高亮。<br>
-                - 对冲会员账号后显示标签：疑似单人对冲 / 疑似组合对冲N（组合编号在本次查询结果内固定）；同一会员同期参与多个组合时打多个标签。<br>
-                - 列表上方展示本次命中的全部对冲关系及其命中期数，点击可筛选只看该关系涉及的期数。</li>
-            <li><strong>列表玩法列：</strong>只展示所选彩种的可对冲玩法（见下方"对冲玩法定义"），列固定，不随查询结果增减；某玩法本期无人下注时该列留空。<br>
-                - 每格展示该会员本期在该选项上的投注总额（不论是否参与对冲），参与疑似对冲的金额加粗高亮。<br>
-                - 非对冲玩法（如豹子、豹顺、特码等）不单独成列，合计金额展示在最后的"其他玩法"列，无则留空；明细在详情中查看。</li>
+            <li><strong>列表展示：</strong>以"一期内的一个对冲关系"为一组展示。同一期存在多个对冲关系（如单人对冲 B、组合对冲 C+D）时，该期按关系拆成多组展示，期数不唯一。记录按期数倒序，同一期内按上方对冲关系的顺序排列；同一期的多组之间用虚线分隔，不同期之间用实线分隔。<br>
+                - 每组首行为目标会员，其后为该对冲关系的会员（单人对冲 1 人，组合对冲 2 人）；期数、操作单元格在组内合并。<br>
+                - 对冲会员账号后显示本组对冲关系的标签：疑似单人对冲 / 疑似组合对冲N（组合编号在本次查询结果内固定）。<br>
+                - 列表上方展示本次命中的全部对冲关系及其命中期数，点击可筛选只看该关系的记录。<br>
+                - 分页按记录条数计算，底部显示"共 X 条（涉及 Y 期）"。</li>
+            <li><strong>列表列固定，不按玩法分列：</strong>部分彩种可对冲玩法很多（如六合彩两面盘有正码一~六、特码、正码所有，共 46 个选项），按选项分列会导致列表过宽、大部分格子为空。因此所有彩种统一为固定 5 列：期数、会员账户、疑似对冲投注、其他投注、操作。<br>
+                - <strong>疑似对冲投注：</strong>只列出该会员在本组对冲关系中参与疑似对冲的投注，每项显示"玩法位置·选项 + 金额"（如"正码一·大 ¥100"、"特码·尾小 ¥100"），金额为该会员本期在该选项上的投注总额并高亮。同一对冲关系在本期多个玩法上都对冲时，在同一格内按玩法顺序依次排列。<br>
+                - <strong>其他投注：</strong>该会员本期除本组"疑似对冲投注"以外的投注金额合计（包括其他对冲关系中的投注、对冲玩法中未命中对冲的投注，以及豹子、特码号码等非对冲玩法），无则留空；明细在详情中查看。</li>
+            <li><strong>按对冲玩法筛选：</strong>结果页右上方提供"对冲玩法"下拉，选项只列出本次结果中出现过疑似对冲的玩法位置（如正码一、特码、正码所有），括号内显示涉及期数；选中后只看在该玩法上出现疑似对冲的期数。可与对冲关系筛选同时使用。</li>
             <li><strong>"疑似"文案：</strong>查询结果仅为按规则筛出的疑似对冲，由商户自行判断。页面中所有描述判定结果的文案均需带"疑似"，包括：任务列表结果列、结果汇总、对冲关系筛选项、对冲标签、详情标题、本期对冲关系、注单明细中的对冲标记。功能名称（对冲查询、对冲规则说明）、查询条件名称及任务状态不加。</li>
             <li><strong>商户区分：</strong>与目标会员同商户（包括子商户）的会员，整行数据红色字体，账号完整显示，括号内显示所属商户名；其他商户的会员，整行数据黄色字体，账号只显示前2位+***+后4位，括号内显示"其他"。</li>
             <li><strong>账号保护：</strong>其他商户会员的完整账号在页面、详情及任务结果中均不得出现，一律显示脱敏账号。</li>
             <li><strong>详情展示：</strong>按期查看，顶部列出该期所有对冲关系的金额对应；下方展示目标会员及该期全部对冲会员在本期的所有投注（包括非对冲玩法，如豹子、豹顺等），命中对冲的投注高亮标注。</li>
             <li><strong>规则说明：</strong>查询页及结果页均提供"对冲规则说明"入口，用通俗文字和例子向商户说明判定规则、颜色含义及查询任务的使用方式，内容见页面弹窗。</li>
-            <li><strong>对冲玩法定义（列表按此分列）：</strong><br>
+            <li><strong>对冲玩法定义：</strong><br>
                 - 一分快三&三分快三&视讯五分快三&鱼虾蟹&一分六合彩&PC28：大&小；单&双<br>
                 - 一分赛车：大&小；单&双；和大&和小；和单&和双<br>
                 - 百人牛牛：蓝方胜&红方胜；龙&虎<br>
                 - 一分快乐十分：第一球两面，大&小；单&双。第八球两面，大&小；单&双。总和，大&小；单&双。<br>
                 - 极速百家乐：庄&闲<br>
                 - 一分时时彩&一分11选5：第一球两面，大&小；单&双。总和，大&小；单&双。<br>
-                - 香港六合彩&澳门六合彩(旧/新/正)&三分六合&视讯十分六合：两面盘，大&小；单&双。<br>
+                - 香港六合彩&澳门六合彩(旧/新/正)&三分六合&视讯十分六合：两面盘。正码一~正码六、特码，各自的大&小；单&双；尾大&尾小。正码所有，总和大&总和小；总和单&总和双。（红波/绿波/蓝波为三选一，不属于两两相反，不纳入对冲判定）<br>
                 - 一分/三分/五分动物彩、赛事：暂未定义对冲玩法，提交时提示"该彩种暂无可对冲玩法"。
             </li>
         </ul>
@@ -476,11 +500,12 @@
                 </ul>
 
                 <h4>七、列表里显示哪些玩法</h4>
-                列表只显示这个彩种可以对冲的玩法（如大、小、单、双），每格是这个会员这一期在该选项上下注的总金额，参与疑似对冲的金额会加粗标黄。<br>其他玩法（如豹子、特码）不单独列出，合计金额放在"其他玩法"一列，具体下了什么点"详情"查看。
+                列表里每一组是一期里的一个对冲关系。同一期如果有好几个对冲关系（比如 B 一个人跟目标会员对冲，C+D 又组合对冲），这一期会分成好几组显示。<br>"疑似对冲投注"一列只显示本组这个对冲关系里的投注，例如"正码一·大 ¥100"，金额标黄，目标会员和对冲会员上下对照看。<br>这个会员这一期的其他投注合计放在"其他投注"一列，具体下了什么点"详情"查看。<br>玩法多的彩种（如六合彩），可以用右上方"对冲玩法"下拉只看某个玩法，比如只看"特码"。
 
                 <h4>八、哪些玩法算"相反"</h4>
                 <ul>
-                    <li>快三、鱼虾蟹、PC28、六合彩类：大 / 小、单 / 双</li>
+                    <li>快三、鱼虾蟹、PC28、一分六合彩：大 / 小、单 / 双</li>
+                    <li>香港/澳门六合彩等：两面盘的正码一~六、特码各自的大 / 小、单 / 双、尾大 / 尾小，正码所有的总和大 / 总和小、总和单 / 总和双（红绿蓝波是三选一，不算）</li>
                     <li>赛车：大 / 小、单 / 双、冠亚和大 / 和小、和单 / 和双</li>
                     <li>时时彩、11选5：第一球大小单双、总和大小单双</li>
                     <li>快乐十分：第一球、第八球、总和的大小单双</li>
@@ -495,9 +520,21 @@
     /* ========== 彩种对冲玩法配置 ========== */
     const DXDS = [{ g: '大小', a: '大', b: '小' }, { g: '单双', a: '单', b: '双' }];
     const twoSide = (pos) => [
-        { g: pos + '两面', a: '大', b: '小', ha: pos + '大', hb: pos + '小' },
-        { g: pos + '两面', a: '单', b: '双', ha: pos + '单', hb: pos + '双' }
+        { g: pos + '两面', pos, a: '大', b: '小' },
+        { g: pos + '两面', pos, a: '单', b: '双' }
     ];
+    // 六合彩两面盘：正码一~六、特码 各有 大小/单双/尾大尾小；正码所有 有 总和大小/总和单双 → 共 23 组、46 个选项
+    const LHC_POS = ['正码一', '正码二', '正码三', '正码四', '正码五', '正码六', '特码'];
+    const LHC = [
+        ...LHC_POS.flatMap(pos => [
+            { g: '两面盘-' + pos, pos, a: '大', b: '小' },
+            { g: '两面盘-' + pos, pos, a: '单', b: '双' },
+            { g: '两面盘-' + pos, pos, a: '尾大', b: '尾小' }
+        ]),
+        { g: '两面盘-正码所有', pos: '正码所有', a: '总和大', b: '总和小' },
+        { g: '两面盘-正码所有', pos: '正码所有', a: '总和单', b: '总和双' }
+    ];
+    const LHC_EXTRA = { g: '特码', o: '49', odds: 47 };
     const CFG = {
         '一分快三':   { pairs: DXDS, extra: { g: '围骰', o: '豹子', odds: 150 } },
         '三分快三':   { pairs: DXDS, extra: { g: '围骰', o: '豹子', odds: 150 } },
@@ -505,12 +542,12 @@
         '鱼虾蟹':     { pairs: DXDS, extra: { g: '单骰', o: '鱼', odds: 1.98 } },
         'PC28':       { pairs: DXDS, extra: { g: '特码', o: '13', odds: 13.5 } },
         '一分六合彩': { pairs: DXDS, extra: { g: '特码', o: '49', odds: 47 } },
-        '香港六合彩': { pairs: DXDS, extra: { g: '特码', o: '49', odds: 47 } },
-        '澳门六合彩旧': { pairs: DXDS, extra: { g: '特码', o: '49', odds: 47 } },
-        '澳门六合彩': { pairs: DXDS, extra: { g: '特码', o: '49', odds: 47 } },
-        '正澳门六合彩': { pairs: DXDS, extra: { g: '特码', o: '49', odds: 47 } },
-        '三分六合':   { pairs: DXDS, extra: { g: '特码', o: '49', odds: 47 } },
-        '视讯十分六合': { pairs: DXDS, extra: { g: '特码', o: '49', odds: 47 } },
+        '香港六合彩': { pairs: LHC, extra: LHC_EXTRA },
+        '澳门六合彩旧': { pairs: LHC, extra: LHC_EXTRA },
+        '澳门六合彩': { pairs: LHC, extra: LHC_EXTRA },
+        '正澳门六合彩': { pairs: LHC, extra: LHC_EXTRA },
+        '三分六合':   { pairs: LHC, extra: LHC_EXTRA },
+        '视讯十分六合': { pairs: LHC, extra: LHC_EXTRA },
         '一分赛车':   { pairs: [...DXDS, { g: '冠亚和', a: '和大', b: '和小' }, { g: '冠亚和', a: '和单', b: '和双' }], extra: { g: '冠军', o: '01', odds: 9.8 } },
         '百人牛牛':   { pairs: [{ g: '胜负', a: '蓝方胜', b: '红方胜' }, { g: '龙虎', a: '龙', b: '虎' }], extra: { g: '牛牛', o: '蓝方牛9', odds: 8 } },
         '极速百家乐': { pairs: [{ g: '庄闲', a: '庄', b: '闲' }], extra: { g: '对子', o: '庄对', odds: 11 } },
@@ -537,11 +574,14 @@
         P2: [{ m: 'T', p: 0, s: 0, amt: 100 }, { m: 'O1', p: 0, s: 1, amt: 50 }, { m: 'M1', p: 0, s: 1, amt: 50 }],
         P3: [{ m: 'T', p: 1, s: 0, amt: 50 }, { m: 'O1', p: 1, s: 1, amt: 25 }, { m: 'M1', p: 1, s: 1, amt: 25 }],
         P4: [{ m: 'T', p: 0, s: 1, amt: 200 }, { m: 'M2', p: 0, s: 0, amt: 120 }, { m: 'O1', p: 0, s: 0, amt: 80 }, { m: 'M1', p: 0, s: 0, amt: 80 }],
-        P5: [{ m: 'T', p: 0, s: 0, amt: 100 }, { m: 'T', p: 1, s: 1, amt: 50 }, { m: 'T', x: 1, amt: 20 }, { m: 'M1', p: 0, s: 1, amt: 100 }, { m: 'M1', x: 1, amt: 5 }, { m: 'O2', p: 1, s: 0, amt: 50 }]
+        P5: [{ m: 'T', p: 0, s: 0, amt: 100 }, { m: 'T', p: 1, s: 1, amt: 50 }, { m: 'T', x: 1, amt: 20 }, { m: 'M1', p: 0, s: 1, amt: 100 }, { m: 'M1', x: 1, amt: 5 }, { m: 'O2', p: 1, s: 0, amt: 50 }],
+        // 以下仅六合彩类有效（p 序号超出其他彩种的玩法数时自动忽略）：p7=正码三单双，p18=特码大小，p20=特码尾大尾小，p21=正码所有总和大小
+        P6: [{ m: 'T', p: 20, s: 0, amt: 100 }, { m: 'T', p: 7, s: 1, amt: 60 }, { m: 'T', p: 3, s: 0, amt: 30 }, { m: 'T', x: 1, amt: 30 }, { m: 'M1', p: 20, s: 1, amt: 100 }, { m: 'O2', p: 7, s: 0, amt: 60 }, { m: 'O2', x: 1, amt: 10 }],
+        P7: [{ m: 'T', p: 21, s: 0, amt: 200 }, { m: 'T', p: 18, s: 1, amt: 50 }, { m: 'M2', p: 21, s: 1, amt: 120 }, { m: 'O1', p: 21, s: 1, amt: 80 }, { m: 'M1', p: 21, s: 1, amt: 80 }, { m: 'M1', p: 18, s: 0, amt: 50 }]
     };
-    const CYCLE = ['P1', 'P2', 'P5', 'P3', 'P4', null, 'P1', 'P2', null, 'P5', 'P1', 'P3', 'P2', 'P4', 'P1'];
+    const CYCLE = ['P1', 'P2', 'P6', 'P5', 'P3', 'P4', 'P7', 'P1', 'P2', null, 'P5', 'P6', 'P1', 'P3', 'P2', 'P4', 'P7', 'P1'];
 
-    const state = { cfg: null, lottery: '', issues: [], rels: {}, filterKey: null, page: 1, pageSize: 5 };
+    const state = { cfg: null, lottery: '', issues: [], rels: {}, filterKey: null, playKey: '', page: 1, pageSize: 5 };
 
     /* ========== 工具函数 ========== */
     const mask = id => id.length > 6 ? id.slice(0, 2) + '***' + id.slice(-4) : id;
@@ -549,6 +589,10 @@
     const accSpan = m => `<span class="${m.same ? 'c-same' : 'c-other'}">${accText(m)}</span>`;
     const money = n => '¥' + n;
     const optName = (cfg, p, s) => s === 0 ? cfg.pairs[p].a : cfg.pairs[p].b;
+    // 列表中的玩法简称：有位置的显示"位置·选项"（如 正码一·大），无位置的直接显示选项
+    const cellLabel = (cfg, p, s) => (cfg.pairs[p].pos ? cfg.pairs[p].pos + '·' : '') + optName(cfg, p, s);
+    // 按对冲玩法筛选的分组键：有位置按位置（正码一/特码…），否则按玩法组（大小/单双…）
+    const playKeyOf = (cfg, p) => cfg.pairs[p].pos || cfg.pairs[p].g;
     const pad = n => String(n).padStart(2, '0');
     const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
@@ -607,11 +651,14 @@
 
     /* ========== 查询任务 ========== */
     const OPERATOR = 'admin01';   // 当前登录的后台账号
+    const LOTTERY_NAME = { '澳门六合彩': '新澳门六合彩', '澳门六合彩旧': '旧澳门六合彩' };
+    const lname = v => LOTTERY_NAME[v] || v;
     const MAX_ACTIVE = 3;
     let seq = 0;
     let highlightNo = null;
 
     const tasks = [
+        { no: 'HQ2026110909321501', lottery: '澳门六合彩', issue: '2026312', target: '601691087', N: 50, M: 10, operator: 'admin01', submitAt: '2026-11-09 09:32:15', finishAt: '2026-11-09 09:34:02', status: 'done' },
         { no: 'HQ2026110218051201', lottery: '一分快三', issue: '20261006088', target: '601691087', N: 50, M: 10, operator: 'admin01', submitAt: '2026-11-02 18:05:12', finishAt: '2026-11-02 18:06:47', status: 'done' },
         { no: 'HQ2026110217304001', lottery: '一分赛车', issue: '20261006060', target: '601691055', N: 30, M: 15, operator: 'ops_lily', submitAt: '2026-11-02 17:30:40', finishAt: '2026-11-02 17:31:22', status: 'done' },
         { no: 'HQ2026110215122001', lottery: '百人牛牛', issue: '20261006020', target: '601690012', N: 500, M: 20, operator: 'admin01', submitAt: '2026-11-02 15:12:20', finishAt: '2026-11-02 15:22:20', status: 'failed', reason: '查询数据量过大，处理超时。建议缩小追溯历史期数后重新提交。' },
@@ -716,7 +763,7 @@
         document.getElementById('taskBody').innerHTML = tasks.length ? tasks.map(t => `
             <tr class="${t.no === highlightNo ? 'row-new' : ''}">
                 <td>${t.no}</td>
-                <td class="cond">${t.lottery} · 第 ${t.issue} 期<br><span class="sub">目标会员 ${t.target} · 追溯 ${t.N} 期 · 命中 ≥ ${t.M} 期</span></td>
+                <td class="cond">${lname(t.lottery)} · 第 ${t.issue} 期<br><span class="sub">目标会员 ${t.target} · 追溯 ${t.N} 期 · 命中 ≥ ${t.M} 期</span></td>
                 <td>${t.operator}</td>
                 <td>${t.submitAt}${t.finishAt ? `<br><span class="sub">${t.finishAt}</span>` : ''}</td>
                 <td>${statusHtml(t)}</td>
@@ -730,11 +777,11 @@
         const t = tasks.find(x => x.no === no);
         const r = t.result;
         MEMBERS.T.id = t.target;
-        Object.assign(state, { cfg: r.cfg, lottery: t.lottery, issues: r.issues, rels: r.rels, filterKey: null, page: 1 });
+        Object.assign(state, { cfg: r.cfg, lottery: t.lottery, issues: r.issues, rels: r.rels, filterKey: null, playKey: '', page: 1 });
 
         const sep = '<span class="sep">|</span>';
         document.getElementById('resultCond').innerHTML =
-            `任务编号 <b>${t.no}</b>${sep}彩种 <b>${t.lottery}</b>${sep}当前期数 <b>${t.issue}</b>${sep}目标会员 <b>${t.target}</b><br>` +
+            `任务编号 <b>${t.no}</b>${sep}彩种 <b>${lname(t.lottery)}</b>${sep}当前期数 <b>${t.issue}</b>${sep}目标会员 <b>${t.target}</b><br>` +
             `追溯 <b>${t.N}</b> 期${sep}命中对冲期数 ≥ <b>${t.M}</b> 期${sep}结果生成时间 <b>${t.finishAt}</b>`;
 
         const empty = document.getElementById('emptyState');
@@ -748,6 +795,7 @@
             document.getElementById('summaryText').innerHTML =
                 `追溯 <b>${t.N}</b> 期（${r.first} ~ ${r.current}），命中对冲期数 ≥ <b>${t.M}</b> 期的疑似对冲关系 <b style="color:#f56c6c">${r.relCount}</b> 个，涉及 <b>${r.issues.length}</b> 期`;
             renderChips();
+            renderPlayFilter();
             renderHead();
             renderTable();
             panel.style.display = 'block';
@@ -783,10 +831,31 @@
         renderTable();
     }
 
+    // 对冲玩法筛选：只列本次结果中出现过对冲的玩法，按玩法定义顺序
+    function renderPlayFilter() {
+        const cfg = state.cfg;
+        const cnt = {};
+        state.issues.forEach(it => new Set(it.rels.map(r => playKeyOf(cfg, r.p))).forEach(k => cnt[k] = (cnt[k] || 0) + 1));
+        const keys = [...new Set(cfg.pairs.map((_, p) => playKeyOf(cfg, p)))].filter(k => cnt[k]);
+        document.getElementById('playFilter').innerHTML =
+            `<option value="">全部</option>` + keys.map(k => `<option value="${k}">${k}（${cnt[k]}期）</option>`).join('');
+    }
+
+    function setPlayFilter(k) {
+        state.playKey = k;
+        state.page = 1;
+        renderTable();
+    }
+
     function renderHead() {
-        const cols = state.cfg.pairs.flatMap(p => [p.ha || p.a, p.hb || p.b]);
         document.getElementById('tableHead').innerHTML =
-            `<tr><th>期数</th><th>会员账户</th>${cols.map(c => `<th>${c}</th>`).join('')}<th>其他玩法<i class="help-icon">?<span class="tooltip-text">该会员本期在非对冲玩法（如豹子、特码）上的投注合计，具体投注点“详情”查看。</span></i></th><th>操作</th></tr>`;
+            `<tr>
+                <th width="11%">期数</th>
+                <th width="27%">会员账户</th>
+                <th>疑似对冲投注<i class="help-icon">?<span class="tooltip-text">只列出该会员在本条对冲关系中参与疑似对冲的投注（玩法位置·选项 + 金额），目标会员与对冲会员上下对照查看。</span></i></th>
+                <th width="11%">其他投注<i class="help-icon">?<span class="tooltip-text">该会员本期除左侧疑似对冲投注以外的投注合计（含其他对冲关系中的投注、未对上的大小单双、豹子、特码号码等），具体投注点“详情”查看。</span></i></th>
+                <th width="9%">操作</th>
+            </tr>`;
     }
 
     function issueMembers(it) {
@@ -805,29 +874,56 @@
         return labels.map(l => `<span class="tag ${l.includes('单人') ? 'tag-single' : 'tag-combo'}">${l}</span>`).join('');
     }
 
+    const tagHtml = l => `<span class="tag ${l.includes('单人') ? 'tag-single' : 'tag-combo'}">${l}</span>`;
+
+    // 结果记录：一期内每个对冲关系为一组；同一期有多个对冲关系时，这一期展示多次
+    function buildRecords() {
+        const cfg = state.cfg;
+        const order = Object.keys(state.rels);
+        const recs = [];
+        state.issues.forEach(it => {
+            const keys = [...new Set(it.rels
+                .filter(r => (!state.filterKey || r.key === state.filterKey) && (!state.playKey || playKeyOf(cfg, r.p) === state.playKey))
+                .map(r => r.key))].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+            keys.forEach(k => recs.push({ it, key: k, rels: it.rels.filter(r => r.key === k) }));
+        });
+        return recs;
+    }
+
     function renderTable() {
         const cfg = state.cfg;
-        const rows = state.filterKey ? state.issues.filter(it => it.rels.some(r => r.key === state.filterKey)) : state.issues;
-        const totalPage = Math.max(1, Math.ceil(rows.length / state.pageSize));
+        const recs = buildRecords();
+        const totalPage = Math.max(1, Math.ceil(recs.length / state.pageSize));
         if (state.page > totalPage) state.page = totalPage;
-        const pageRows = rows.slice((state.page - 1) * state.pageSize, state.page * state.pageSize);
+        const pageRecs = recs.slice((state.page - 1) * state.pageSize, state.page * state.pageSize);
 
         let html = '';
-        pageRows.forEach(it => {
-            const ms = issueMembers(it);
+        pageRecs.forEach((rec, i) => {
+            const it = rec.it;
+            const info = state.rels[rec.key];
+            const sameIssue = i > 0 && pageRecs[i - 1].it.issue === it.issue;
+            const ms = ['T', ...info.members];
             ms.forEach((m, idx) => {
                 const mem = MEMBERS[m];
-                let tr = `<tr class="${mem.same ? 'row-same' : 'row-other'} ${idx === 0 ? 'group-start' : ''}">`;
+                let tr = `<tr class="${mem.same ? 'row-same' : 'row-other'} ${idx === 0 ? (sameIssue ? 'group-sub' : 'group-start') : ''}">`;
                 if (idx === 0) tr += `<td rowspan="${ms.length}">${it.issue}</td>`;
-                tr += `<td class="acc c-color">${accText(mem)}${memberTags(it, m)}</td>`;
-                cfg.pairs.forEach((_, p) => {
-                    [0, 1].forEach(s => {
-                        const amt = it.bets.filter(b => b.m === m && !b.x && b.p === p && b.s === s).reduce((a, b) => a + b.amt, 0);
-                        tr += `<td class="amt c-color ${amt && isHit(it, m, p, s) ? 'hit' : ''}">${amt || ''}</td>`;
-                    });
+                const tag = m === 'T' ? '<span class="tag tag-target">目标会员</span>' : tagHtml(info.label);
+                tr += `<td class="acc c-color">${accText(mem)}${tag}</td>`;
+                // 疑似对冲投注：只列本条对冲关系命中的选项，按玩法顺序
+                const hits = [];
+                let hitSum = 0;
+                [...rec.rels].sort((a, b) => a.p - b.p).forEach(r => {
+                    const s = m === 'T' ? r.s : 1 - r.s;
+                    const amt = it.bets.filter(b => b.m === m && !b.x && b.p === r.p && b.s === s).reduce((a, b) => a + b.amt, 0);
+                    if (amt) {
+                        hits.push(`<span class="hb"><span class="pl">${cellLabel(cfg, r.p, s)}</span><b>${money(amt)}</b></span>`);
+                        hitSum += amt;
+                    }
                 });
-                const other = it.bets.filter(b => b.m === m && b.x).reduce((a, b) => a + b.amt, 0);
-                tr += `<td class="amt c-color">${other || ''}</td>`;
+                const total = it.bets.filter(b => b.m === m).reduce((a, b) => a + b.amt, 0);
+                const other = total - hitSum;
+                tr += `<td class="hedge-cell c-color">${hits.join('')}</td>`;
+                tr += `<td class="amt c-color">${other ? money(other) : ''}</td>`;
                 if (idx === 0) tr += `<td rowspan="${ms.length}"><button class="btn-detail" onclick="viewDetail('${it.issue}')">详情</button></td>`;
                 tr += '</tr>';
                 html += tr;
@@ -835,8 +931,9 @@
         });
         document.getElementById('tableBody').innerHTML = html;
 
+        const issueCnt = new Set(recs.map(x => x.it.issue)).size;
         document.getElementById('pager').innerHTML =
-            `<span>共 ${rows.length} 期</span>
+            `<span>共 ${recs.length} 条（涉及 ${issueCnt} 期）</span>
              <button ${state.page <= 1 ? 'disabled' : ''} onclick="goPage(-1)">上一页</button>
              <span>${state.page} / ${totalPage}</span>
              <button ${state.page >= totalPage ? 'disabled' : ''} onclick="goPage(1)">下一页</button>`;
@@ -848,7 +945,7 @@
     function viewDetail(issue) {
         const it = state.issues.find(x => x.issue === issue);
         const cfg = state.cfg;
-        document.getElementById('detailTitle').textContent = `疑似对冲注单详情 · ${state.lottery} · 第 ${issue} 期`;
+        document.getElementById('detailTitle').textContent = `疑似对冲注单详情 · ${lname(state.lottery)} · 第 ${issue} 期`;
 
         document.getElementById('detailRels').innerHTML = it.rels.map(r => {
             const info = state.rels[r.key];
