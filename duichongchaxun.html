@@ -321,7 +321,7 @@
             <div class="section-title" style="margin:0">
                 查询任务
                 <i class="help-icon">?
-                    <span class="tooltip-text">提交后系统在后台处理，无需停留在本页。处理完成后点击【查看结果】查看疑似对冲列表。结果保留 7 天，过期需重新提交。</span>
+                    <span class="tooltip-text">提交后系统在后台处理，无需停留在本页。处理完成后点击【查看结果】查看疑似对冲列表。任务及结果保留 30 天，到期自动删除。</span>
                 </i>
             </div>
             <div>
@@ -393,16 +393,14 @@
                 - 任务编号为精确匹配，需输入完整编号。<br>
                 - 点击【查询】或回车后，列表只显示符合条件的任务；无匹配时显示"暂无查询任务"（包括已超过 30 天被删除的任务）。<br>
                 - 点击【重置】清空输入并恢复全部任务；【刷新】保留当前查询条件及页码。</li>
-            <li><strong>任务状态：</strong>排队中 → 处理中（展示处理进度）→ 已完成 / 失败；已完成的任务超过 7 天变为已过期。列表中存在排队中或处理中的任务时自动刷新状态，也可点击【刷新】手动更新。</li>
+            <li><strong>任务状态：</strong>排队中 → 处理中（展示处理进度）→ 已完成 / 失败。列表中存在排队中或处理中的任务时自动刷新状态，也可点击【刷新】手动更新。</li>
             <li><strong>结果列：</strong>已完成的任务直接显示命中的疑似对冲关系个数及涉及期数；没有命中时显示"未命中"。其他状态显示"—"。</li>
             <li><strong>操作列：</strong>
                 <br>- 已完成：【查看结果】，进入查询结果页（未命中也可进入，结果页显示空状态提示）。
                 <br>- 处理中 / 排队中：不可操作，提示"处理完成后可查看"。
-                <br>- 失败：状态旁"?"悬浮显示失败原因；操作为【重新提交】，按原查询条件生成一条新任务，原失败任务保留。
-                <br>- 已过期：提示"结果已过期"，需重新提交查询。</li>
+                <br>- 失败：状态旁"?"悬浮显示失败原因；操作为【重新提交】，按原查询条件生成一条新任务，原失败任务保留。</li>
             <li><strong>查询结果页：</strong>顶部展示本次任务的任务编号、查询条件及结果生成时间。结果为任务完成时的数据，之后不再变化；如需最新数据，请重新提交查询。结果页的列表、筛选、详情、规则说明交互见下方第二部分。</li>
-            <li><strong>结果保留：</strong>查询结果保留 7 天，过期后不可查看，任务在列表中显示为"已过期"。</li>
-            <li><strong>任务记录保留：</strong>任务记录（含已完成、已过期、失败的任务）自提交之日起保留 30 天，超过 30 天后自动从任务列表删除，不可再查看或通过任务编号查到。排队中、处理中的任务不受影响。</li>
+            <li><strong>任务及结果保留：</strong><span class="chg">任务记录及查询结果（含已完成、失败的任务）自提交之日起保留 30 天，期间结果可随时查看；超过 30 天后任务和结果一起自动删除，从任务列表中消失，不可再查看或通过任务编号查到。排队中、处理中的任务不受影响。</span></li>
         </ul>
 
         <h5>二、对冲判定与结果展示</h5>
@@ -483,7 +481,7 @@
                 <div class="eg" style="background:#fdf6ec;color:#e6a23c;margin:0 0 10px">查询结果只是按下注规律筛出来的"疑似对冲"，系统不会自动处理，是否真的在刷流水请商户结合实际情况自己判断。</div>
                 <h4>一、怎么查询</h4>
                 填好查询条件点【提交查询】，系统会在后台慢慢查，不用一直等在页面上。下方"查询任务"里可以看到进度，状态变成"已完成"后点【查看结果】就能看到疑似对冲列表。
-                <div class="eg">查询结果保留 7 天，过期后需要重新提交。查询失败的任务可以点【重新提交】再查一次。</div>
+                <div class="eg">查询任务和结果保留 30 天，到期自动删除，需要的话重新提交即可。查询失败的任务可以点【重新提交】再查一次。</div>
 
                 <h4>二、什么是对冲</h4>
                 同一个彩种、同一期，目标会员下了一边（比如"大"），另一个会员下了相反的一边（"小"），而且金额一样或相差很少，就算一次对冲。这样两人不管开什么都一输一赢，只是在刷流水。
@@ -683,14 +681,14 @@
         { no: 'HQ2026110218051201', lottery: '一分快三', issue: '20261006088', target: '601691087', N: 50, M: 10, operator: 'admin01', submitAt: '2026-11-02 18:05:12', finishAt: '2026-11-02 18:06:47', status: 'done' },
         { no: 'HQ2026110217304001', lottery: '一分赛车', issue: '20261006060', target: '601691055', N: 30, M: 15, operator: 'ops_lily', submitAt: '2026-11-02 17:30:40', finishAt: '2026-11-02 17:31:22', status: 'done' },
         { no: 'HQ2026110215122001', lottery: '百人牛牛', issue: '20261006020', target: '601690012', N: 500, M: 20, operator: 'admin01', submitAt: '2026-11-02 15:12:20', finishAt: '2026-11-02 15:22:20', status: 'failed', reason: '查询数据量过大，处理超时。建议缩小追溯历史期数后重新提交。' },
-        { no: 'HQ2026102611080501', lottery: '一分时时彩', issue: '20261019045', target: '601691087', N: 100, M: 10, operator: 'admin01', submitAt: '2026-10-26 11:08:05', finishAt: '2026-10-26 11:09:30', status: 'expired' },
-        { no: 'HQ2026102516204401', lottery: '香港六合彩', issue: '2026120', target: '601691087', N: 30, M: 5, operator: 'admin01', submitAt: '2026-10-25 16:20:44', finishAt: '2026-10-25 16:21:30', status: 'expired' },
-        { no: 'HQ2026102414031801', lottery: '一分赛车', issue: '20261017033', target: '601690512', N: 50, M: 10, operator: 'admin01', submitAt: '2026-10-24 14:03:18', finishAt: '2026-10-24 14:04:02', status: 'expired' },
-        { no: 'HQ2026102310452201', lottery: '极速百家乐', issue: '20261016088', target: '601690512', N: 80, M: 15, operator: 'admin01', submitAt: '2026-10-23 10:45:22', finishAt: '2026-10-23 10:46:10', status: 'expired' },
-        { no: 'HQ2026102217125001', lottery: 'PC28', issue: '3302105', target: '601688821', N: 50, M: 10, operator: 'admin01', submitAt: '2026-10-22 17:12:50', finishAt: '2026-10-22 17:13:21', status: 'expired' },
-        { no: 'HQ2026102111300901', lottery: '三分快三', issue: '20261014120', target: '601688821', N: 40, M: 8, operator: 'admin01', submitAt: '2026-10-21 11:30:09', finishAt: '2026-10-21 11:30:55', status: 'expired' },
-        { no: 'HQ2026102009154701', lottery: '一分11选5', issue: '20261013066', target: '601691087', N: 60, M: 12, operator: 'admin01', submitAt: '2026-10-20 09:15:47', finishAt: '2026-10-20 09:16:40', status: 'expired' },
-        { no: 'HQ2026101915481201', lottery: '澳门六合彩', issue: '2026291', target: '601690033', N: 20, M: 5, operator: 'admin01', submitAt: '2026-10-19 15:48:12', finishAt: '2026-10-19 15:49:01', status: 'expired' }
+        { no: 'HQ2026102611080501', lottery: '一分时时彩', issue: '20261019045', target: '601691087', N: 100, M: 10, operator: 'admin01', submitAt: '2026-10-26 11:08:05', finishAt: '2026-10-26 11:09:30', status: 'done' },
+        { no: 'HQ2026102516204401', lottery: '香港六合彩', issue: '2026120', target: '601691087', N: 30, M: 5, operator: 'admin01', submitAt: '2026-10-25 16:20:44', finishAt: '2026-10-25 16:21:30', status: 'done' },
+        { no: 'HQ2026102414031801', lottery: '一分赛车', issue: '20261017033', target: '601690512', N: 50, M: 10, operator: 'admin01', submitAt: '2026-10-24 14:03:18', finishAt: '2026-10-24 14:04:02', status: 'done' },
+        { no: 'HQ2026102310452201', lottery: '极速百家乐', issue: '20261016088', target: '601690512', N: 80, M: 15, operator: 'admin01', submitAt: '2026-10-23 10:45:22', finishAt: '2026-10-23 10:46:10', status: 'done' },
+        { no: 'HQ2026102217125001', lottery: 'PC28', issue: '3302105', target: '601688821', N: 50, M: 10, operator: 'admin01', submitAt: '2026-10-22 17:12:50', finishAt: '2026-10-22 17:13:21', status: 'done' },
+        { no: 'HQ2026102111300901', lottery: '三分快三', issue: '20261014120', target: '601688821', N: 40, M: 8, operator: 'admin01', submitAt: '2026-10-21 11:30:09', finishAt: '2026-10-21 11:30:55', status: 'done' },
+        { no: 'HQ2026102009154701', lottery: '一分11选5', issue: '20261013066', target: '601691087', N: 60, M: 12, operator: 'admin01', submitAt: '2026-10-20 09:15:47', finishAt: '2026-10-20 09:16:40', status: 'done' },
+        { no: 'HQ2026101915481201', lottery: '澳门六合彩', issue: '2026291', target: '601690033', N: 20, M: 5, operator: 'admin01', submitAt: '2026-10-19 15:48:12', finishAt: '2026-10-19 15:49:01', status: 'done' }
     ];
     tasks.filter(t => t.status === 'done').forEach(t => t.result = computeResult(t));
 
@@ -766,7 +764,6 @@
             case 'running': return `<span class="st st-run">处理中</span><div class="bar"><i style="width:${t.progress}%"></i></div><span class="sub">${t.progress}%</span>`;
             case 'done': return '<span class="st st-done">已完成</span>';
             case 'failed': return `<span class="st st-fail">失败</span><i class="help-icon">?<span class="tooltip-text">${t.reason}</span></i>`;
-            case 'expired': return '<span class="st st-exp">已过期</span>';
         }
     }
 
@@ -782,7 +779,6 @@
         switch (t.status) {
             case 'done': return `<button class="btn-detail" onclick="viewResult('${t.no}')">查看结果</button>`;
             case 'failed': return `<button class="btn-text" onclick="resubmit('${t.no}')">重新提交</button>`;
-            case 'expired': return '<span class="sub">结果已过期</span>';
             default: return '<span class="sub">处理完成后可查看</span>';
         }
     }
