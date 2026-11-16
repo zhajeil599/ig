@@ -80,7 +80,7 @@ th.c{text-align:center}
 <div class="page">
   <div class="top">
     <h1>交易记录-提现详情 · 交互原型 + 需求说明</h1>
-    <p>版本 V1.4 · 2026-10-26 · 左侧原型可点击：点卡片进入详情，点「全部 ▼」筛选状态，点复制图标复制订单号。右侧说明随当前页面切换。</p>
+    <p>版本 V1.4 · 2026-11-16 · 左侧原型可点击：点卡片进入详情，点「全部 ▼」筛选状态，点复制图标复制订单号。右侧说明随当前页面切换。</p>
   </div>
 
   <div class="proto">
@@ -96,7 +96,7 @@ th.c{text-align:center}
         <tbody>
           <tr><td><strong>申请中</strong></td><td>灰白 #D2D4D9 · 时钟</td><td>待审核、审核中（锁单）、审核通过待出款、代付处理中、代付失败待重新代付</td><td>提交时从余额扣除（冻结）</td></tr>
           <tr><td><strong>提现成功</strong></td><td>绿 #2EC27E · 对勾</td><td>出款成功、已人工出款</td><td>扣除完成</td></tr>
-          <tr><td><strong>提现失败</strong></td><td>红 #F04B5A · 叉</td><td>审核拒绝、代付失败后拒绝出款（退回）</td><td>提现金额（含手续费）全额退回余额</td></tr>
+          <tr><td><strong>提现失败</strong></td><td>红 #F04B5A · 叉</td><td>审核拒绝、代付失败后拒绝出款（退回）</td><td>提现金额全额退回余额</td></tr>
         </tbody>
       </table></div>
       <p class="tip">流转：提交 → 申请中 → 提现成功 / 提现失败。后台中间环节前台不单独展示，统一显示「申请中」。</p>
@@ -104,7 +104,7 @@ th.c{text-align:center}
 
     <section>
       <h3>二、不同状态的详情页字段</h3>
-      <p class="tip">✓ 展示 · — 不展示。收款信息行按第三节，与状态无关（交易哈希除外）。</p>
+      <p class="tip">✓ 展示 · — 不展示。收款信息行按第三节，与状态无关。</p>
       <div class="tblwrap"><table>
         <thead><tr><th style="width:18%">字段</th><th class="c" style="width:12%">申请中</th><th class="c" style="width:12%">提现成功</th><th class="c" style="width:12%">提现失败</th><th>说明</th></tr></thead>
         <tbody>
@@ -116,9 +116,8 @@ th.c{text-align:center}
           <tr><td>到账币种、汇率</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>法币方式汇率为 1</td></tr>
           <tr><td><strong>预计到账</strong></td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td>（提现金额 − 手续费）÷ 汇率</td></tr>
           <tr><td><strong>实际到账</strong></td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td>同上公式，绿字</td></tr>
-          <tr><td><strong>退回金额</strong></td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>= 提现金额（含手续费），全额退回余额</td></tr>
+          <tr><td><strong>退回金额</strong></td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>= 提现金额，全额退回余额</td></tr>
           <tr><td><strong>完成时间</strong></td><td class="n">—</td><td class="y">✓</td><td class="y">✓</td><td>出款成功或失败退回的时间</td></tr>
-          <tr><td><strong>交易哈希</strong></td><td class="n">—</td><td class="y">✓ 仅 USDT</td><td class="n">—</td><td>可复制</td></tr>
           <tr><td>订单号码</td><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td><td>可复制</td></tr>
           <tr><td><strong>备注</strong></td><td class="y">有内容才展示</td><td class="y">有内容才展示</td><td class="y">有内容才展示</td><td>无内容不展示该行；提现失败为红字（一般为失败原因），其他为白字。列表卡片规则相同</td></tr>
         </tbody>
@@ -139,7 +138,6 @@ th.c{text-align:center}
           <tr><td>支付宝实名</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td>只显示最后一个字</td><td>*明</td></tr>
           <tr><td>链类型</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td class="n">—</td><td>不掩码</td><td>TRC20</td></tr>
           <tr><td>提现地址</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓ 可复制</td><td class="n">—</td><td>前 6 后 6，中间掩码；复制为完整地址</td><td>TQ8xm3****Rk9Fd2</td></tr>
-          <tr><td>交易哈希</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">仅成功 · 可复制</td><td class="n">—</td><td>前 8 后 8，中间掩码；复制为完整哈希</td><td>8f3a1c9e****d47b20e6</td></tr>
           <tr><td>钱包类型</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>不掩码</td><td>NO钱包</td></tr>
           <tr><td>钱包账号</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="y">✓</td><td>前 2 后 4，中间掩码</td><td>NO*****2231</td></tr>
           <tr><td>到账币种</td><td class="y">CNY</td><td class="y">CNY</td><td class="y">CNY</td><td class="y">USDT</td><td class="y">CNY</td><td>—</td><td>—</td></tr>
@@ -155,10 +153,9 @@ th.c{text-align:center}
         <thead><tr><th style="width:18%">规则</th><th>说明</th></tr></thead>
         <tbody>
           <tr><td>数字显示</td><td>详情页金额、汇率去掉小数点后无效的 0，金额最多 4 位、汇率最多 8 位小数。例：100.0000 → 100；12.5000 → 12.5；27.8090 → 27.809；1.00000000 → 1。列表页金额沿用 2 位小数（-100.00）。</td></tr>
-          <tr><td>手续费</td><td>内扣：到账金额 =（提现金额 − 手续费）÷ 汇率。提现失败时，提现金额（含手续费）全额退回余额。按提现时实际收取金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。</td></tr>
-          <tr><td>订单号码</td><td>按系统中实际订单号格式展示，列表与详情为同一个订单号。</td></tr>
-          <tr><td>时间格式</td><td>列表与详情统一为 YYYY-MM-DD HH:mm:ss，如 2026-10-25 16:09:38。</td></tr>
-          <tr><td>复制</td><td>订单号码、提现地址、交易哈希可复制，toast「复制成功」1.5 秒消失</td></tr>
+          <tr><td>手续费</td><td>按提现时实际收取金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。</td></tr>
+          <tr><td>时间格式</td><td>详情页 YYYY/MM/DD HH:mm:ss</td></tr>
+          <tr><td>复制</td><td>订单号码、提现地址可复制，toast「复制成功」1.5 秒消失</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -178,13 +175,13 @@ th.c{text-align:center}
     </section>
 
     <section>
-      <h3>六、已确认规则</h3>
-      <div class="warn" style="background:#f0faf4;border-color:#b7e4c7"><ol style="color:#14532d">
-        <li>手续费采用内扣：到账金额 =（提现金额 − 手续费）÷ 汇率。</li>
-        <li>提现失败时，提现金额（含手续费）全额退回余额。</li>
-        <li>订单号码按系统中实际订单号格式展示。</li>
-        <li>时间格式列表与详情统一用「-」：YYYY-MM-DD HH:mm:ss。</li>
-        <li>免提直充没有收款对象，不展示收款信息行。</li>
+      <h3>六、待确认清单</h3>
+      <div class="warn"><ol>
+        <li>手续费扣法：内扣（到账 = 提现金额 − 手续费）还是外扣（余额另扣）？原型按内扣。</li>
+        <li>提现失败时手续费是否一并退回？原型按全额退回。</li>
+        <li>各收款信息的掩码规则需与会员详情「提现账号」页签保持一致，请研发确认现有规则。</li>
+        <li>订单号前缀不统一：列表为 U 开头，现网详情为 WD 开头，需要后端确认同一笔订单用哪个号。</li>
+        <li>时间格式不统一：列表用「-」，详情用「/」，建议统一。</li>
       </ol></div>
     </section>
   </div>
@@ -193,9 +190,9 @@ th.c{text-align:center}
 <script>
 (function () {
   var DATA = [
-    { id: 'r1', method: '免提直充', orderNo: 'U20261026132005118842', time: '2026-10-26 13:20:05', amount: 100, fee: 0, currency: 'CNY', rate: 1, status: 'pending', remark: '', extra: [], done: '' },
-    { id: 'r2', method: '银行卡', orderNo: 'U20261025160938793843', time: '2026-10-25 16:09:38', amount: 500, fee: 5, currency: 'CNY', rate: 1, status: 'pending', remark: '', extra: [{ label: '收款银行', value: '招商银行' }, { label: '银行卡号', value: '6225 **** **** 6688' }, { label: '持卡人', value: '张*明' }], done: '' },
-    { id: 'r3', method: 'USDT', orderNo: 'U20261024094512660217', time: '2026-10-24 09:45:12', amount: 200, fee: 2, currency: 'USDT', rate: 7.12, status: 'success', remark: '', extra: [{ label: '链类型', value: 'TRC20' }, { label: '提现地址', value: 'TQ8xm3****Rk9Fd2', copy: true }], txHash: '8f3a1c9e****d47b20e6', done: '2026-10-24 10:03:51' },
+    { id: 'r1', method: '免提直充', orderNo: 'U20261026132005118842', time: '2026-10-26 13:20:05', amount: 100, fee: 0, currency: 'CNY', rate: 1, status: 'pending', remark: '提现申请已提交，等待审核', extra: [], done: '' },
+    { id: 'r2', method: '银行卡', orderNo: 'U20261025160938793843', time: '2026-10-25 16:09:38', amount: 500, fee: 5, currency: 'CNY', rate: 1, status: 'pending', remark: '审核已通过，银行出款处理中', extra: [{ label: '收款银行', value: '招商银行' }, { label: '银行卡号', value: '6225 **** **** 6688' }, { label: '持卡人', value: '张*明' }], done: '' },
+    { id: 'r3', method: 'USDT', orderNo: 'U20261024094512660217', time: '2026-10-24 09:45:12', amount: 200, fee: 2, currency: 'USDT', rate: 7.12, status: 'success', remark: 'TRC20 链上出款完成，请留意钱包到账', extra: [{ label: '链类型', value: 'TRC20' }, { label: '提现地址', value: 'TQ8xm3****Rk9Fd2', copy: true }], done: '2026-10-24 10:03:51' },
     { id: 'r4', method: '支付宝', orderNo: 'U20261020201833440193', time: '2026-10-20 20:18:33', amount: 1000, fee: 12.5, currency: 'CNY', rate: 1, status: 'success', remark: '大额提现，已人工核实出款', extra: [{ label: '支付宝账号', value: '138****5521' }, { label: '支付宝实名', value: '*明' }], done: '2026-10-20 20:31:02' },
     { id: 'r5', method: '钱包', orderNo: 'U20261018111406550128', time: '2026-10-18 11:14:06', amount: 300, fee: 3, currency: 'CNY', rate: 1, status: 'failed', remark: '流水未达标，请完成稽核后再提现', extra: [{ label: '钱包类型', value: 'NO钱包' }, { label: '钱包账号', value: 'NO*****2231' }], done: '2026-10-18 11:40:22' },
     { id: 'r6', method: '银行卡', orderNo: 'U20261015154239057118', time: '2026-10-15 15:42:39', amount: 100, fee: 1, currency: 'CNY', rate: 1, status: 'failed', remark: '收款银行卡信息有误，资金已退回余额', extra: [{ label: '收款银行', value: '建设银行' }, { label: '银行卡号', value: '6217 **** **** 0213' }, { label: '持卡人', value: '张*明' }], done: '2026-10-15 16:12:31' }
@@ -213,7 +210,7 @@ th.c{text-align:center}
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function num(n, dp) { return String(parseFloat(n.toFixed(dp))); }
-  function slash(t) { return t || ''; }
+  function slash(t) { return (t || '').replace(/-/g, '/'); }
   function find(id) { for (var i = 0; i < DATA.length; i++) if (DATA[i].id === id) return DATA[i]; return DATA[0]; }
 
   function listHTML() {
@@ -246,7 +243,6 @@ th.c{text-align:center}
   function rowsOf(r) {
     var recv = num((r.amount - r.fee) / r.rate, 4) + ' ' + r.currency;
     var rows = [{ label: '交易类型', value: '提现' }, { label: '提现方式', value: r.method }].concat(r.extra);
-    if (r.status === 'success' && r.txHash) rows.push({ label: '交易哈希', value: r.txHash, copy: true });
     rows = rows.concat([
       { label: '创建时间', value: slash(r.time) },
       { label: '提现金额', value: num(r.amount, 4) + ' CNY' },
@@ -288,7 +284,7 @@ th.c{text-align:center}
         ['入口与跳转', '交易记录 → 提现 Tab。点击卡片任意位置，进入该笔订单的提现详情；点击订单号旁的复制图标只复制，不跳转。'],
         ['状态（3 种）', '申请中（灰）/ 提现成功（绿）/ 提现失败（红）。\n后台审核、出款、重新代付等中间环节，前台统一显示「申请中」。'],
         ['卡片字段', '提现方式、状态、订单号（可复制）、金额（沿用 2 位小数，带负号）、时间。'],
-        ['备注', '提现成功、提现失败都可能有备注，有内容才展示，无内容不展示该行。\n提现失败为红字（一般为失败原因），提现成功为白字。'],
+        ['备注', '各状态都可能有备注，有内容才展示，无内容不展示该行。\n提现失败为红字（一般为失败原因），申请中、提现成功为白字。'],
         ['筛选', '「全部 ▼」可选：全部、申请中、提现成功、提现失败；选中后即时过滤，无数据显示「暂无记录」。']
       ];
     } else {
@@ -301,14 +297,14 @@ th.c{text-align:center}
         failed: '包含后台：审核拒绝、代付失败后拒绝出款。提现金额全额退回余额，后台填写的原因展示在「备注」（红字）。'
       }[r.status];
       var fields = {
-        pending: '展示：预计到账。\n不展示：实际到账、退回金额、完成时间、交易哈希。\n备注：有内容才展示（一般为空）。',
-        success: '展示：实际到账（绿字）、完成时间；USDT 另展示交易哈希。\n不展示：预计到账、退回金额。\n备注：有内容才展示（白字）。',
-        failed: '展示：退回金额、完成时间。\n不展示：预计到账、实际到账、交易哈希。\n备注：有内容才展示（红字，一般为失败原因）。'
+        pending: '展示：预计到账。\n不展示：实际到账、退回金额、完成时间。\n备注：有内容才展示（白字）。',
+        success: '展示：实际到账（绿字）、完成时间。\n不展示：预计到账、退回金额。\n备注：有内容才展示（白字）。',
+        failed: '展示：退回金额、完成时间。\n不展示：预计到账、实际到账。\n备注：有内容才展示（红字，一般为失败原因）。'
       }[r.status] + (r.status === 'failed' ? '\n退回金额 = 提现金额。' : '\n到账金额 =（提现金额 − 手续费）÷ 汇率。');
       var method = {
         '银行卡': '展示：收款银行、银行卡号（前 4 后 4，中间掩码）、持卡人（中间字掩码）。\n不展示：支付宝、USDT、钱包相关字段。',
         '支付宝': '展示：支付宝账号（手机号中间 4 位掩码）、支付宝实名（只显示最后一个字）。\n不展示：银行卡、USDT、钱包相关字段。',
-        'USDT': '展示：链类型（TRC20 / ERC20）、提现地址（前 6 后 6，中间掩码，可复制）；提现成功时增加交易哈希（可复制）。\n到账币种为 USDT，汇率为提交时锁定的值。\n不展示：银行卡、支付宝、钱包相关字段。',
+        'USDT': '展示：链类型（TRC20 / ERC20）、提现地址（前 6 后 6，中间掩码，可复制）；不展示交易哈希。\n到账币种为 USDT，汇率为提交时锁定的值。\n不展示：银行卡、支付宝、钱包相关字段。',
         '钱包': '展示：钱包类型、钱包账号（前 2 后 4，中间掩码）。\n不展示：银行卡、支付宝、USDT 相关字段。',
         '免提直充': '免提直充没有收款对象，不展示任何收款信息行，只展示通用字段。'
       }[r.method];
@@ -316,9 +312,9 @@ th.c{text-align:center}
         ['状态：' + s.label, statusNote],
         ['本状态展示的字段', fields],
         ['收款信息 · ' + r.method, method + '\n5 种方式的完整对照见下方第三节。'],
-        ['手续费', '内扣：到账金额 =（提现金额 − 手续费）÷ 汇率。\n提现失败时，提现金额（含手续费）全额退回余额。\n按提现时实际收取的金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。'],
+        ['手续费', '按提现时实际收取的金额展示；为 0 时显示「0 CNY（免手续费）」，含 VIP 每日免手续费笔数抵扣。'],
         ['数字显示', '金额、汇率去掉小数点后无效的 0：100.0000 → 100，27.8090 → 27.809，1.00000000 → 1。'],
-        ['其他', '订单号码按系统中实际订单号格式展示，可复制，提示「复制成功」。\n时间格式统一为 YYYY-MM-DD HH:mm:ss（与列表一致）。\n左上角返回，保留列表原筛选条件。']
+        ['其他', '订单号码可复制，提示「复制成功」；时间格式 YYYY/MM/DD HH:mm:ss；左上角返回，保留列表原筛选条件。']
       ];
     }
     return '<span class="tag">需求说明</span><h2>' + title + '</h2><p class="hint">' + esc(hint) + '</p>' +
