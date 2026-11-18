@@ -286,10 +286,11 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
       </div>
       <!-- 领取条件弹窗 -->
       <div id="reqModal" class="absolute inset-0 bg-black/70 z-[110] items-center justify-center" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-        <div class="w-[290px] bg-[#1a1612] border border-[#d4a054] rounded-xl px-5 pt-5 pb-4 shadow-2xl">
+        <div style="width:330px" class="bg-[#1a1612] border border-[#d4a054] rounded-xl px-4 pt-5 pb-4 shadow-2xl">
           <div id="reqTitle" class="text-center text-[#d4a054] font-bold text-[15px] mb-3"></div>
+          <div id="reqTime" class="text-[11px] text-gray-300 mb-2"></div>
           <div class="text-[#D8A246] text-xs font-bold mb-1">领取条件：</div>
-          <div id="reqBody" class="text-gray-200 text-[13px] bg-[#2a2015] border border-[#3e3427] rounded-lg px-3 py-2"></div>
+          <div id="reqBody" style="max-height:260px;overflow-y:auto" class="border border-[#73531F] rounded-lg"></div>
           <div class="text-gray-400 text-[11px] mt-3 leading-relaxed">需要满足以上条件方可领取彩金。</div>
           <button onclick="$('reqModal').style.display='none'" class="mt-4 w-full bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] font-bold text-sm py-2 rounded-lg">知道了</button>
         </div>
@@ -410,7 +411,7 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
       <h3>5.3 其他</h3>
       <ul>
         <li>顶部表盘、总充值、当前等级卡片（距离下一级的充值差额）按会员实际数据展示。</li>
-        <li>活动详情：上方为后台文案内容；下方表格展示各等级总存款、晋级礼金、周俸禄、月俸禄，表格只显示金额，有领取条件的金额右侧带金色「ⓘ」图标提示可点击；点击金额弹窗展示该奖励的领取条件，标题为「等级 + 奖励名称 + 金额」（如「V3 周俸禄 ￥250」），内容为「领取条件：1. 上周充值 ≥ 600；2. 上周打码 ≥ 6000」，下方说明「需要满足以上条件方可领取彩金。」，点击「知道了」或弹窗外区域关闭。条件为 0 的项不展示；无领取条件或金额为 0 的格子不可点击。</li>
+        <li>活动详情：上方为后台文案内容；下方表格展示各等级总存款、晋级礼金、周俸禄、月俸禄，表格只显示各等级金额，不展示领取条件。表头中「晋级礼金 / 周俸禄 / 月俸禄」做成按钮样式（带「›」），点击分别弹窗展示该奖励的说明：标题为「XX领取条件」；领取时间（晋级礼金：达到对应等级后可领取、每级限领一次及过期天数；周/月俸禄：按后台配置的领取时间，过期不可领取，按领取时的VIP等级发放）；领取条件表格列出各等级的奖励金额、充值要求、打码要求（列名随统计周期变化，如「上周充值 / 上周打码」，为 0 时显示「无要求」，奖励为 0 的等级不列出）；底部说明「需要满足以上条件方可领取彩金。」；点击「知道了」或弹窗外区域关闭。</li>
         <li>领取记录：展示日期、金额、类型（晋级礼金 / 周俸禄 / 月俸禄）、详情（如「v3-晋级礼金」），按时间倒序。</li>
       </ul>
     </div>
@@ -623,9 +624,7 @@ function renderFront(){
   const curDep=(sorted().find(l=>l.lv===cl)||{dep:0}).dep;
   const pct=next?Math.min(100,(sim.total-curDep)/(next.dep-curDep)*100):100;
   const salaryHint=[['wk','周俸禄'],['mon','月俸禄']].map(([k,nm])=>`${nm}${claimWhen(k)}`).join('，')+'，过期不可领取';
-  const td=(k,o,lv)=>!o.a?`<td class="py-2">0</td>`:(o.r||o.b)
-    ?`<td class="py-2 cursor-pointer active:bg-[#2a2015]" onclick="showReq('${k}',${lv})"><span class="inline-flex items-center gap-1">${fmt(o.a)}<svg width="11" height="11" viewBox="0 0 16 16" style="flex-shrink:0;margin-left:3px"><circle cx="8" cy="8" r="7" fill="none" stroke="#D8A246" stroke-width="1.4"/><circle cx="8" cy="4.8" r="1" fill="#D8A246"/><rect x="7.2" y="7" width="1.6" height="5" rx="0.8" fill="#D8A246"/></svg></span></td>`
-    :`<td class="py-2">${fmt(o.a)}</td>`;
+  const td=o=>`<td class="py-2">${fmt(o.a)}</td>`;
   $('app').innerHTML=`
   <header class="sticky top-0 w-full bg-[#151515] h-12 flex items-center px-4 z-40 border-b border-[#333]">
     <button class="text-gray-300 w-8 h-8 flex items-center"><i class="fa-solid fa-chevron-left"></i></button>
@@ -664,8 +663,8 @@ function renderFront(){
     <div class="flex items-center justify-center gap-2 mb-4"><span class="text-[#D8A246] text-[10px]">◆</span><h3 class="text-[#D8A246] font-bold text-[15px] tracking-widest">活动详情</h3><span class="text-[#D8A246] text-[10px]">◆</span></div>
     <div class="mb-4 text-sm leading-relaxed bg-[#2a2015] p-3 rounded-lg border border-[#3e3427] text-gray-300">${cfg.content}</div>
     <div class="border border-[#73531F] p-1 rounded-lg bg-[#0D0D0D]"><table class="gold-table">
-      <thead><tr class="bg-[#1A1A1A]"><th>VIP等级</th><th>总存款</th><th>晋级礼金</th><th>周俸禄</th><th>月俸禄</th></tr></thead>
-      <tbody>${ls.map((l,i)=>`<tr class="${i%2?'bg-[#151515]':''}"><td class="py-2">V${l.lv}</td><td class="py-2">${fmt(l.dep)}+</td>${td('up',l.up,l.lv)}${td('wk',l.wk,l.lv)}${td('mon',l.mon,l.lv)}</tr>`).join('')}</tbody></table></div>
+      <thead><tr class="bg-[#1A1A1A]"><th>VIP等级</th><th>总存款</th>${[['up','晋级礼金'],['wk','周俸禄'],['mon','月俸禄']].map(([k,t])=>`<th onclick="showReq('${k}')" style="cursor:pointer;padding:6px 3px"><span style="display:inline-block;border:1px solid #d4a054;background:#2a2015;border-radius:999px;padding:2px 7px;white-space:nowrap">${t} ›</span></th>`).join('')}</tr></thead>
+      <tbody>${ls.map((l,i)=>`<tr class="${i%2?'bg-[#151515]':''}"><td class="py-2">V${l.lv}</td><td class="py-2">${fmt(l.dep)}+</td>${td(l.up)}${td(l.wk)}${td(l.mon)}</tr>`).join('')}</tbody></table></div>
   </section>
   <section class="px-6 py-6 pb-12">
     <h4 class="text-center text-[#D8A246] text-[12px] mb-3">注意事项</h4>
@@ -674,12 +673,17 @@ function renderFront(){
   $('recordList').innerHTML=records.map((r,i)=>`<div class="flex py-3 px-4 border-b border-[#2a2015] items-center ${i%2?'':'bg-[#2a2015]/20'}"><div class="flex-[3]">${r.d}</div><div class="flex-[2] text-center text-[#d4a054]">${money(r.a)}</div><div class="flex-[2] text-center">${r.t}</div><div class="flex-[3] text-right">${r.x}</div></div>`).join('')+'<div class="text-center py-6 text-gray-600">没有更多了</div>';
   const d=D(sim.date);$('s-week').textContent=`${WD[wday(d)]} · 当前等级 VIP${cl}`;
 }
-function showReq(k,lv){
-  const l=levels.find(x=>x.lv===lv),o=l[k],p=P[cfg[k].period];
-  const nm={up:'晋级礼金',wk:'周俸禄',mon:'月俸禄'}[k];
-  const lines=[];if(o.r)lines.push(`${p}充值 ≥ ${fmt(o.r)}`);if(o.b)lines.push(`${p}打码 ≥ ${fmt(o.b)}`);
-  $('reqTitle').textContent=`V${lv} ${nm} ￥${fmt(o.a)}`;
-  $('reqBody').innerHTML=lines.map((t,i)=>`<div class="flex items-center py-1"><span class="w-4 h-4 rounded-full bg-[#d4a054] text-[#3e2708] text-[10px] font-bold flex items-center justify-center mr-2">${i+1}</span>${t}</div>`).join('');
+function showReq(k){
+  const p=P[cfg[k].period],nm={up:'晋级礼金',wk:'周俸禄',mon:'月俸禄'}[k];
+  const ls=sorted().filter(l=>l.on&&l[k].a);
+  $('reqTitle').textContent=`${nm}领取条件`;
+  $('reqTime').innerHTML=k==='up'
+    ?`<span style="color:#D8A246">领取时间：</span>达到对应等级后可领取，每个等级限领一次${+cfg.up.expire>0?`，${cfg.up.expire}天内未领取则过期`:''}`
+    :`<span style="color:#D8A246">领取时间：</span>${claimWhen(k)}，过期不可领取；按领取时的VIP等级发放`;
+  const c='style="border:1px solid #3e3427;padding:6px 2px;text-align:center"';
+  $('reqBody').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:11px">
+    <thead><tr style="background:#2a2015;color:#D8A246"><th ${c}>等级</th><th ${c}>${nm}</th><th ${c}>${p}充值</th><th ${c}>${p}打码</th></tr></thead>
+    <tbody style="color:#e5e5e5">${ls.map(l=>`<tr><td ${c}>V${l.lv}</td><td ${c}>${fmt(l[k].a)}</td><td ${c}>${l[k].r?'≥ '+fmt(l[k].r):'无要求'}</td><td ${c}>${l[k].b?'≥ '+fmt(l[k].b):'无要求'}</td></tr>`).join('')||`<tr><td ${c} colspan="4">暂无</td></tr>`}</tbody></table>`;
   $('reqModal').style.display='flex';
 }
 function toast(){const t=$('toast');t.classList.replace('opacity-0','opacity-100');setTimeout(()=>t.classList.replace('opacity-100','opacity-0'),1500);}
