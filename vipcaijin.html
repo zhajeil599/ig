@@ -398,7 +398,7 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
         <tr><th style="width:150px">状态</th><th>展示</th></tr>
         <tr><td>可领取</td><td>金色按钮「立即领取」，点击提示「领取成功」后变为已领取。</td></tr>
         <tr><td>未到领取时间</td><td>灰色，显示「每周一领取」/「每月1号领取」。</td></tr>
-        <tr><td>未达标</td><td>灰色，显示差的条件，例：「需上周充值 1000 / 需上周有效投注 10000」。</td></tr>
+        <tr><td>未达标</td><td>灰色，显示「未达标」。具体条件可在活动详情表头的「周俸禄 / 月俸禄」弹窗中查看。</td></tr>
         <tr><td>本期已领取</td><td>灰色，显示「下周再来」/「下月再来」。</td></tr>
         <tr><td>当前等级无此奖励</td><td>灰色，显示「暂无」。</td></tr>
       </table>
@@ -600,7 +600,7 @@ function salaryBtn(k){
   const d=D(sim.date),c=cfg[k];
   if(c.claim==='fixed'&&(k==='wk'?wday(d)!==c.day:d.getDate()!==c.day))
     return grey(`<div class="text-[#555] text-[11px] font-bold">${claimWhen(k)}</div>`);
-  if(!met(k,l[k]))return grey(`<div class="text-[#8b2323] text-[9px] bg-black/10 rounded py-1 px-2 leading-tight font-bold w-11/12">${needTxt(k,l[k])}</div>`);
+  if(!met(k,l[k]))return grey(`<div class="text-[#8b2323] text-[11px] font-bold">未达标</div>`);
   return `<div onclick="claimSalary('${k}')" class="flex-1 bg-gold-gradient rounded-xl py-2 px-1 text-center border-b-4 border-[#9c6f1a] cursor-pointer active:translate-y-1 flex flex-col justify-center items-center min-h-[72px]">
      <div class="flex items-center gap-1 mb-1.5"><div class="text-[#3e2708] font-bold text-[15px]">${name}</div><div class="text-[#8b2323] font-bold text-[13px]">￥${fmt(amt)}</div></div>
      <div class="bg-[#8b2323] text-[#FDE19F] text-[11px] px-4 py-1 rounded-full font-bold w-10/12">立即领取</div></div>`;
