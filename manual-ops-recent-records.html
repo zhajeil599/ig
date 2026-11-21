@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人工存提最近记录原型</title>
+<style>
+/*
+VOICE: 内部评审用的后台原型，克制、贴近现网 Element 风格
+IDEA: 现网「财务管理-人工充提」页面原样复刻，只在提交按钮下方加记录区
+PICTURE: 可操作的表单 + 最近10条记录表本身
+COLOUR and TYPE: 现网后台蓝 #409eff，灰白底；需求标注用橙色编号
+LAYOUT: 左侧原型，右侧需求说明；窄屏上下堆叠
+*/
+:root{color-scheme:light;--blue:#409eff;--line:#e4e7ed;--ink:#303133;--sub:#909399;--mark:#f56c00;--warn:#e6a23c}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+body{margin:0;background:#f0f2f5;color:var(--ink);font:13px/1.5 "PingFang SC","Microsoft YaHei",Helvetica,Arial,sans-serif;overflow-x:clip}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 400px;min-height:100vh}
+@media(max-width:1100px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.app{display:grid;grid-template-columns:210px minmax(0,1fr);background:#fff;align-items:start}
+.app.fold{grid-template-columns:0 minmax(0,1fr)}.app.fold .side{visibility:hidden}
+.side{background:#304156;color:#bfcbd9;font-size:14px;position:sticky;top:0;height:100vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#4a5a70 #304156}
+.logo{height:50px;display:flex;align-items:center;gap:8px;padding:0 16px;background:#2b2f3a;color:#fff;font-weight:600;font-size:14px;position:sticky;top:0;z-index:1}
+.logo i{width:24px;height:24px;border-radius:5px;background:var(--blue);display:grid;place-items:center;font-style:normal;font-size:12px}
+.nav,.nav ul{list-style:none;margin:0;padding:0}
+.nav .t{height:50px;display:flex;align-items:center;gap:10px;padding:0 20px;cursor:pointer;white-space:nowrap}
+.nav .t:hover{background:#263445}
+.nav svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8}
+.nav .arr{margin-left:auto;width:10px;height:10px;transition:transform .2s}
+.nav li.open>.t .arr{transform:rotate(180deg)}
+.nav li>ul{display:none;background:#1f2d3d}.nav li.open>ul{display:block}
+.nav ul .t{padding-left:46px;height:46px}.nav ul ul .t{padding-left:60px}
+.nav ul .t:hover{background:#001528}
+.nav .t.on{color:var(--blue)}
+.nav li.has-on>.t{color:#f4f4f5}
+.top{height:50px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,21,41,.08)}
+.ham{cursor:pointer;width:18px;height:18px;stroke:#5a5e66;fill:none;stroke-width:2}
+.top .bal{color:#f56c6c}.pill{background:var(--blue);color:#fff;border-radius:14px;padding:3px 12px;font-size:12px}
+.ava{width:30px;height:30px;border-radius:50%;background:#c0c4cc;display:inline-grid;place-items:center;color:#fff;font-size:12px}
+.crumb{padding:0 14px;height:34px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.crumb span{border:1px solid #d8dce5;padding:2px 8px;color:#495060;background:#fff}
+.crumb span.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.crumb span.on::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin-right:5px;vertical-align:1px}
+.main{padding:14px}
+.tabs{display:flex;border:1px solid var(--line);border-bottom:0;background:#f5f7fa}
+.tabs button{border:0;background:none;padding:10px 18px;font:inherit;color:#606266;cursor:pointer;border-right:1px solid var(--line)}
+.tabs button.on{background:#fff;color:var(--blue)}
+.pane{border:1px solid var(--line);padding:18px 18px 26px}
+.form{max-width:760px;margin:0 auto}
+.row{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:10px;margin-bottom:14px}
+.row>label{text-align:right;color:#606266;white-space:nowrap}
+.req::before{content:"* ";color:#f56c6c}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr);gap:10px;align-items:center}
+.two label{text-align:right;color:#606266}
+input,select,textarea{font:inherit;border:1px solid #dcdfe6;border-radius:4px;padding:6px 10px;width:100%;background:#fff;color:var(--ink)}
+input:focus,textarea:focus,select:focus{outline:2px solid #a0cfff;border-color:var(--blue)}
+input[disabled]{background:#f5f7fa;color:#a8abb2}
+.inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.inline input[type=text],.inline input[type=number]{max-width:140px}
+.inline select{width:80px}
+.radio{display:inline-flex;gap:4px;align-items:center;cursor:pointer;margin-right:12px}
+.radio input{width:auto}
+.btn{white-space:nowrap;flex:none;border:1px solid var(--blue);background:var(--blue);color:#fff;border-radius:4px;padding:7px 16px;font:inherit;cursor:pointer}
+.btn.plain{background:#fff;color:#606266;border-color:#dcdfe6}
+.mk{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--mark);color:#fff;font-size:11px;font-weight:700;margin-left:6px;vertical-align:middle;flex:none}
+.rec{margin:22px auto 0;max-width:1100px;border:1px dashed var(--mark);border-radius:6px;padding:12px 14px;background:#fffaf5}
+.rec h4{margin:0;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rec h4 small{color:var(--sub);font-weight:400}
+.rec .more{margin-left:auto;color:var(--blue);font-weight:400;cursor:pointer;font-size:12px}
+.tip{margin:8px 0;padding:6px 10px;border-radius:4px;background:#f4f4f5;color:#606266;font-size:12px}
+.tip.warn{background:#fdf6ec;color:#b88230}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:12px}
+th,td{border-bottom:1px solid #ebeef5;padding:7px 8px;text-align:center;white-space:nowrap}
+th{background:#f5f7fa;color:#606266;font-weight:600}
+td.l{text-align:left;white-space:normal;min-width:80px}
+tr.new td{background:#ecf5ff}
+.empty{text-align:center;color:var(--sub);padding:20px}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#f0f9eb;color:#67c23a;border:1px solid #e1f3d8;padding:8px 16px;border-radius:4px;display:none;z-index:9}
+.toast.err{background:#fef0f0;color:#f56c6c;border-color:#fde2e2}
+.demo{margin:0 auto 14px;max-width:760px;font-size:12px;color:var(--sub);background:#f5f7fa;padding:6px 10px;border-radius:4px}
+.demo b{color:var(--blue);cursor:pointer}
+.notes{background:#fff;border-left:1px solid var(--line);padding:18px 20px 40px;font-size:13px}
+.notes h2{font-size:17px;margin:0 0 4px}.notes h3{font-size:14px;margin:18px 0 6px;display:flex;align-items:center;gap:4px}
+.notes h3 .mk{margin:0 4px 0 0}
+.notes p,.notes li{color:#4a4d55;margin:4px 0}.notes ul{padding-left:18px;margin:4px 0}
+.notes .bg{background:#f5f7fa;border-radius:4px;padding:8px 10px;color:#606266}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="app">
+  <nav class="side">
+    <div class="logo"><i>T</i>test渠道</div>
+    <ul class="nav" id="nav"></ul>
+  </nav>
+  <div>
+    <div class="top"><svg class="ham" id="ham" viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h14"/></svg><span>余额 <span class="bal">309730.86</span></span><span style="flex:1"></span><span class="pill">人工存款</span><span class="pill">会员出款</span><span class="pill">免提直充</span><span style="flex:1"></span><span style="color:#f56c6c">到期时间: 2030-12-27</span><span class="ava">B</span><span>ben</span></div>
+    <div class="crumb"><span>首页</span><span class="on">人工存提 ×</span></div>
+    <div class="main">
+      <div class="tabs" id="tabs">
+        <button data-t="dep" class="on">人工存款</button><button data-t="wd">人工提款</button><button data-t="code">人工打码量</button>
+      </div>
+      <div class="pane">
+        <form class="form" id="f" autocomplete="off">
+          <div class="row"><label class="req">商户</label><select id="merchant"><option>test渠道</option><option>test2渠道</option></select></div>
+          <div class="row" id="rowBatch"><label class="req">是否批量</label><div><label class="radio"><input type="radio" name="batch" value="0" checked>否</label><label class="radio"><input type="radio" name="batch" value="1">是</label><span class="mk">1</span></div></div>
+          <div class="row" id="rowUid"><label class="req">用户ID</label><div class="inline" style="flex-wrap:nowrap"><input type="text" id="uid" placeholder="输入用户ID查询" style="max-width:none"><button type="button" class="btn" id="qbtn">查询</button></div></div>
+          <div class="row" id="rowUids" hidden><label class="req">用户ID</label><textarea rows="4" placeholder="输入用户ID,以英文逗号间隔,一次最大支持50个用户"></textarea></div>
+          <div id="info">
+            <div class="row"><label>昵称</label><div class="two"><input disabled id="i_nick"><label>真实姓名</label><input disabled id="i_name"></div></div>
+            <div class="row"><label>余额</label><div class="two"><input disabled id="i_bal"><label>层级</label><input disabled id="i_lv"></div></div>
+            <div class="row"><label>状态</label><div class="two"><input disabled id="i_st"><span></span><span></span></div></div>
+          </div>
+          <div id="fields"></div>
+          <div class="row"><label class="req">备注</label><textarea id="remark" rows="2" placeholder="请输入"></textarea></div>
+          <div class="row" id="rowPwd"><label class="req">二级密码</label><input type="password" id="pwd" placeholder="请输入" style="max-width:220px"></div>
+          <div class="row"><label></label><div class="inline"><button class="btn" type="submit">提交</button><button class="btn plain" type="button" id="xls">Excel导入</button></div></div>
+        </form>
+        <div class="rec" id="rec" hidden></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<aside class="notes">
+  <div class="demo">原型演示：输入用户ID 后点「查询」。可试 <b data-id="110784038">110784038</b>（记录较多，含24小时内的操作）、<b data-id="110801891">110801891</b>（打码量操作多）、<b data-id="110800001">110800001</b>（无记录）。记录数据为示例。</div>
+  <h2>【商户后台】人工存提新增最近人工操作记录</h2>
+  <p class="bg">背景：财务在「人工存提」给用户加款、扣款、加打码量时，看不到这个用户刚刚有没有被操作过，容易重复操作。本次在人工存款、人工提款、人工打码量三个页签的提交按钮下方，展示该用户最近 10 条对应的人工记录，操作前先核对。</p>
+
+  <h3><span class="mk">1</span>展示时机</h3>
+  <ul>
+    <li>单个用户模式（是否批量＝否）下，输入用户ID点「查询」，查询成功后在提交按钮下方展示记录区。</li>
+    <li>批量模式（是否批量＝是）不展示记录区：批量最多 50 个用户，且没有单个用户查询。</li>
+    <li>重新查询其他用户时，记录区刷新为新用户的记录；查询失败、切换为批量、切换商户时，记录区隐藏。</li>
+    <li>三个页签各自独立，各显示对应类型的记录：人工存款页签只看存款，人工提款页签只看提款，人工打码量页签只看打码量。</li>
+  </ul>
+
+  <h3><span class="mk">2</span>记录范围</h3>
+  <ul>
+    <li>当前所选商户下该用户的记录，按操作时间倒序，只显示最近 10 条；不限时间，不受记录页最多查 31 天的限制。</li>
+    <li>显示所有管理员的操作，不只是当前登录账号的操作。</li>
+    <li>人工存款：包含人工存款、优惠存款两种类型；单个提交、批量提交、Excel 导入给该用户的记录都算。口径与【人工存款记录】一致。</li>
+    <li>人工提款：口径与【人工提款记录】一致，包含人工取款、优惠取款。</li>
+    <li>人工打码量：每一次人工添加打码量的操作。</li>
+  </ul>
+
+  <h3><span class="mk">3</span>展示字段</h3>
+  <ul>
+    <li>人工存款：订单号、类型、存款金额（充值金额／优惠金额）、稽核打码量（充值打码量／优惠打码量）、存款后余额、操作人、操作时间、备注。</li>
+    <li>人工提款：订单号、类型、取款金额、取款后余额、操作人、操作时间、备注。</li>
+    <li>人工打码量：打码量、操作人、操作时间、备注。</li>
+    <li>用户信息、商户、渠道商、层级等上方已显示，记录里不重复。</li>
+    <li>没有记录时显示「该用户暂无人工××记录」。</li>
+  </ul>
+
+  <h3><span class="mk">4</span>最近一次提醒</h3>
+  <ul>
+    <li>记录表上方显示一行：最近一次操作的时间、距今多久、操作人。</li>
+    <li>近 24 小时内有记录时，这一行标黄，并显示 24 小时内的条数，提醒核对是否重复操作。</li>
+    <li>只做提醒，不拦截提交。</li>
+  </ul>
+
+  <h3><span class="mk">5</span>查看全部</h3>
+  <ul>
+    <li>人工存款、人工提款的记录区右上角有「查看全部」，分别打开【人工存款记录】、【人工提款记录】，自动带入商户和用户ID，时间默认近 30 天并直接查询。</li>
+    <li>人工打码量目前没有记录页面，不显示「查看全部」。</li>
+  </ul>
+
+  <h3><span class="mk">6</span>提交后刷新</h3>
+  <ul><li>提交成功后，记录区立即刷新，刚提交的记录排在第一条并高亮；超过 10 条时，最早的一条移出。</li></ul>
+
+  <h3><span class="mk">7</span>人工打码量需新增留存</h3>
+  <ul>
+    <li>现状：人工打码量没有独立的业务记录。只在【操作日志】里有一条「人工添加打码量」的变更详情（含打码量、备注）；【即时稽核查询】里显示为「其他」类型，没有订单号，和优惠打码量混在一起，无法区分。</li>
+    <li>本次需要单独留存每次人工打码量操作，包括商户、用户、打码量、操作人、操作时间、备注，供本页记录区使用。</li>
+    <li>上线时从【操作日志】中的「人工添加打码量」补录历史记录，保证上线后能直接看到之前的操作。</li>
+  </ul>
+
+  <h3>权限</h3>
+  <ul><li>能进入「人工存提」页面的管理员都能看到记录区，不新增权限配置。</li></ul>
+</aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const NOW = new Date('2026-11-21T15:20:00');
+const USERS = {
+  '110784038': {nick:'gly000',name:'王丹',bal:1166957.63,lv:'渠道1 5000以上会员可见',st:'正常'},
+  '110801891': {nick:'lilei01',name:'李雷',bal:803.50,lv:'渠道1默认层级 0-500可见',st:'正常'},
+  '110800001': {nick:'newbie88',name:'',bal:0,lv:'渠道1默认层级 0-500可见',st:'正常'}
+};
+const REC = {
+  dep: {
+    '110784038': [
+      ['20261121143012051288','人工存款',500,0,500,0,1167457.63,'beita','2026-11-21 14:30:12','补单 充值未到账'],
+      ['20261121092245030117','人工存款',500,0,500,0,1166957.63,'huzi','2026-11-21 09:22:45','补单 充值未到账'],
+      ['20261120020454031081','优惠存款',100,7,100,14,1166457.63,'beita','2026-11-20 02:04:54','活动补发'],
+      ['20261120015913040536','人工存款',100,1,100,1,1167264.60,'beita','2026-11-20 01:59:13','1'],
+      ['20261117110302011245','人工存款',2000,0,2000,0,1165163.60,'dijia','2026-11-17 11:03:02','线下转账'],
+      ['20261115204118090332','优惠存款',0,88,0,88,1163163.60,'showmaay','2026-11-15 20:41:18','VIP补发'],
+      ['20261112160733042871','人工存款',1000,0,1000,0,1163075.60,'beita','2026-11-12 16:07:33','线下转账'],
+      ['20261108093021077314','人工存款',300,0,300,0,1162075.60,'leo','2026-11-08 09:30:21','补单'],
+      ['20261103221509019962','人工存款',5000,50,5000,50,1161775.60,'dijia','2026-11-03 22:15:09','大额线下'],
+      ['20261030175644033105','人工存款',200,0,200,0,1156725.60,'huzi','2026-10-30 17:56:44','补单'],
+      ['20261025100211015530','人工存款',100,0,100,0,1156525.60,'beita','2026-10-25 10:02:11','测试']
+    ],
+    '110801891': [['20261101142445061790','人工存款',1000,0,1000,0,1003.50,'showmaay','2026-11-01 14:24:45','test']]
+  },
+  wd: {
+    '110784038': [
+      ['20261119183320044127','人工取款',1200,1165957.63,'dijia','2026-11-19 18:33:20','用户申请线下出款'],
+      ['20261110120458012206','人工取款',300,1162775.60,'beita','2026-11-10 12:04:58','误存扣回']
+    ],
+    '110801891': [['20261101171010038960','人工取款',100,903.50,'showmaay','2026-11-01 17:10:10','test']]
+  },
+  code: {
+    '110784038': [[2900,'beita','2026-11-15 07:18:34','1'],[50,'beita','2026-11-15 07:08:44','1']],
+    '110801891': [[200,'showmaay','2026-11-01 17:13:47','补打码'],[200,'showmaay','2026-11-01 17:12:48','补打码'],[500,'showmaay','2026-11-01 17:02:36','test'],[500,'showmaay','2026-11-01 17:01:42','test'],[100,'showmaay','2026-11-01 17:00:48','test'],[100,'showmaay','2026-11-01 17:00:13','test']]
+  }
+};
+const LABEL = {dep:'人工存款',wd:'人工提款',code:'人工打码量'};
+const HEAD = {
+  dep:['订单号','类型','存款金额','稽核打码量','存款后余额','操作人','操作时间','备注'],
+  wd:['订单号','类型','取款金额','取款后余额','操作人','操作时间','备注'],
+  code:['打码量','操作人','操作时间','备注']
+};
+let tab='dep', cur=null, fresh=null;
+const $=id=>document.getElementById(id);
+const money=n=>Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/,/g,'');
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+const parse=s=>new Date(s.replace(' ','T'));
+const ago=s=>{const m=Math.round((NOW-parse(s))/60000);if(m<60)return `${Math.max(m,1)}分钟前`;const h=Math.floor(m/60);if(h<24)return `${h}小时前`;return `${Math.floor(h/24)}天前`};
+const timeIdx={dep:8,wd:5,code:2}, opIdx={dep:7,wd:4,code:1};
+
+function toast(msg,err){const t=$('toast');t.textContent=msg;t.className='toast'+(err?' err':'');t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',1800)}
+
+function renderFields(){
+  const f=$('fields');
+  if(tab==='dep'){
+    f.innerHTML=`
+    <div class="row"><label class="req">存款金额</label><div class="inline"><input type="number" id="amt" placeholder="请输入"><label class="radio"><input type="radio" name="a1" checked value="1">稽核</label><label class="radio"><input type="radio" name="a1" value="0">不稽核</label><select id="m1"><option value="x">倍数</option><option value="f">打码量</option></select><input type="number" id="v1" value="1"></div></div>
+    <div class="row"><label class="req">优惠存款</label><div class="inline"><input type="number" id="amt2" placeholder="请输入"><label class="radio"><input type="radio" name="a2" checked value="1">稽核</label><label class="radio"><input type="radio" name="a2" value="0">不稽核</label><select id="m2"><option value="x">倍数</option><option value="f">打码量</option></select><input type="number" id="v2" value="1"></div></div>
+    <div class="row"><label>类型</label><div><label class="radio"><input type="radio" name="dtype" value="人工存款" checked>人工存款</label><label class="radio"><input type="radio" name="dtype" value="优惠存款">优惠存款</label></div></div>`;
+  }else if(tab==='wd'){
+    f.innerHTML=`<div class="row"><label class="req">出款金额</label><input type="number" id="amt" placeholder="请输入" style="max-width:220px"></div>
+    <div class="row"><label>类型</label><div><label class="radio"><input type="radio" checked>人工出款</label></div></div>`;
+  }else{
+    f.innerHTML=`<div class="row"><label class="req">打码量</label><input type="number" id="amt" placeholder="请输入打码量"></div>`;
+  }
+  $('rowBatch').hidden = tab==='code';
+  $('rowPwd').hidden = tab==='dep';
+  $('xls').hidden = tab!=='dep';
+}
+
+function isBatch(){return tab!=='code' && document.querySelector('input[name=batch]:checked').value==='1'}
+
+function fillInfo(u){
+  $('i_nick').value=u?u.nick:'';$('i_name').value=u?u.name:'';$('i_bal').value=u?money(u.bal):'';$('i_lv').value=u?u.lv:'';$('i_st').value=u?u.st:'';
+}
+
+function rowHtml(r,isNew){
+  let cells;
+  if(tab==='dep') cells=[r[0],r[1],`充值金额:${money(r[2])}<br>优惠金额:${money(r[3])}`,`充值打码量:${money(r[4])}<br>优惠打码量:${money(r[5])}`,money(r[6]),r[7],r[8],r[9]];
+  else if(tab==='wd') cells=[r[0],r[1],money(r[2]),money(r[3]),r[4],r[5],r[6]];
+  else cells=[money(r[0]),r[1],r[2],r[3]];
+  return `<tr${isNew?' class="new"':''}>${cells.map((c,i)=>`<td${i===cells.length-1?' class="l"':''}>${c}</td>`).join('')}</tr>`;
+}
+
+function renderRec(){
+  const box=$('rec');
+  if(!cur||isBatch()){box.hidden=true;return}
+  const list=(REC[tab][cur]||[]).slice(0,10);
+  const name=LABEL[tab];
+  const more=tab==='code'?'':`<span class="more" id="more">查看全部 ›</span><span class="mk">5</span>`;
+  let tip='';
+  if(list.length){
+    const ti=timeIdx[tab],oi=opIdx[tab];
+    const last=list[0];
+    const n24=list.filter(r=>NOW-parse(r[ti])<=864e5).length;
+    tip = n24
+      ? `<div class="tip warn">最近一次：${last[ti]}（${ago(last[ti])}），操作人 ${last[oi]}。近24小时内已有 ${n24} 条${name}记录，请核对是否重复操作。<span class="mk">4</span></div>`
+      : `<div class="tip">最近一次：${last[ti]}（${ago(last[ti])}），操作人 ${last[oi]}<span class="mk">4</span></div>`;
+  }
+  box.innerHTML=`<h4>最近${name}记录 <small>（用户ID ${cur}，最近10条）</small><span class="mk">1</span><span class="mk">2</span><span class="mk">3</span>${more}</h4>${tip}
+  <div class="scroll"><table><thead><tr>${HEAD[tab].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>
+  ${list.length?list.map((r,i)=>rowHtml(r,fresh===tab&&i===0)).join(''):`<tr><td colspan="${HEAD[tab].length}" class="empty">该用户暂无${name}记录</td></tr>`}
+  </tbody></table></div>`;
+  box.hidden=false;
+  const m=$('more'); if(m) m.onclick=()=>toast(`打开【${tab==='dep'?'人工存款记录':'人工提款记录'}】，带入用户ID ${cur}，时间近30天`);
+}
+
+function reset(){cur=null;fresh=null;fillInfo(null);renderRec()}
+
+function query(){
+  const id=$('uid').value.trim();
+  if(!id){toast('请输入用户ID',1);return}
+  const u=USERS[id];
+  if(!u){cur=null;fillInfo(null);renderRec();toast('用户不存在',1);return}
+  cur=id;fresh=null;fillInfo(u);renderRec();toast('查询成功');
+}
+
+function submit(e){
+  e.preventDefault();
+  if(isBatch()){toast('批量模式：提交逻辑不变，本次不展示记录');return}
+  if(!cur){toast('请先查询用户',1);return}
+  const a=parseFloat($('amt').value)||0;
+  const remark=$('remark').value.trim();
+  if(tab==='dep'&&!a&&!(parseFloat($('amt2').value)||0)){toast('请输入存款金额',1);return}
+  if(tab!=='dep'&&!a){toast('请输入'+(tab==='wd'?'出款金额':'打码量'),1);return}
+  if(!remark){toast('请输入备注',1);return}
+  if(tab!=='dep'&&!$('pwd').value){toast('请输入二级密码',1);return}
+  const u=USERS[cur], t=fmt(NOW), op='ben';
+  const no=t.replace(/\D/g,'')+String(Math.floor(Math.random()*1e6)).padStart(6,'0');
+  REC[tab][cur]=REC[tab][cur]||[];
+  if(tab==='dep'){
+    const b=parseFloat($('amt2').value)||0;
+    const audit=(on,mode,v,base)=>document.querySelector(`input[name=${on}]:checked`).value==='0'?0:($(mode).value==='x'?base*(parseFloat($(v).value)||0):(parseFloat($(v).value)||0));
+    u.bal+=a+b;
+    REC.dep[cur].unshift([no,document.querySelector('input[name=dtype]:checked').value,a,b,audit('a1','m1','v1',a),audit('a2','m2','v2',b),u.bal,op,t,remark]);
+  }else if(tab==='wd'){
+    if(a>u.bal){toast('余额不足',1);return}
+    u.bal-=a;
+    REC.wd[cur].unshift([no,'人工取款',a,u.bal,op,t,remark]);
+  }else{
+    REC.code[cur].unshift([a,op,t,remark]);
+  }
+  fresh=tab;fillInfo(u);
+  $('amt').value='';$('remark').value='';if($('pwd'))$('pwd').value='';
+  renderRec();toast('提交成功');
+}
+
+$('tabs').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  tab=b.dataset.t;$('uid').value='';renderFields();reset();
+};
+document.querySelectorAll('input[name=batch]').forEach(r=>r.onchange=()=>{
+  const bt=isBatch();$('rowUid').hidden=bt;$('rowUids').hidden=!bt;$('info').hidden=bt;
+  if(bt){$('uid').value='';reset()}
+});
+$('merchant').onchange=()=>{$('uid').value='';reset()};
+$('qbtn').onclick=query;
+$('uid').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();query()}};
+$('f').onsubmit=submit;
+$('xls').onclick=()=>toast('Excel导入：沿用现有逻辑');
+document.querySelector('.demo').onclick=e=>{const b=e.target.closest('b');if(b){$('uid').value=b.dataset.id;query()}};
+renderFields();
+
+const IC = {
+  user:'<path d="M10 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 18c0-3.5 3-6 7-6s7 2.5 7 6"/>',
+  money:'<rect x="2" y="5" width="16" height="11" rx="1.5"/><circle cx="10" cy="10.5" r="2.5"/>',
+  game:'<rect x="2" y="6" width="16" height="9" rx="4"/><path d="M6 9v3M4.5 10.5h3M13 10h.01M15 11.5h.01"/>',
+  agent:'<circle cx="6" cy="6" r="2.5"/><circle cx="14" cy="6" r="2.5"/><path d="M2 17c0-2.5 2-4.5 4-4.5s4 2 4 4.5M10 17c0-2.5 2-4.5 4-4.5s4 2 4 4.5"/>',
+  report:'<path d="M3 17V3M3 17h14M7 14V9M11 14V6M15 14v-3"/>',
+  chat:'<path d="M3 4h14v9H8l-4 3v-3H3z"/>',
+  mic:'<rect x="7" y="2" width="6" height="10" rx="3"/><path d="M4 9a6 6 0 0 0 12 0M10 15v3"/>',
+  gift:'<rect x="3" y="7" width="14" height="10"/><path d="M2 7h16M10 7v10M10 7c-2-4-5-3-4-1s4 1 4 1c2-4 5-3 4-1s-4 1-4 1"/>',
+  msg:'<rect x="2" y="4" width="16" height="12" rx="1"/><path d="M2 5l8 6 8-6"/>',
+  ch:'<circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3c2.5 2.5 2.5 11.5 0 14M10 3c-2.5 2.5-2.5 11.5 0 14"/>',
+  ad:'<rect x="2" y="4" width="16" height="12" rx="1"/><path d="M6 13l2-6 2 6M6.7 11h2.6M12 7v6h1.5a3 3 0 0 0 0-6z"/>',
+  set:'<circle cx="10" cy="10" r="2.5"/><path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.3 4.3l2.1 2.1M13.6 13.6l2.1 2.1M4.3 15.7l2.1-2.1M13.6 6.4l2.1-2.1"/>',
+  card:'<rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 8h6M7 12h4"/>',
+  code:'<rect x="3" y="8" width="14" height="9" rx="1"/><path d="M6 8V5a4 4 0 0 1 8 0v3"/>',
+  video:'<rect x="2" y="5" width="12" height="10" rx="1"/><path d="M14 9l4-2v6l-4-2"/>'
+};
+const MENU = [
+  ['会员管理','user',['会员列表','层级管理','用户银行卡列表','用户USDT列表','用户钱包列表','用户支付宝列表','登录查询','用户签到记录','VIP会员卡配置','VIP会员卡记录','VIP彩金配置','VIP彩金记录']],
+  ['财务管理','money',['人工存提','出入款模板','即时稽核查询','人工存款记录','人工提款记录','批量人工存款列表',
+    ['支付管理',['第三方代付','支付栏目','支付商户配置','支付渠道管理','钱包类型','支付错误日志','线上入款','托管支付订单']],
+    ['提现管理',['提现列表','免提直充','托管代付订单','代付错误日志']],
+    ['内嵌钱包管理',['钱包支付商户配置','用户内嵌钱包列表']]]],
+  ['游戏管理','game',['平台列表','游戏列表','栏目列表','彩票开奖结果','用户跟单记录']],
+  ['代理系统','agent',['代理费率配置','顶级代理','代理查询','每日数据','佣金明细','代理佣金设置']],
+  ['报表管理','report',['游戏记录','游戏报表','提现报表','充值报表','资金明细','彩票注单','红包发送记录','红包领取记录','额度管理','游戏平台上下分','短剧购买记录']],
+  ['聊天群组','chat',['群组列表','聊天记录','聊天室列表']],
+  ['主播管理','mic',['订单列表','打赏记录']],
+  ['聊天卡管理','card',['商城','订单','我的聊天卡','使用记录']],
+  ['数据统计','report',['总数据分析','总数据分析日统计','渠道日统计','活跃留存','观影日活统计','每日用户数据统计','彩金统计','导出列表']],
+  ['活动管理','gift',['活动分类管理','普通活动列表','活动列表','活动领取记录','每日返奖登记列表','大转盘开奖记录','红包雨活动管理','红包雨发放记录']],
+  ['视频管理','video',['短剧管理']],
+  ['验证码查询','code',['验证码列表']],
+  ['短信模板管理','msg',['短信模板列表']],
+  ['渠道管理','ch',['渠道列表']],
+  ['广告位管理','ad',['广告列表']],
+  ['系统管理','set',['操作日志','禁言/封号列表','角色管理','管理员','管理员登录日志','客服管理','公告管理','站内信','渠道配置','任务中心配置','APP版本更新','白名单管理']]
+];
+const ARR='<svg class="arr" viewBox="0 0 10 10"><path d="M1.5 3.5L5 7l3.5-3.5"/></svg>';
+const ACTIVE='人工存提';
+const leaf=n=>`<li><div class="t${n===ACTIVE?' on':''}" data-leaf="${n}">${n}</div></li>`;
+const sub=(n,kids)=>{const on=kids.includes(ACTIVE);return `<li class="${on?'open has-on':''}"><div class="t">${n}${ARR}</div><ul>${kids.map(leaf).join('')}</ul></li>`};
+$('nav').innerHTML=MENU.map(([n,ic,kids])=>{
+  const on=kids.some(k=>k===ACTIVE);
+  return `<li class="${on?'open has-on':''}"><div class="t"><svg viewBox="0 0 20 20">${IC[ic]}</svg>${n}${ARR}</div><ul>${kids.map(k=>Array.isArray(k)?sub(k[0],k[1]):leaf(k)).join('')}</ul></li>`;
+}).join('');
+$('nav').onclick=e=>{
+  const t=e.target.closest('.t');if(!t)return;
+  if(t.dataset.leaf){if(t.dataset.leaf!==ACTIVE)toast(`【${t.dataset.leaf}】为现有页面，本原型不涉及`);return}
+  t.parentElement.classList.toggle('open');
+};
+$('ham').onclick=()=>document.querySelector('.app').classList.toggle('fold');
+}
+</script>
+</body>
+</html>

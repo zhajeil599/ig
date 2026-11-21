@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用户划转 - 交互原型</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;color:#303133;background:#f0f2f5;height:100vh;display:flex;overflow:hidden}
+a{color:#409eff;cursor:pointer;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:13px}
+.new{display:inline-block;background:#ff7a00;color:#fff;font-size:10px;line-height:15px;padding:0 4px;border-radius:3px;margin-left:4px;vertical-align:middle;font-weight:normal}
+/* sitemap */
+#map{width:170px;background:#fff;border-right:1px solid #e4e7ed;overflow:auto;flex-shrink:0}
+#map h1{font-size:15px;padding:16px 14px 10px;border-bottom:1px solid #eee}
+#map .grp{padding:12px 14px 4px;color:#909399;font-size:12px}
+#map .it{padding:7px 14px 7px 24px;cursor:pointer;color:#303133}
+#map .it:hover{background:#f5f7fa}
+#map .it.on{background:#ecf5ff;color:#409eff;border-right:3px solid #409eff}
+#map .legend{margin:14px;padding:8px;background:#fff7e6;border:1px solid #ffd591;border-radius:4px;font-size:12px;color:#ad6800;line-height:1.6}
+/* stage */
+#stage{flex:1;overflow:auto;padding:16px;display:flex;gap:14px;align-items:flex-start}
+#canvas{flex:1;min-width:0}
+#notes{width:300px;flex-shrink:0;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;padding:14px 16px;position:sticky;top:0;max-height:calc(100vh - 40px);overflow:auto;line-height:1.75}
+#notes h3{font-size:14px;margin-bottom:6px;color:#874d00}
+#notes h4{font-size:13px;margin:10px 0 2px;color:#303133}
+#notes ol,#notes ul{padding-left:18px}
+#notes li{margin:2px 0}
+#notes .demo{margin-top:12px;padding-top:10px;border-top:1px dashed #e8d48a;font-size:12px;color:#8c6d1f}
+/* admin shell */
+.adm{display:flex;background:#fff;border:1px solid #dcdfe6;min-height:640px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.adm-side{width:150px;background:#1f2d3d;color:#bfcbd9;flex-shrink:0}
+.adm-side .logo{color:#fff;font-size:17px;font-weight:600;padding:16px}
+.adm-side .m{padding:11px 16px;cursor:default;color:#bfcbd9}
+.adm-side .m.open{color:#fff}
+.adm-side .s{padding:9px 16px 9px 36px;background:#18222e;cursor:pointer;color:#bfcbd9}
+.adm-side .s:hover{color:#fff}
+.adm-side .s.on{color:#409eff;background:#111a24}
+.adm-side .s.dim{cursor:default;opacity:.55}
+.adm-main{flex:1;min-width:0;background:#f0f2f5}
+.adm-top{height:46px;background:#fff;border-bottom:1px solid #e6e6e6;display:flex;align-items:center;padding:0 16px;color:#606266;justify-content:space-between}
+.adm-body{padding:14px}
+.card{background:#fff;padding:14px;border-radius:4px;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.filters label{color:#606266;margin-right:6px}
+.ipt{height:30px;border:1px solid #dcdfe6;border-radius:4px;padding:0 9px;outline:none;width:160px}
+.ipt:focus{border-color:#409eff}
+.ipt.err{border-color:#f56c6c}
+.btn{height:30px;padding:0 14px;border-radius:4px;border:1px solid #dcdfe6;background:#fff;color:#606266}
+.btn.p{background:#409eff;border-color:#409eff;color:#fff}
+.btn.d{color:#f56c6c;border-color:#fbc4c4;background:#fef0f0}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+table.t{width:100%;border-collapse:collapse;background:#fff}
+table.t th{background:#f5f7fa;color:#606266;font-weight:500;padding:9px 8px;border:1px solid #ebeef5;white-space:nowrap}
+table.t td{padding:9px 8px;border:1px solid #ebeef5;text-align:center;line-height:1.5;white-space:nowrap}
+.log td{white-space:normal}
+.card{overflow-x:auto}
+.tag{display:inline-block;padding:0 7px;border-radius:3px;font-size:12px;line-height:20px}
+.tag.on{background:#f0f9eb;color:#67c23a;border:1px solid #e1f3d8}
+.tag.off{background:#fef0f0;color:#f56c6c;border:1px solid #fde2e2}
+.pager{display:flex;justify-content:flex-end;gap:8px;align-items:center;padding:10px 0 0;color:#606266}
+.q{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;border-radius:50%;background:#c0c4cc;color:#fff;font-size:10px;margin-left:3px;cursor:help;position:relative;font-style:normal}
+.q:hover::after{content:attr(data-tip);position:absolute;left:18px;top:-6px;background:#303133;color:#fff;padding:6px 9px;border-radius:4px;white-space:pre;font-size:12px;line-height:1.5;z-index:99;text-align:left}
+.empty{color:#909399;padding:24px;text-align:center}
+.place{display:flex;align-items:center;justify-content:center;height:640px;border:2px dashed #c0c4cc;color:#909399;font-size:18px;background:#fafafa;border-radius:6px}
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50}
+.dlg{background:#fff;border-radius:6px;width:460px;max-height:90vh;overflow:auto}
+.dlg .hd{padding:14px 18px;border-bottom:1px solid #eee;font-size:15px;font-weight:600;display:flex;justify-content:space-between}
+.dlg .bd{padding:18px}
+.dlg .ft{padding:12px 18px;border-top:1px solid #eee;text-align:right;display:flex;gap:8px;justify-content:flex-end}
+.fr{margin-bottom:16px}
+.fr>.lb{display:block;margin-bottom:6px;color:#606266}
+.req{color:#f56c6c}
+.errtxt{color:#f56c6c;font-size:12px;margin-top:4px}
+.sw{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.sw i{width:38px;height:20px;border-radius:10px;background:#dcdfe6;position:relative;transition:.2s}
+.sw i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on i{background:#409eff}
+.sw.on i::after{left:20px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 12px;margin-bottom:12px;color:#606266}
+/* mobile */
+.phone{width:375px;height:720px;background:#fff;border:1px solid #dcdfe6;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.06);margin:0 auto}
+.ph-hd{height:50px;background:#565656;color:#fff;display:flex;align-items:center;justify-content:center;position:relative;font-size:17px;flex-shrink:0}
+.ph-hd .bk{position:absolute;left:12px;font-size:22px;cursor:pointer;width:30px}
+.ph-hd .rt{position:absolute;right:12px;font-size:13px;cursor:pointer;color:#fff;padding:4px 6px;border-radius:3px}
+.ph-bd{flex:1;overflow:auto;position:relative}
+.m-lb{font-size:16px;font-weight:600;margin:14px 14px 8px;display:flex;justify-content:space-between;align-items:center}
+.m-lb small{font-size:12px;font-weight:normal;color:#606266;cursor:pointer}
+.m-ipt{margin:0 14px;background:#f2f2f2;border-radius:8px;height:46px;display:flex;align-items:center;padding:0 12px}
+.m-ipt input{flex:1;border:none;background:transparent;outline:none;font-size:14px}
+.m-ipt .ic{width:24px;height:24px;border:1.5px solid #888;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#666;font-size:12px}
+.m-ipt.err{box-shadow:0 0 0 1px #f56c6c inset}
+.m-err{color:#f56c6c;font-size:12px;margin:5px 16px 0}
+.m-sub{font-size:12px;color:#606266;margin:6px 18px 0;display:flex;align-items:center}
+.m-btn{margin:36px 14px 0;height:44px;border:none;border-radius:6px;background:#409eff;color:#fff;font-size:15px;width:calc(100% - 28px)}
+.m-btn:disabled{background:#a0cfff}
+.payee{margin:10px 14px 0;background:#f2f2f2;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.av{width:38px;height:38px;border-radius:50%;background:#555;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.payee .nm{font-size:15px;font-weight:600}
+.payee .id{font-size:12px;color:#606266}
+.sbtn{margin-left:auto;background:#409eff;color:#fff;border:none;border-radius:4px;font-size:12px;padding:5px 10px}
+.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;z-index:20;max-width:80%;text-align:center}
+.sheet{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:15}
+.sheet .box{background:#fff;border-radius:10px;width:290px;padding:22px 18px 16px;text-align:center}
+.sheet .box h3{font-size:17px;margin-bottom:6px}
+.sheet .amt{font-size:26px;font-weight:700;margin:6px 0}
+.sheet .row{display:flex;gap:10px;margin-top:16px}
+.sheet .row button{flex:1;height:38px;border-radius:6px;border:1px solid #409eff;background:#fff;color:#409eff}
+.sheet .row button.p{background:#409eff;color:#fff}
+.letter{padding:6px 14px;background:#f5f5f5;color:#909399;font-size:12px}
+.fitem{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #f2f2f2;cursor:pointer}
+.fitem .rd{margin-left:auto;width:18px;height:18px;border-radius:50%;border:1.5px solid #c0c4cc}
+.fitem.on .rd{border-color:#409eff;background:#409eff;box-shadow:0 0 0 3px #fff inset}
+.ph-foot{padding:10px 14px;border-top:1px solid #eee;flex-shrink:0}
+.tabs{display:flex;border-bottom:1px solid #eee;flex-shrink:0;overflow-x:auto}
+.tabs div{padding:11px 0;flex:1;text-align:center;cursor:pointer;color:#606266;white-space:nowrap;min-width:52px}
+.tabs div.on{color:#409eff;border-bottom:2px solid #409eff;font-weight:600}
+.timef{padding:8px 14px;font-size:12px;color:#606266;display:flex;gap:8px;flex-shrink:0}
+.timef span{padding:3px 9px;border-radius:12px;background:#f2f2f2;cursor:pointer}
+.timef span.on{background:#ecf5ff;color:#409eff}
+.rec{padding:12px 14px;border-bottom:1px solid #f2f2f2;display:flex;justify-content:space-between;cursor:pointer}
+.rec .l b{font-size:14px;display:block;margin-bottom:3px}
+.rec .l p{font-size:11px;color:#909399;line-height:1.6}
+.rec .r{text-align:right}
+.rec .r .st{font-size:12px;color:#67c23a}
+.rec .r .a{font-size:15px;font-weight:600;margin-top:4px}
+.plus{color:#e6a23c}.minus{color:#303133}
+.mine-list .row{padding:15px 16px;border-bottom:1px solid #f2f2f2;display:flex;justify-content:space-between;cursor:pointer}
+.botnav{display:flex;border-top:1px solid #eee;flex-shrink:0}
+.botnav div{flex:1;text-align:center;padding:8px 0;font-size:11px;color:#909399}
+.botnav div.on{color:#409eff}
+.det{padding:22px 16px;text-align:center;border-bottom:8px solid #f5f5f5}
+.det .a{font-size:30px;font-weight:700;margin:8px 0}
+.dl{display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f2f2f2;font-size:13px}
+.dl span:first-child{color:#909399}
+.log td{text-align:left}
+/* 我的(深色) */
+.phone.dk{background:#121216;color:#fff}
+.dk .ph-bd{background:#121216}
+.mh{display:flex;align-items:center;gap:12px;padding:22px 14px 14px;position:relative}
+.mav{width:58px;height:58px;border-radius:50%;background:#3a3a44;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:12px;color:#aaa}
+.mname{font-size:18px;font-weight:700;display:flex;align-items:center;gap:6px}
+.lvb{background:linear-gradient(#f7c56a,#c97a1c);color:#fff;font-size:11px;border-radius:9px;padding:0 8px;line-height:18px}
+.mid{font-size:13px;font-weight:600;margin-top:4px}
+.bell{position:absolute;right:16px;top:18px;font-size:20px}
+.bell i{position:absolute;top:-6px;right:-10px;background:#ff3b5c;color:#fff;font-size:10px;font-style:normal;border-radius:8px;padding:0 4px;line-height:15px}
+.vipc{margin:0 10px;border-radius:8px;padding:10px 12px;background:linear-gradient(90deg,#3b2a12,#1e1a14);border:1px solid #5a4420;display:flex;gap:8px;align-items:center}
+.vt{color:#f5d08a;font-weight:700;font-size:14px}
+.vs{font-size:10.5px;color:#e8dcc4;margin-top:2px;line-height:1.4}
+.vbtn{flex-shrink:0;background:linear-gradient(#fbe3a6,#e2b765);color:#5a3a10;font-weight:700;border-radius:18px;padding:8px 14px;position:relative;font-size:13px}
+.vbtn i{position:absolute;top:-10px;right:-4px;background:#ff3b30;color:#fff;font-size:9px;font-style:normal;padding:1px 5px;border-radius:6px 6px 6px 0}
+.two{display:flex;gap:10px;margin:10px}
+.gc{flex:1;height:64px;border-radius:8px;background:linear-gradient(120deg,#3a2c10,#1d1a14);border:1px solid #4a3a1a;padding:9px 10px}
+.gc b{display:block;color:#f5d08a;font-size:14px}
+.gc span{font-size:10px;color:#d8ccb4;line-height:1.4}
+.banner{margin:0 10px;height:150px;border-radius:8px;border:1px dashed #555;background:#1d1d24;display:flex;align-items:center;justify-content:center;color:#888;position:relative;font-size:14px}
+.dots{position:absolute;bottom:8px;display:flex;gap:4px}
+.dots i{width:5px;height:5px;border-radius:50%;background:#666}.dots i.on{background:#ff3b5c}
+.balc{margin:10px;border-radius:10px;background:linear-gradient(180deg,#2a2328,#1f1d22);padding:18px 14px;position:relative;text-align:center}
+.getback{position:absolute;right:12px;top:12px;font-size:11px;color:#e8d3a0}
+.bal{color:#ff3b5c;font-size:22px;font-weight:700;margin-top:8px}
+.ball{font-size:12px;margin-top:2px}
+.bbtns{display:flex;gap:12px;margin-top:16px}
+.bbtns button{flex:1;height:42px;border-radius:21px;font-size:16px;font-weight:600}
+.bbtns.three{gap:8px}.bbtns.three button{font-size:15px}
+.bf{border:none;color:#fff;background:linear-gradient(90deg,#ff8a6a,#ff3b5c)}
+.bo{background:transparent;border:1.5px solid #ddd;color:#fff}
+.func{margin:0 10px 10px;border-radius:10px;background:#1f1f25;padding:14px 6px}
+.func .ft{font-size:15px;font-weight:600;padding:0 10px 10px;color:#ddd}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);row-gap:20px}
+.grid div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12.5px;color:#eee}
+.botnav.dkn{background:#16161b;border-top:1px solid #26262c}
+.dkn div{color:#9a9aa3}.dkn div.on{color:#ff3b5c}
+/* 添加好友 */
+.phone.af{background:#221d3a;color:#fff}
+.af .ph-bd{background:#221d3a}
+.aftop{display:flex;gap:22px;padding:12px 14px 8px;font-size:15px;color:#bbb;background:linear-gradient(90deg,#2a2346,#1e2a40);flex-shrink:0}
+.aftop .on{color:#fff;font-weight:700;border-bottom:3px solid #2de0c7;padding-bottom:4px}
+.afsub{display:flex;gap:10px;padding:8px 14px;flex-shrink:0}
+.afsub span{flex:1;text-align:center;background:#2d2848;border-radius:14px;padding:5px 0;font-size:12px;color:#ccc}
+.afsub span.on{color:#2de0c7;font-weight:600}
+.afback{padding:12px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.afp{display:flex;gap:12px;padding:4px 14px 14px;font-size:12px;line-height:1.5}
+.afp b{font-size:16px}
+.afav{width:60px;height:60px;background:#3a3456;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px}
+.afl{padding:6px 14px;font-size:13px;font-weight:600}
+.aft{margin:0 14px;width:calc(100% - 28px);height:78px;background:transparent;border:1px solid #4a4466;color:#fff;resize:none;outline:none;padding:6px}
+.afr{display:flex;justify-content:space-between;padding:14px;border-top:1px solid #3a3456;margin-top:8px;font-size:13px;font-weight:600}
+.afsend{text-align:center;color:#3d8bff;font-size:14px;margin-top:22px;cursor:pointer}
+/* 重置支付密码 */
+.phone.fg{background:#000;color:#fff}
+.fg .ph-bd{background:#000}
+.fl{margin:16px 14px 8px;font-size:15px;font-weight:600}
+.fi{margin:0 14px;background:#f7f7f7;border-radius:3px;height:38px;display:flex;align-items:center;padding:0 12px;color:#333;font-size:13px}
+.fi input{flex:1;border:none;background:transparent;outline:none;font-size:13px}
+.fgbtn{margin:26px 14px 0;width:calc(100% - 28px);height:36px;border:none;border-radius:4px;color:#fff;font-weight:600;background:linear-gradient(90deg,#ff8a6a,#ff3b5c)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="stage"><div id="canvas"></div><div id="notes"></div></div>
+
+<script>
+/* ============ 数据 ============ */
+const ME='100039991';
+const MEMBERS={
+ '100039991':{n:'无家可归aegp',lv:'充值500-2000',ch:'官方渠道'},
+ '100012345':{n:'特朗普8848',lv:'充值0-500',ch:'官方渠道'},
+ '100041118':{n:'风行者',lv:'充值500-1000',ch:'官方渠道'},
+ '100040958':{n:'投资达人',lv:'充值500-1000',ch:'谷歌'},
+ '100041105':{n:'小鱼儿',lv:'充值5000以上',ch:'FaceBook'},
+ '100020001':{n:'阿龙',lv:'充值0-500',ch:'官方渠道'},
+ '100020002':{n:'阿杰',lv:'充值0-500',ch:'抖音推广'},
+ '100020003':{n:'白马',lv:'充值500-1000',ch:'官方渠道'},
+ '100020004':{n:'成哥',lv:'充值2000以上',ch:'谷歌'}
+};
+let FRIENDS=[['A',['100020001','100020002']],['B',['100020003']],['C',['100020004']],['T',['100012345']]];
+const PY={'100041118':'F','100040958':'T','100041105':'X'};
+const isFriend=id=>FRIENDS.some(f=>f[1].includes(id));
+function addFriend(id){const L=PY[id]||'#';let g=FRIENDS.find(f=>f[0]===L);if(!g){g=[L,[]];FRIENDS.push(g);FRIENDS.sort((a,b)=>a[0].localeCompare(b[0]))}if(!g[1].includes(id))g[1].push(id)}
+function sendApply(id){addFriend(id);go('c-transfer');toast('添加好友成功')}
+let CONFIG=[
+ {id:'100039991',on:true,min:100,max:5000,mul:1.5},
+ {id:'100041118',on:true,min:100,max:50000,mul:1.5},
+ {id:'100040958',on:false,min:0,max:10000,mul:2}
+];
+let RECORDS=[
+ {no:'202608072254525910947',from:'100041118',to:'100012345',amt:800,t:'2026-08-07 22:54:52',rm:'-'},
+ {no:'202608072247371250785',from:'100040958',to:'100012345',amt:3000,t:'2026-08-07 22:47:37',rm:'-'},
+ {no:'202608072247371250782',from:'100041105',to:'100012345',amt:20,t:'2026-08-07 16:32:54',rm:'-'},
+ {no:'202611201530110021001',from:'100039991',to:'100020003',amt:200,t:'2026-11-20 15:30:11',rm:'-'},
+ {no:'202611191208450021002',from:'100041118',to:'100039991',amt:500,t:'2026-11-19 12:08:45',rm:'-'}
+];
+const S={balance:1234.56,pwd:'123456',betLeft:0,adminRecFilter:{},histTab:'all',histTime:'近7天',tradeTab:'划转',detail:null,
+ tf:{id:'',payee:null,amt:'',pwd:'',showPwd:false,err:{}},friendSel:null};
+
+const fmt=n=>Number(n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const myCfg=()=>CONFIG.find(c=>c.id===ME);
+const now=()=>{const d=new Date(2026,10,21,11,2,33);return d.toISOString().slice(0,10)+' 11:02:33'};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ 页面目录 ============ */
+const PAGES=[
+ {g:'说明'},
+ {id:'log',n:'修改日志'},
+ {g:'代理后台'},
+ {id:'a-member',n:'会员列表'},
+ {id:'a-withdraw',n:'提现列表'},
+ {id:'a-record',n:'划转记录'},
+ {id:'a-config',n:'划转配置'},
+ {id:'a-fund',n:'资金明细'},
+ {g:'客户端'},
+ {id:'c-mine',n:'我的'},
+ {id:'c-transfer',n:'划转'},
+ {id:'c-friend',n:'划转-选择好友'},
+ {id:'c-history',n:'划转记录'},
+ {id:'c-detail',n:'划转详情'},
+ {id:'c-trade',n:'交易记录'},
+ {id:'c-addfriend',n:'添加好友(现有页面)'},
+ {id:'c-forgot',n:'重置支付密码(现有页面)'}
+];
+let cur='log';
+function renderMap(){
+ document.getElementById('map').innerHTML='<h1>用户划转</h1>'+PAGES.map(p=>p.g?`<div class="grp">${p.g}</div>`:`<div class="it ${p.id===cur?'on':''}" onclick="go('${p.id}')">${p.n}</div>`).join('');
+}
+function go(id,opt){closeModal();cur=id;if(opt)Object.assign(S,opt);renderMap();render();document.getElementById('stage').scrollTop=0}
+
+/* ============ 后台外壳 ============ */
+const MENU=[
+ ['会员管理',[['会员列表','a-member']]],
+ ['财务管理',[['提现列表','a-withdraw'],['划转记录','a-record'],['划转配置','a-config']]],
+ ['报表查询',[['资金明细','a-fund']]],
+ ['系统管理',[['渠道配置','']]]
+];
+function adm(active,crumb,body){
+ return `<div class="adm"><div class="adm-side"><div class="logo">代理后台</div>`+
+ MENU.map(([m,subs])=>{const open=subs.some(s=>s[1]===active);return `<div class="m ${open?'open':''}">${m}</div>`+subs.map(s=>`<div class="s ${s[1]===active?'on':''} ${s[1]?'':'dim'}" ${s[1]?`onclick="go('${s[1]}')"`:''}>${s[0]}</div>`).join('')}).join('')+
+ `<div class="m">游戏管理</div><div class="m">代理系统</div><div class="m">活动管理</div></div>
+ <div class="adm-main"><div class="adm-top"><span>首页 / ${crumb}</span><span>admin　余额：123456.78</span></div><div class="adm-body">${body}</div></div></div>`;
+}
+const q=tip=>`<i class="q" data-tip="${esc(tip)}">?</i>`;
+
+/* ============ 各页面 ============ */
+const V={};
+
+V.log=()=>{
+ const rows=[
+  ['代理后台','财务管理-划转配置','新增独立菜单。按会员添加/编辑/删除划转配置：划转功能开关、单次划转下限与上限、收款方打码量倍数；支持按会员ID查询。'],
+  ['代理后台','财务管理-划转记录','新增划转订单列表，展示转出方与转入方的用户ID、昵称、层级及金额、时间；支持按时间、订单号、转出/转入用户ID查询及导出。'],
+  ['代理后台','报表查询-资金明细','增加划转收入、划转支出账变。'],
+  ['代理后台','会员列表','金流统计划转金额；会员详情增加划转次数/金额及明细入口。'],
+  ['代理后台','提现列表','金流统计划转金额。'],
+  ['客户端','我的','余额区在充值与提现之间增加「划转」按钮。'],
+  ['客户端','划转','支持输入用户ID或选择通讯录好友划转，需输入支付密码确认；右上角为划转记录入口。'],
+  ['客户端','划转记录 / 划转详情','展示会员的划转历史订单（全部/转出/转入）及单笔详情。'],
+  ['客户端','交易记录','增加划转页签，展示划转收入、划转支出。']
+ ];
+ return `<div class="card"><h2 style="text-align:center;font-size:24px;margin:10px 0 18px">修改日志</h2>
+ <table class="t log"><tr><th>日期</th><th>系统端</th><th>页面</th><th>改动点</th></tr>${rows.map(r=>`<tr><td style="text-align:center">2026.10.4</td><td style="text-align:center">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</table></div>`;
+};
+
+function sumIn(id){const r=RECORDS.filter(x=>x.to===id);return {c:r.length,a:r.reduce((s,x)=>s+x.amt,0)}}
+V['a-member']=()=>{
+ const list=['100039991','100012345'];
+ return adm('a-member','会员管理 / 会员列表',`<div class="card"><div class="filters">
+ <span><label>渠道商</label><input class="ipt" placeholder="请选择"></span><span><label>用户ID</label><input class="ipt"></span><span><label>层级</label><select class="ipt"><option>全部</option></select></span>
+ <button class="btn p">查询</button><button class="btn">重置</button></div></div>
+ <div class="card"><table class="t"><tr><th>渠道商</th><th>昵称/ID/层级</th><th>资产</th><th>金流</th><th>状态</th><th>详情</th></tr>
+ ${list.map(id=>{const m=MEMBERS[id],s=sumIn(id);return `<tr><td>${m.ch}</td><td>${m.n}<br>${id}<br>${m.lv}</td><td>余额:${id===ME?fmt(S.balance):'5,200.00'}</td>
+ <td style="text-align:left">充值:1858<span style="color:#e6a23c">+${s.a}(划转)</span> | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td><td>启用</td><td><a onclick="memberDlg('${id}')">详情</a></td></tr>`}).join('')}
+ </table></div>`);
+};
+function memberDlg(id){
+ const m=MEMBERS[id],s=sumIn(id);
+ modal(`<div class="dlg" style="width:640px"><div class="hd">概况<span style="cursor:pointer" onclick="closeModal()">✕</span></div><div class="bd">
+ <div class="kv"><span>用户ID：${id}</span><span>用户昵称：${m.n}</span><span>用户层级：${m.lv}</span><span>余额：${id===ME?fmt(S.balance):'5,200.00'}</span><span>账号状态：启用</span><span>总充值：1858</span></div>
+ <div style="margin-bottom:8px"><span class="tag on">今日</span> 昨日　本月　上月</div>
+ <table class="t"><tr><td>有效投注</td><td>85080</td></tr><tr><td>游戏盈亏</td><td>17480</td></tr><tr><td>充值</td><td>2次/5000　<a>明细</a></td></tr>
+ <tr><td>划转${q('统计该会员收到的划转（转入）次数及金额')}</td><td>${s.c}次/${s.a}　<a onclick="closeModal();go('a-record',{adminRecFilter:{to:'${id}'}})">明细</a></td></tr>
+ <tr><td>提现</td><td>0次/0　<a>明细</a></td></tr><tr><td>提充客损</td><td>10000</td></tr></table></div>
+ <div class="ft"><button class="btn">刷新</button><button class="btn" onclick="closeModal()">关闭</button></div></div>`);
+}
+
+V['a-withdraw']=()=>adm('a-withdraw','财务管理 / 提现列表',`<div class="card"><table class="t"><tr><th>订单号</th><th>用户ID</th><th>提现金额</th><th>金流</th><th>状态</th></tr>
+ ${[['W2026112010001','100039991',300],['W2026112010002','100012345',1000]].map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td style="text-align:left">充值:1858<span style="color:#e6a23c">+${sumIn(r[1]).a}(划转)</span> | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td><td>待审核</td></tr>`).join('')}</table></div>`);
+
+V['a-record']=()=>{
+ const f=S.adminRecFilter||{};
+ const list=RECORDS.filter(r=>(!f.no||r.no.includes(f.no))&&(!f.from||r.from===f.from)&&(!f.to||r.to===f.to));
+ return adm('a-record','财务管理 / 划转记录',`<div class="card"><div class="filters">
+ <span><label>转账时间</label><input class="ipt" style="width:220px" placeholder="开始日期 至 结束日期"></span>
+ <span><label>订单号</label><input class="ipt" id="fno" value="${f.no||''}"></span>
+ <span><label>转出用户ID</label><input class="ipt" id="ffrom" value="${f.from||''}"></span>
+ <span><label>转入用户ID</label><input class="ipt" id="fto" value="${f.to||''}"></span>
+ <button class="btn p" onclick="S.adminRecFilter={no:fno.value.trim(),from:ffrom.value.trim(),to:fto.value.trim()};render()">查询</button>
+ <button class="btn" onclick="render()">刷新</button><button class="btn" onclick="S.adminRecFilter={};render()">重置</button><button class="btn">导出</button></div></div>
+ <div class="card" style="overflow:auto"><table class="t"><tr><th>渠道商${q('转出会员所属渠道')}</th><th>订单号</th><th>转出用户ID</th><th>转出用户昵称</th><th>转出会员层级</th><th>转账金额</th><th>转入用户ID</th><th>转入会员昵称</th><th>转入会员层级</th><th>转账时间</th><th>备注</th></tr>
+ ${list.length?list.map(r=>{const a=MEMBERS[r.from],b=MEMBERS[r.to];return `<tr><td>${a.ch}</td><td>${r.no}</td><td>${r.from}</td><td>${a.n}</td><td>${a.lv}</td><td>${r.amt}</td><td>${r.to}</td><td>${b.n}</td><td>${b.lv}</td><td>${r.t}</td><td>${r.rm}</td></tr>`}).join(''):`<tr><td colspan="11" class="empty">暂无数据</td></tr>`}
+ </table><div class="pager">共 ${list.length} 条 <select class="ipt" style="width:90px"><option>50条/页</option></select> ‹ 1 ›</div></div>`);
+};
+
+let cfgQuery='';
+V['a-config']=()=>{
+ const list=CONFIG.filter(c=>!cfgQuery||c.id.includes(cfgQuery));
+ return adm('a-config','财务管理 / 划转配置',`<div class="card"><div class="filters">
+ <span><label>会员ID</label><input class="ipt" id="cq" value="${cfgQuery}"></span>
+ <button class="btn p" onclick="cfgQuery=cq.value.trim();render()">查询</button><button class="btn" onclick="cfgQuery='';render()">重置</button>
+ <button class="btn p" style="margin-left:auto" onclick="cfgDlg()">+ 新增配置</button></div></div>
+ <div class="card"><table class="t"><tr><th>会员ID</th><th>会员昵称</th><th>划转功能状态</th><th>单次转账限额区间</th><th>转账收款稽核倍数${q('会员转出的金额，收款方到账后需完成\n「金额 × 倍数」的打码量才可提现')}</th><th>操作</th></tr>
+ ${list.length?list.map(c=>`<tr><td>${c.id}</td><td>${MEMBERS[c.id].n}</td><td><span class="tag ${c.on?'on':'off'}">${c.on?'已开启':'已关闭'}</span></td><td>¥ ${c.min.toLocaleString()} - ¥ ${c.max.toLocaleString()}</td><td>${c.mul} 倍</td>
+ <td><a onclick="cfgDlg('${c.id}')">编辑</a> | <a style="color:#f56c6c" onclick="cfgDel('${c.id}')">删除</a></td></tr>`).join(''):`<tr><td colspan="6" class="empty">暂无数据</td></tr>`}
+ </table></div>`);
+};
+let cfgDraft=null;
+function cfgDlg(id){
+ const c=id?CONFIG.find(x=>x.id===id):null;
+ cfgDraft=c?{...c,edit:true,found:true}:{id:'',on:true,min:'',max:'',mul:'',found:false,err:{}};
+ cfgDraft.err={};drawCfg();
+}
+function drawCfg(){
+ const d=cfgDraft,e=d.err;
+ modal(`<div class="dlg"><div class="hd">${d.edit?'编辑':'新增'}会员配置<span style="cursor:pointer" onclick="closeModal()">✕</span></div><div class="bd">
+ <div class="fr"><span class="lb">会员ID <span class="req">*</span></span><div style="display:flex;gap:8px"><input class="ipt ${e.id?'err':''}" style="flex:1" id="cid" value="${d.id}" ${d.edit?'disabled':''} placeholder="输入会员ID"><button class="btn" ${d.edit?'disabled':''} onclick="cfgSearch()">搜索</button></div>
+ ${e.id?`<div class="errtxt">${e.id}</div>`:''}${d.found&&MEMBERS[d.id]?`<div style="margin-top:6px;color:#67c23a">会员昵称：${MEMBERS[d.id].n}</div>`:''}</div>
+ <div class="fr"><span class="lb">划转功能开关</span><span class="sw ${d.on?'on':''}" onclick="cfgDraft.on=!cfgDraft.on;sync();drawCfg()"><i></i>${d.on?'开启':'关闭'}</span></div>
+ <div class="fr"><span class="lb">单次转账限额区间 <span class="req">*</span></span><div style="display:flex;gap:8px;align-items:center"><input class="ipt ${e.r?'err':''}" style="flex:1" id="cmin" value="${d.min}" placeholder="¥ 下限"> - <input class="ipt ${e.r?'err':''}" style="flex:1" id="cmax" value="${d.max}" placeholder="¥ 上限"></div>${e.r?`<div class="errtxt">${e.r}</div>`:''}</div>
+ <div class="fr"><span class="lb">转账收款稽核倍数 <span class="req">*</span>${q('收款方到账后，需完成「到账金额 × 倍数」\n的打码量才可提现；填 0 表示不增加打码量')}</span><div style="display:flex;align-items:center;gap:6px"><input class="ipt ${e.m?'err':''}" style="flex:1" id="cmul" value="${d.mul}"> 倍</div>${e.m?`<div class="errtxt">${e.m}</div>`:''}</div>
+ </div><div class="ft"><button class="btn" onclick="closeModal()">取消</button><button class="btn p" onclick="cfgSave()">保存</button></div></div>`);
+}
+function sync(){if(!window.cid)return;if(!cfgDraft.edit)cfgDraft.id=cid.value.trim();cfgDraft.min=cmin.value.trim();cfgDraft.max=cmax.value.trim();cfgDraft.mul=cmul.value.trim()}
+function cfgSearch(){sync();const d=cfgDraft;d.err={};d.found=false;
+ if(!MEMBERS[d.id])d.err.id='会员ID不存在';else if(CONFIG.some(c=>c.id===d.id))d.err.id='该会员已存在配置，请直接编辑';else d.found=true;drawCfg()}
+function cfgSave(){sync();const d=cfgDraft;d.err={};
+ if(!d.edit){if(!d.id)d.err.id='请输入会员ID';else if(!MEMBERS[d.id])d.err.id='会员ID不存在';else if(CONFIG.some(c=>c.id===d.id))d.err.id='该会员已存在配置，请直接编辑';}
+ const mn=Number(d.min),mx=Number(d.max),mu=Number(d.mul);
+ if(d.min===''||d.max===''||isNaN(mn)||isNaN(mx)||mn<0||mx<=0)d.err.r='请输入正确的限额（下限≥0，上限>0）';else if(mn>mx)d.err.r='下限不能大于上限';
+ if(d.mul===''||isNaN(mu)||mu<0)d.err.m='请输入≥0的倍数';
+ if(Object.keys(d.err).length)return drawCfg();
+ const row={id:d.id,on:d.on,min:mn,max:mx,mul:mu};
+ if(d.edit)CONFIG=CONFIG.map(c=>c.id===d.id?row:c);else CONFIG.unshift(row);
+ closeModal();render();flash('保存成功');
+}
+function cfgDel(id){modal(`<div class="dlg" style="width:380px"><div class="hd">提示</div><div class="bd">确认删除会员 ${id}（${MEMBERS[id].n}）的划转配置？删除后该会员将无法使用划转功能。</div>
+ <div class="ft"><button class="btn" onclick="closeModal()">取消</button><button class="btn p" onclick="CONFIG=CONFIG.filter(c=>c.id!=='${id}');closeModal();render();flash('删除成功')">确定</button></div></div>`)}
+
+let fundType='';
+V['a-fund']=()=>{
+ let rows=[];RECORDS.forEach(r=>{rows.push({no:r.no,uid:r.from,type:'划转支出',amt:-r.amt,t:r.t,rm:`转入用户ID：${r.to}`});rows.push({no:r.no,uid:r.to,type:'划转收入',amt:r.amt,t:r.t,rm:`转出用户ID：${r.from}`})});
+ rows.push({no:'20260526133802722021702',uid:'100040394',type:'活动优惠',amt:8.88,t:'2026-05-26 13:38:02',rm:'用户绑定手机号'});
+ rows.sort((a,b)=>b.t.localeCompare(a.t));
+ if(fundType)rows=rows.filter(r=>r.type===fundType);
+ return adm('a-fund','报表查询 / 资金明细',`<div class="card"><div class="filters"><span><label>时间</label><input class="ipt" style="width:220px" placeholder="开始日期 至 结束日期"></span><span><label>用户ID</label><input class="ipt"></span>
+ <span><label>账变类型</label><select class="ipt" id="ft">${['','用户充值','用户提现','活动优惠','彩票下注','短剧付费','划转收入','划转支出'].map(o=>`<option ${o===fundType?'selected':''} value="${o}">${o||'请选择'}</option>`).join('')}</select></span>
+ <button class="btn p" onclick="fundType=ft.value;render()">查询</button><button class="btn" onclick="fundType='';render()">重置</button><button class="btn">导出</button></div></div>
+ <div class="card"><table class="t"><tr><th>订单号</th><th>用户ID</th><th>账变类型</th><th>账变金额</th><th>账变时间</th><th>备注</th></tr>
+ ${rows.map(r=>`<tr><td>${r.no}</td><td>${r.uid}</td><td>${r.type}</td><td style="color:${r.amt<0?'#f56c6c':'#67c23a'}">${r.amt>0?'+':''}${r.amt}</td><td>${r.t}</td><td>${r.rm}</td></tr>`).join('')}</table></div>`);
+};
+
+/* ============ 客户端 ============ */
+function phone(title,body,opt={}){
+ return `<div class="phone"><div class="ph-hd">${opt.back!==false?`<span class="bk" onclick="go('${opt.back||'c-mine'}')">‹</span>`:''}${title}${opt.right||''}</div><div class="ph-bd" id="phbd">${body}</div>${opt.foot||''}</div>`;
+}
+const ICON={
+ '推广赚钱':'<circle cx="12" cy="12" r="8"/><path d="M9 10l3 3 3-3M12 13v4M9 14h6"/>',
+ '交易记录':'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+ '观看历史':'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ '收藏记录':'<path d="M7 11v9H4v-9zM7 11l4-7c1.5 0 2.5 1 2 3l-.5 3H19c1 0 2 1 1.7 2l-1.5 6c-.3 1-1 2-2 2H7"/>',
+ '收款方式':'<path d="M6 4h12v10l-6 6-6-6z"/><path d="M10 8l2 2 2-2M12 10v4"/>',
+ '分享好友':'<rect x="3" y="7" width="18" height="12" rx="2"/><path d="M8 3l4 4 4-4"/><text x="12" y="16.5" font-size="5.5" text-anchor="middle" fill="currentColor" stroke="none" font-weight="700">FREE</text>',
+ '客服中心':'<path d="M4 14v-2a8 8 0 0116 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/>',
+ '商务洽谈':'<circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7z"/>',
+ '设置':'<path d="M12 2l8.5 5v10L12 22l-8.5-5V7z"/><circle cx="12" cy="12" r="3"/>',
+ '主播中心':'<rect x="3" y="9" width="13" height="11" rx="2"/><path d="M16 13l5-3v9l-5-3"/><circle cx="7" cy="5" r="2.5"/><circle cx="13" cy="5" r="2.5"/>',
+ '每日任务':'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"/>'
+};
+const svg=(p,c='#fff')=>`<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+V['c-mine']=()=>{
+ const c=myCfg(),show=c&&c.on;
+ const funcs=Object.keys(ICON);
+ return `<div class="phone dk"><div class="ph-bd">
+ <div class="mh"><div class="mav">头像</div><div><div class="mname"><span class="lvb">7</span>${MEMBERS[ME].n} <span style="font-size:13px;opacity:.7">✎</span></div><div class="mid">ID:${ME} <span style="opacity:.7">⧉</span></div></div><div class="bell">🔔<i>29</i></div></div>
+ <div class="vipc"><div><div class="vt">◆ 赠送永久VIP卡</div><div class="vs">有限期限：永久</div><div class="vs">注册赠送会员1天；充值999、赠送会员2天；游戏流水满10000、赠送会员3天....0快来买</div></div><div class="vbtn"><i>限时特惠</i>永久VIP</div></div>
+ <div class="two"><div class="gc"><b>每日任务</b><span>连签30日 轻松赚大奖</span></div><div class="gc"><b>VIP彩金</b><span>晋级礼金+周俸禄+月俸禄<br>终身受益</span></div></div>
+ <div class="banner">Banner 轮播图<div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div></div>
+ <div class="balc"><div class="getback">⟲ 一键取回</div><div class="bal">¥ ${fmt(S.balance)}</div><div class="ball">我的余额</div>
+ <div class="bbtns ${show?'three':''}"><button class="bf">充值</button>${show?`<button class="bo" onclick="go('c-transfer')">划转</button>`:''}<button class="bo">提现</button></div></div>
+ <div class="func"><div class="ft">常用功能</div><div class="grid">${funcs.map(f=>`<div ${f==='交易记录'?`onclick="go('c-trade')" style="cursor:pointer"`:''}>${svg(ICON[f])}<span>${f}</span></div>`).join('')}</div></div>
+ </div><div class="botnav dkn">${['视频','抖阴','聊天','活动','游戏','我的'].map(t=>`<div class="${t==='我的'?'on':''}">${t}</div>`).join('')}</div></div>`;
+};
+
+function tfValid(){const t=S.tf;return t.payee&&t.amt!==''&&t.pwd!==''}
+V['c-transfer']=()=>{
+ const t=S.tf,c=myCfg()||{min:100,max:5000},e=t.err;
+ return phone('划转',`
+ <div class="m-lb">收款人</div>
+ <div class="m-ipt ${e.id?'err':''}"><input id="tid" placeholder="请输入用户ID" value="${t.id}" inputmode="numeric" onblur="lookup(this.value)" oninput="S.tf.id=this.value"><span class="ic" title="通讯录好友" onclick="S.friendSel=S.tf.payee;go('c-friend')">👤</span></div>
+ ${e.id?`<div class="m-err">${e.id}</div>`:''}
+ ${t.payee?`<div class="payee"><div class="av">头像</div><div><div class="nm">${MEMBERS[t.payee].n}</div><div class="id">ID：${t.payee}</div></div>${isFriend(t.payee)?'':`<button class="sbtn" onclick="go('c-addfriend',{addTarget:S.tf.payee})">添加好友</button>`}</div>`:''}
+ <div class="m-lb">划转金额</div>
+ <div class="m-ipt ${e.amt?'err':''}"><input id="tamt" placeholder="限额${c.min}-${c.max}" value="${t.amt}" inputmode="decimal" oninput="S.tf.amt=this.value.replace(/[^\\d.]/g,'');this.value=S.tf.amt;btnState()"></div>
+ ${e.amt?`<div class="m-err">${e.amt}</div>`:''}
+ <div class="m-sub">可用余额：${fmt(S.balance)}</div>
+ <div class="m-lb">支付密码<small onclick="go('c-forgot')">忘记密码？</small></div>
+ <div class="m-ipt ${e.pwd?'err':''}"><input id="tpwd" type="${t.showPwd?'text':'password'}" placeholder="请输入支付密码" value="${t.pwd}" maxlength="6" oninput="S.tf.pwd=this.value;btnState()"><span style="cursor:pointer;color:#888" onclick="S.tf.showPwd=!S.tf.showPwd;render()">${t.showPwd?'◉':'◎'}</span></div>
+ ${e.pwd?`<div class="m-err">${e.pwd}</div>`:''}
+ <button class="m-btn" id="tbtn" ${tfValid()?'':'disabled'} onclick="submitTf()">确认划转</button>`,
+ {right:`<span class="rt" onclick="go('c-history')">划转记录</span>`});
+};
+function btnState(){const b=document.getElementById('tbtn');if(b)b.disabled=!tfValid()}
+function lookup(v){v=v.trim();const t=S.tf;const old=t.payee+'|'+t.err.id;t.id=v;t.err.id='';t.payee=null;
+ if(v){if(!MEMBERS[v])t.err.id='用户ID不存在';else if(v===ME)t.err.id='不能划转给自己';else t.payee=v;}
+ if(old!==t.payee+'|'+t.err.id)setTimeout(()=>{if(cur==='c-transfer')render()},0);}
+function submitTf(){
+ const t=S.tf,c=myCfg(),a=Number(t.amt);t.err={};
+ if(!c||!c.on){toast('划转功能未开启');return}
+ if(isNaN(a)||a<c.min||a>c.max)t.err.amt='划转金额超限';
+ else if(a>S.balance)t.err.amt='可用余额不足';
+ else if(t.pwd!==S.pwd)t.err.pwd='支付密码不正确';
+ if(Object.keys(t.err).length)return render();
+ const no='2026112111023'+String(Math.floor(Math.random()*9e7)+1e7);
+ RECORDS.unshift({no,from:ME,to:t.payee,amt:a,t:now(),rm:'-'});
+ S.balance=+(S.balance-a).toFixed(2);
+ const to=t.payee;S.tf={id:'',payee:null,amt:'',pwd:'',showPwd:false,err:{}};
+ render();
+ document.querySelector('.phone').insertAdjacentHTML('beforeend',`<div class="sheet"><div class="box"><div style="font-size:36px;color:#67c23a">✓</div><h3>划转成功</h3><div class="amt">${fmt(a)}</div>
+ <div style="color:#606266;font-size:13px">已转给 ${MEMBERS[to].n}（ID：${to}）</div><div class="row"><button onclick="go('c-detail',{detail:'${no}'})">查看详情</button><button class="p" onclick="render()">完成</button></div></div></div>`);
+}
+
+V['c-friend']=()=>phone('选择好友',FRIENDS.map(([L,ids])=>`<div class="letter">${L}</div>`+ids.map(id=>`<div class="fitem ${S.friendSel===id?'on':''}" onclick="S.friendSel='${id}';render()"><div class="av">头像</div><div><div>${MEMBERS[id].n}</div><div style="font-size:12px;color:#909399">ID：${id}</div></div><span class="rd"></span></div>`).join('')).join(''),
+ {back:'c-transfer',foot:`<div class="ph-foot"><button class="m-btn" style="margin:0;width:100%" ${S.friendSel?'':'disabled'} onclick="S.tf.id=S.friendSel;S.tf.payee=S.friendSel;S.tf.err.id='';go('c-transfer')">确认选择</button></div>`});
+
+function myRecs(){return RECORDS.filter(r=>r.from===ME||r.to===ME)}
+V['c-history']=()=>{
+ let l=myRecs();if(S.histTab==='out')l=l.filter(r=>r.from===ME);if(S.histTab==='in')l=l.filter(r=>r.to===ME);
+ return phone('划转记录',`${l.length?l.map(r=>{const out=r.from===ME,o=out?r.to:r.from;return `<div class="rec" onclick="go('c-detail',{detail:'${r.no}'})"><div class="l"><b>${out?'转出给 ':'收到 '}${MEMBERS[o].n}</b><p>对方ID：${o}<br>订单号：${r.no}<br>时间：${r.t}</p></div><div class="r"><div class="st">成功</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div></div></div>`}).join(''):'<div class="empty">暂无划转记录</div>'}`,
+ {back:'c-transfer',right:'',foot:''}).replace('<div class="ph-bd" id="phbd">',`<div class="tabs">${[['all','全部'],['out','转出'],['in','转入']].map(([k,n])=>`<div class="${S.histTab===k?'on':''}" onclick="S.histTab='${k}';render()">${n}</div>`).join('')}</div><div class="timef">${['今天','昨天','近7天','近30天'].map(x=>`<span class="${S.histTime===x?'on':''}" onclick="S.histTime='${x}';render()">${x}</span>`).join('')}</div><div class="ph-bd" id="phbd">`);
+};
+V['c-detail']=()=>{
+ const r=RECORDS.find(x=>x.no===S.detail)||myRecs()[0];const out=r.from===ME,o=out?r.to:r.from;
+ const cfg=CONFIG.find(c=>c.id===r.from);
+ return phone('划转详情',`<div class="det"><div style="color:#606266">${out?'划转支出':'划转收入'}</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div><div style="color:#67c23a">成功</div></div>
+ <div class="dl"><span>${out?'收款人':'转出人'}</span><span>${MEMBERS[o].n}</span></div><div class="dl"><span>对方ID</span><span>${o}</span></div>
+ <div class="dl"><span>订单号</span><span>${r.no} <a onclick="toast('已复制')">复制</a></span></div><div class="dl"><span>划转时间</span><span>${r.t}</span></div>
+ ${!out&&cfg&&cfg.mul>0?`<div class="dl"><span>需完成打码量</span><span>${fmt(r.amt*cfg.mul)}</span></div>`:''}`,{back:'c-history'});
+};
+
+V['c-trade']=()=>{
+ const tabs=['充值','提现','消费','场馆','活动','主播','划转'];
+ let body='';
+ if(S.tradeTab==='划转'){body=myRecs().map(r=>{const out=r.from===ME;return `<div class="rec" onclick="go('c-detail',{detail:'${r.no}'})"><div class="l"><b>${out?'划转支出':'划转收入'}</b><p>订单号：${r.no}<br>时间：${r.t}</p></div><div class="r"><div class="st">成功</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div></div></div>`}).join('')}
+ else body=`<div class="rec"><div class="l"><b>${S.tradeTab}示例记录</b><p>订单号：20260330123546213546584<br>时间：2026-12-12 12:12:12</p></div><div class="r"><div class="st">成功</div><div class="a">123.45</div></div></div>`;
+ return phone('交易记录',body,{back:'c-mine'}).replace('<div class="ph-bd" id="phbd">',`<div class="tabs">${tabs.map(t=>`<div class="${S.tradeTab===t?'on':''}" onclick="S.tradeTab='${t}';render()">${t}</div>`).join('')}</div><div class="timef">${['昨天','近7天','近15天','近30天'].map((x,i)=>`<span class="${i==1?'on':''}">${x}</span>`).join('')}</div><div class="ph-bd" id="phbd">`);
+};
+V['c-addfriend']=()=>{const id=S.addTarget||'100012345',m=MEMBERS[id];
+ return `<div class="phone af"><div class="aftop"><span>聊天室</span><span class="on">好友消息</span></div>
+ <div class="afsub"><span>消息</span><span>未读</span><span class="on">通讯录</span></div>
+ <div class="ph-bd"><div class="afback" onclick="go('c-transfer')">‹　添加好友/群聊</div>
+ <div class="afp"><div class="afav">头像</div><div><b>${m.n}</b><div>ID: ${id}</div><div>个性签名:</div></div></div>
+ <div class="afl">请填写验证信息</div><textarea class="aft">我是${MEMBERS[ME].n}</textarea>
+ <div class="afr"><span>备注名</span><span>✎</span></div>
+ <div class="afsend" onclick="sendApply('${id}')">发送申请</div></div>
+ <div class="botnav dkn">${['视频','抖音','聊天','活动','游戏','我的'].map(t=>`<div class="${t==='聊天'?'on':''}">${t}</div>`).join('')}</div></div>`;
+};
+V['c-forgot']=()=>`<div class="phone fg"><div class="ph-hd" style="background:#1a1a1a"><span class="bk" onclick="go('c-transfer')">‹</span><b>重置支付密码</b></div><div class="ph-bd">
+ <div class="fl">新密码</div><div class="fi"><input type="password" maxlength="6" placeholder="请输入6位数字组合的新密码"><span>◡</span></div>
+ <div class="fl">确认密码</div><div class="fi"><input type="password" maxlength="6" placeholder="请输入确认密码"><span>◡</span></div>
+ <div class="fl">手机号</div><div style="display:flex;gap:10px;margin:0 14px"><div class="fi" style="margin:0;width:56px;justify-content:center">+86</div><div class="fi" style="margin:0;flex:1">138****1551</div></div>
+ <div class="fl">验证码</div><div class="fi"><input placeholder="请输入验证码"><span style="color:#ff3b30;cursor:pointer" onclick="toast('验证码已发送')">发送验证码</span></div>
+ <button class="fgbtn" onclick="toast('支付密码已重置')">提交</button></div></div>`;
+
+/* ============ 需求说明 ============ */
+const NOTE={
+log:`<h3>需求背景</h3>会员之间可互相划转余额。仅后台配置过且开启划转功能的会员可发起划转，划转即时到账；收款方按转出方配置的稽核倍数增加打码量，用于提现稽核。
+<h4>原型说明</h4>左侧点击切换页面。原型内数据联动：在客户端发起划转后，后台划转记录、资金明细、会员详情统计同步更新。`,
+'a-member':`<h3>会员列表</h3><ol><li>金流-充值：展示为「充值金额 + 划转金额(划转)」，划转金额为该会员收到的划转（转入）累计金额；小计行同样统计。</li><li>会员详情-概况：增加「划转」行，展示所选时间范围内收到划转的次数/金额。</li><li>点击划转行的「明细」跳转至划转记录，自动带入转入用户ID筛选该会员。</li></ol>`,
+'a-withdraw':`<h3>提现列表</h3><ol><li>金流列与会员列表一致：充值金额后追加「+划转金额(划转)」，统计该会员收到的划转累计金额，便于审核提现时识别资金来源。</li></ol>`,
+'a-record':`<h3>划转记录</h3><ol><li>菜单位置：财务管理-划转记录。</li><li>每笔划转生成一条记录，按转账时间倒序。</li><li>展示渠道商、订单号、转出用户ID、转出用户昵称、转出会员层级、转账金额、转入用户ID、转入会员昵称、转入会员层级、转账时间、备注。</li><li>渠道商：展示转出会员所属渠道。</li><li>昵称、层级展示会员当前信息。</li><li>查询条件：转账时间、订单号、转出用户ID、转入用户ID；支持导出。</li><li>备注：预留，无内容时展示「-」。</li></ol>`,
+'a-config':`<h3>划转配置</h3><ol><li>菜单位置：财务管理-划转配置，独立菜单。</li><li>划转功能按会员单独配置，未添加配置或开关关闭的会员不可发起划转，客户端不展示划转按钮；接收划转不受此限制。</li><li>新增：输入会员ID后搜索，会员不存在提示「会员ID不存在」，已配置过的会员提示直接编辑，同一会员只能有一条配置。</li><li>单次转账限额区间：下限≥0，上限>0，下限不能大于上限；客户端划转金额须在此区间内。</li><li>转账收款稽核倍数：≥0；收款方到账后增加「到账金额×倍数」的打码量，打码完成后才可提现。</li><li>编辑：会员ID不可修改，其余可改，保存后即时生效。</li><li>删除：二次确认，删除后该会员不可再发起划转。</li><li>列表支持按会员ID查询。</li></ol>`,
+'a-fund':`<h3>资金明细</h3><ol><li>账变类型增加「划转收入」「划转支出」，可按类型筛选。</li><li>一笔划转产生两条账变：转出方「划转支出」（减少），收款方「划转收入」（增加），两条订单号与划转记录一致。</li><li>备注展示对方用户ID。</li></ol>`,
+'c-mine':`<h3>我的</h3><ol><li>余额区在「充值」和「提现」之间增加「划转」按钮，点击进入划转页。</li><li>仅后台已配置且开启划转功能的会员展示划转按钮；不展示时，余额区保持充值、提现两个按钮。</li><li>页面其余内容为现有内容，不做改动。</li></ol>`,
+'c-transfer':`<h3>划转</h3><ol><li>右上角「划转记录」：点击进入划转记录页查看历史订单。</li><li>收款人：输入用户ID，输入框失去焦点后查询并展示对方头像、昵称、ID；用户不存在提示「用户ID不存在」，输入自己的ID提示「不能划转给自己」。</li><li>点击输入框右侧图标进入通讯录选择好友，确认后自动带入收款人。</li><li>添加好友：查询到的收款人还不是好友时，在收款人信息右侧展示「添加好友」按钮，已是好友则不展示。点击直接跳转添加好友页面并带入对方信息，完成添加后返回划转页，已填写的收款人、金额保留，「添加好友」按钮不再展示，对方同步出现在通讯录好友中。</li><li>划转金额：输入框提示展示该会员的单次限额区间；下方展示可用余额。超出区间提示「划转金额超限」，超过余额提示「可用余额不足」。</li><li>打码量：发起划转不受打码量限制；收款方到账后按转出方配置的稽核倍数增加打码量。</li><li>支付密码：输入错误提示「支付密码不正确」；「忘记密码？」进入现有重置支付密码页面。</li><li>收款人、金额、密码均填写后「确认划转」才可点击。</li><li>划转成功即时扣款到账，弹出成功提示，可查看详情或完成（清空表单停留本页）。</li></ol>`,
+'c-friend':`<h3>选择好友</h3><ol><li>展示当前会员的通讯录好友，按昵称首字母分组。</li><li>单选，选中后「确认选择」可点击，返回划转页并带入收款人。</li></ol>`,
+'c-history':`<h3>划转记录</h3><ol><li>入口：划转页右上角。</li><li>页签：全部 / 转出 / 转入；时间筛选：今天、昨天、近7天、近30天。</li><li>每条展示：转出给/收到 + 对方昵称、对方ID、订单号、时间、状态、金额（转出为 -，转入为 +）。</li><li>划转即时完成，状态均为「成功」。</li><li>按时间倒序，点击进入划转详情。</li></ol>`,
+'c-detail':`<h3>划转详情</h3><ol><li>展示类型（划转支出/划转收入）、金额、状态、对方昵称、对方ID、订单号（可复制）、划转时间。</li><li>转入记录额外展示本笔需完成的打码量（到账金额 × 转出方配置的稽核倍数）；倍数为0时不展示。</li></ol>`,
+'c-trade':`<h3>交易记录</h3><ol><li>增加「划转」页签，展示划转收入与划转支出，点击进入划转详情。</li><li>划转订单只在「划转」页签展示，与划转记录页数据一致。</li></ol>`,
+'c-addfriend':`<h3>添加好友</h3><ol><li>现有页面，页面内容不做改动。</li><li>从划转页收款人信息的「添加好友」进入时，自动带入对方头像、昵称、ID，验证信息默认带入「我是+本人昵称」，可修改。</li><li>点击「发送申请」完成添加后，提示「添加好友成功」并返回划转页；点击左上角返回也回到划转页。</li></ol>`,
+'c-forgot':`<h3>重置支付密码</h3>现有页面，不做改动。从划转页「忘记密码？」进入。`
+};
+function demoCtl(){
+ if(cur==='c-transfer')return `<div class="demo">演示控制：<br>支付密码为 123456；收款人：已是好友 100012345 / 100020003；非好友 100041118 / 100040958 / 100041105</div>`;
+ if(cur==='c-mine')return `<div class="demo">演示控制：<br><label><input type="checkbox" ${myCfg()&&myCfg().on?'checked':''} onchange="const c=myCfg();if(c)c.on=this.checked;else CONFIG.push({id:ME,on:true,min:100,max:5000,mul:1.5});render()"> 当前会员已开启划转</label></div>`;
+ return '';
+}
+
+/* ============ 通用 ============ */
+function render(){document.getElementById('canvas').innerHTML=V[cur]();document.getElementById('notes').innerHTML=(NOTE[cur]||'')+demoCtl()}
+function modal(h){closeModal();document.body.insertAdjacentHTML('beforeend',`<div class="mask" id="mk">${h}</div>`)}
+function closeModal(){const m=document.getElementById('mk');if(m)m.remove()}
+function toast(m){const p=document.querySelector('.phone');if(!p)return;const d=document.createElement('div');d.className='toast';d.textContent=m;p.appendChild(d);setTimeout(()=>d.remove(),1800)}
+function flash(m){const d=document.createElement('div');d.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f0f9eb;color:#67c23a;border:1px solid #e1f3d8;padding:8px 18px;border-radius:4px;z-index:99';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),1500)}
+renderMap();render();
+</script>
+</body>
+</html>
