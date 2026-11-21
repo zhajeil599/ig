@@ -214,7 +214,9 @@
 
     /* --- 菜单补充 --- */
     .sub-item.sub-folder { display: flex; justify-content: space-between; align-items: center; padding-right: 20px; }
-    .menu-group > .menu-item .arrow { transition: transform 0.2s; }
+    /* 菜单箭头：纯 CSS 绘制，不依赖外网图标库 */
+    .sidebar .arrow { display: inline-block; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin-top: -4px; opacity: 0.7; transition: transform 0.2s, margin 0.2s; flex-shrink: 0; }
+    .sidebar .arrow.up { transform: rotate(-135deg); margin-top: 3px; }
 
     /* --- 占位页面 --- */
     .placeholder-box { background: #fff; border-radius: 4px; padding: 80px 0; text-align: center; font-size: 18px; color: #999; }
@@ -238,6 +240,48 @@
     #hedgeBody { flex: 1; min-height: 0; }
     #hedgeBody iframe { width: 100%; height: 100%; border: none; display: block; }
 
+    /* --- 更新日志弹窗 --- */
+    #logModal .modal-content { width: 1160px; height: 92vh; max-height: 980px; }
+    #logModal .modal-body { flex: 1; overflow-y: auto; padding: 16px 24px 24px; background: #fff; }
+    .log-member-bar { display: flex; align-items: center; gap: 28px; padding: 12px 16px; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 4px; font-size: 13px; color: #666; margin-bottom: 14px; flex-wrap: wrap; }
+    .log-member-bar b { color: #333; font-weight: 500; }
+    .log-badge { display: inline-block; font-size: 12px; line-height: 20px; padding: 0 8px; border-radius: 2px; border: 1px solid; }
+    .lb-ok { color: #52c41a; border-color: #b7eb8f; background: #f6ffed; }
+    .lb-warn { color: #fa8c16; border-color: #ffd591; background: #fff7e6; }
+    .lb-danger { color: #f5222d; border-color: #ffa39e; background: #fff1f0; }
+    .lb-gray { color: #8c8c8c; border-color: #d9d9d9; background: #fafafa; }
+    .lb-blue { color: #1677ff; border-color: #91caff; background: #e6f4ff; }
+    .lb-purple { color: #722ed1; border-color: #d3adf7; background: #f9f0ff; }
+
+
+    .log-filter { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: center; margin-bottom: 12px; }
+    .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .log-table th, .log-table td { padding: 10px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: top; line-height: 1.7; }
+    .log-table th { background: #fafafa; white-space: nowrap; }
+    .log-table td.t-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .log-table .chg-line { white-space: nowrap; }
+    .log-table .chg-line .lbl { color: #888; }
+    .log-table .old { color: #999; text-decoration: line-through; }
+    .log-table .arr { color: #bfbfbf; margin: 0 6px; }
+    .log-table .new { color: #333; font-weight: 500; }
+    .log-table .empty-val { color: #bfbfbf; }
+    .log-table tr.row-ban td { background: #fffafa; }
+    #logModal .date-range-picker input { width: 136px; }
+    #logModal .date-range-picker { gap: 4px; padding: 0 8px; }
+    .log-empty { text-align: center; color: #999; padding: 40px 0; font-size: 13px; }
+
+    /* 字段提示 ? */
+    .q-tip { display: inline-flex; justify-content: center; align-items: center; width: 14px; height: 14px; border-radius: 50%; background: #c0c4cc; color: #fff; font-size: 10px; font-style: normal; margin-left: 4px; cursor: help; position: relative; font-weight: normal; vertical-align: 1px; }
+    .q-tip:hover { background: #909399; }
+    .q-tip .q-text { visibility: hidden; opacity: 0; position: absolute; bottom: 140%; left: 50%; transform: translateX(-50%); width: 260px; background: #303133; color: #fff; text-align: left; border-radius: 4px; padding: 8px 10px; font-size: 12px; line-height: 1.6; z-index: 50; transition: opacity .2s; white-space: normal; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+    .q-tip:hover .q-text { visibility: visible; opacity: 1; }
+
+    .prd-note h5 { margin: 12px 0 6px; color: #303133; font-size: 13px; }
+    .prd-note li { margin-bottom: 4px; }
+    .prd-note table { border-collapse: collapse; margin: 6px 0 4px; font-size: 12px; background: #fff; }
+    .prd-note table th, .prd-note table td { border: 1px solid #e4e7ed; padding: 6px 10px; text-align: left; vertical-align: top; line-height: 1.6; color: #606266; }
+    .prd-note table th { background: #fafafa; color: #303133; font-weight: 500; }
+
     </style>
 </head>
 <body>
@@ -250,7 +294,7 @@
         <div class="menu-group">
             <div class="menu-item active" onclick="toggleGroup(this)">
                 <span class="item-left"><i class="fa-solid fa-users main-icon"></i>会员管理</span>
-                <i class="fa-solid fa-chevron-up arrow"></i>
+                <i class="arrow up"></i>
             </div>
             <div class="sub-menu">
                 <a href="javascript:void(0)" class="sub-item active" onclick="navTo(this, 'member')">会员列表</a>
@@ -261,19 +305,19 @@
                 <a href="javascript:void(0)" class="sub-item" onclick="navTo(this)">用户支付宝列表</a>
                 <a href="javascript:void(0)" class="sub-item" onclick="navTo(this)">登录查询</a>
                 <a href="javascript:void(0)" class="sub-item" onclick="navTo(this)">用户签到记录</a>
-                <a href="javascript:void(0)" class="sub-item sub-folder">VIP会员卡<i class="fa-solid fa-chevron-down arrow"></i></a>
-                <a href="javascript:void(0)" class="sub-item sub-folder">VIP彩金<i class="fa-solid fa-chevron-down arrow"></i></a>
+                <a href="javascript:void(0)" class="sub-item sub-folder">VIP会员卡<i class="arrow"></i></a>
+                <a href="javascript:void(0)" class="sub-item sub-folder">VIP彩金<i class="arrow"></i></a>
             </div>
         </div>
 
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-wallet main-icon"></i>财务管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gamepad main-icon"></i>游戏管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-sitemap main-icon"></i>代理系统</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-wallet main-icon"></i>财务管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gamepad main-icon"></i>游戏管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-sitemap main-icon"></i>代理系统</span><i class="arrow"></i></div>
 
         <div class="menu-group">
             <div class="menu-item" onclick="toggleGroup(this)">
                 <span class="item-left"><i class="fa-solid fa-chart-line main-icon"></i>报表查询</span>
-                <i class="fa-solid fa-chevron-down arrow"></i>
+                <i class="arrow"></i>
             </div>
             <div class="sub-menu" style="display: none;">
                 <a href="javascript:void(0)" class="sub-item" onclick="navTo(this)">游戏记录</a>
@@ -290,17 +334,17 @@
             </div>
         </div>
 
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-comments main-icon"></i>聊天群组</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-video main-icon"></i>主播管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-database main-icon"></i>数据统计</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-file-export main-icon"></i>导出管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gift main-icon"></i>活动管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-clock-rotate-left main-icon"></i>日志查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-key main-icon"></i>验证码查询</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-envelope main-icon"></i>短信模板管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-tower-broadcast main-icon"></i>渠道管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-rectangle-ad main-icon"></i>广告位管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gear main-icon"></i>系统管理</span><i class="fa-solid fa-chevron-down arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-comments main-icon"></i>聊天群组</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-video main-icon"></i>主播管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-database main-icon"></i>数据统计</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-file-export main-icon"></i>导出管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gift main-icon"></i>活动管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-clock-rotate-left main-icon"></i>日志查询</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-key main-icon"></i>验证码查询</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-envelope main-icon"></i>短信模板管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-tower-broadcast main-icon"></i>渠道管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-rectangle-ad main-icon"></i>广告位管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gear main-icon"></i>系统管理</span><i class="arrow"></i></div>
     </div>
 
     <div class="main-content">
@@ -457,7 +501,7 @@
                             <td>
                                 <div class="action-dropdown-container">
                                     <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">
-                                        操作 <i class="fa-solid fa-chevron-down"></i>
+                                        操作 <span class="dd-arrow"></span>
                                     </button>
                                     <div class="action-dropdown-menu">
                                         <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
@@ -470,6 +514,7 @@
                                         <button class="btn-small btn-green" onclick="openRebateModal(100039991, '无家可归aegp', 0)">返佣后台</button>
                                         <button class="btn-small btn-blue" onclick="openHedge({ memberId: '100039991' })">对冲查询</button>
                                         <button class="btn-small" style="background-color: #f5222d; color: white;" onclick="openTargetModal('riskModal')">风控查询</button>
+                                        <button class="btn-small" style="background-color: #13c2c2;" onclick="openLogModal('100039991')">更新日志</button>
                                     </div>
                                 </div>
                             </td>
@@ -502,7 +547,7 @@
                             <td>
                                 <div class="action-dropdown-container">
                                     <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">
-                                        操作 <i class="fa-solid fa-chevron-down"></i>
+                                        操作 <span class="dd-arrow"></span>
                                     </button>
                                     <!-- 替换开始：第二行用户的操作下拉菜单 -->
                                     <div class="action-dropdown-menu">
@@ -516,6 +561,7 @@
                                         <button class="btn-small btn-green" onclick="openRebateModal(100039992, '风行者', 1)">返佣后台</button>
                                         <button class="btn-small btn-blue" onclick="openHedge({ memberId: '100039992' })">对冲查询</button>
                                         <button class="btn-small" style="background-color: #f5222d; color: white;" onclick="openTargetModal('riskModal')">风控查询</button>
+                                        <button class="btn-small" style="background-color: #13c2c2;" onclick="openLogModal('100039992')">更新日志</button>
                                     </div>
                                     <!-- 替换结束 -->
                                 </div>
@@ -554,6 +600,16 @@
                 <button class="page-btn">下一页</button>
             </div>
         </div>
+
+            <div class="prd-note">
+                <h4>研发需求说明文档，研发阅读实际前端页面不展示</h4>
+                <ul>
+                    <li><strong>新增入口【更新日志】：</strong>会员列表每行"操作"下拉菜单内新增【更新日志】按钮；会员【详情】弹窗底部同步新增【更新日志】按钮，两处打开的是同一个弹窗，只展示当前这位会员的记录。</li>
+                    <li><strong>功能目的：</strong>让商户可以追溯该会员在后台被改过什么、什么时候改的、谁改的，包括商户后台的操作、平台对该会员的封号 / 禁言，以及系统按规则自动做的变更。</li>
+                    <li><strong>按钮权限：</strong>新增权限项"会员列表-更新日志"，在后台角色权限中配置；未勾选该权限的后台账号不展示此按钮。</li>
+                    <li><strong>原有操作补记录：</strong>会员列表中的编辑备注、改手机、改密码、更新用户、解锁IM、返佣后台、批量禁用、批量解锁IM账号，提交成功后都需生成更新日志；记录规则详见更新日志弹窗底部的需求说明。</li>
+                </ul>
+            </div>
     </div>
 
         <!-- ===================== 报表查询 - 彩票注单 ===================== -->
@@ -701,6 +757,8 @@
     .action-dropdown-container { position: relative; display: inline-block; }
     .btn-dropdown-trigger { background-color: #4096ff; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
     .btn-dropdown-trigger:hover { background-color: #1677ff; }
+    .dd-arrow { display: inline-block; width: 6px; height: 6px; border-right: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(45deg); margin: -3px 0 0 2px; transition: transform .2s, margin .2s; }
+    .action-dropdown-container.open .dd-arrow { transform: rotate(-135deg); margin-top: 3px; }
     .action-dropdown-menu {
         display: none;
         position: absolute;
@@ -837,6 +895,7 @@
                 <div>
                     <button class="btn-submit" onclick="openHedge({ memberId: document.getElementById('detailUid').value })" style="background-color: #fa8c16;">对冲查询</button>
                     <button class="btn-submit" onclick="openTargetModal('riskModal')" style="background-color: #f5222d; margin-left: 10px;">风控查询</button>
+                    <button class="btn-submit" onclick="openLogModal(document.getElementById('detailUid').value)" style="background-color: #13c2c2; margin-left: 10px;">更新日志</button>
                 </div>
                 <div>
                     <button class="btn-submit" onclick="closeTargetModal('detailModal')" style="margin-right: 10px; background-color: #f0f0f0; color: #333;">刷新</button>
@@ -1092,6 +1151,8 @@
 
             // 切换当前菜单的显示/隐藏状态
             currentMenu.classList.toggle('show');
+            document.querySelectorAll('.action-dropdown-container').forEach(c =>
+                c.classList.toggle('open', c.querySelector('.action-dropdown-menu').classList.contains('show')));
         }
 
         // 点击页面其他空白处时，自动关闭已打开的下拉菜单
@@ -1100,6 +1161,7 @@
                 document.querySelectorAll('.action-dropdown-menu.show').forEach(menu => {
                     menu.classList.remove('show');
                 });
+                document.querySelectorAll('.action-dropdown-container.open').forEach(c => c.classList.remove('open'));
             }
         });
 
@@ -2269,8 +2331,7 @@
             const open = sub.style.display !== 'none';
             sub.style.display = open ? 'none' : 'block';
             const arrow = el.querySelector('.arrow');
-            arrow.classList.toggle('fa-chevron-up', !open);
-            arrow.classList.toggle('fa-chevron-down', open);
+            arrow.classList.toggle('up', !open);
         }
 
         function navTo(el, page) {
@@ -2487,6 +2548,319 @@
         </div>
     </div>
     <!-- 👆 风控查询弹窗结束 👆 -->
+
+<!-- 👇 新增：更新日志弹窗 👇 -->
+    <div class="modal-overlay" id="logModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span style="font-size: 15px;">更新日志</span>
+                <span style="cursor:pointer; color:#999; font-size:16px;" onclick="closeTargetModal('logModal')">✕</span>
+            </div>
+            <div class="modal-body">
+
+                <!-- 会员信息与当前状态 -->
+                <div class="log-member-bar">
+                    <span>用户ID：<b id="lgUid"></b></span>
+                    <span>用户昵称：<b id="lgNick"></b></span>
+                    <span>账号状态：<span id="lgStatus"></span></span>
+                    <span>封号状态<i class="q-tip">?<span class="q-text">平台对该会员的封号状态。封号中会员无法登录；显示到期时间，永久封号显示"永久"。</span></i>：<span id="lgBan"></span></span>
+                    <span>禁言状态<i class="q-tip">?<span class="q-text">平台对该会员的禁言状态。禁言中会员无法在禁言范围内发言；显示禁言范围和到期时间。</span></i>：<span id="lgMute"></span></span>
+                </div>
+
+                <div class="log-filter">
+                    <div class="search-item">
+                        <label>变更类型</label>
+                        <select class="form-input" id="lgType" style="width: 110px;"></select>
+                    </div>
+                    <div class="search-item">
+                        <label>操作来源<i class="q-tip">?<span class="q-text">商户后台：本商户后台账号的操作；平台：平台对该会员做的处理，如封号、禁言；系统：系统按规则自动执行的变更，如禁言到期自动解除。</span></i></label>
+                        <select class="form-input" id="lgSource" style="width: 100px;">
+                            <option value="">全部</option>
+                            <option>商户后台</option>
+                            <option>平台</option>
+                            <option>系统</option>
+                        </select>
+                    </div>
+                    <div class="search-item">
+                        <label>操作人</label>
+                        <input type="text" class="form-input" id="lgOperator" placeholder="后台账号" style="width: 110px;">
+                    </div>
+                    <div class="search-item input-group">
+                        <span class="form-input" style="display:flex; align-items:center; background:#fafafa; border-right:none; border-radius:4px 0 0 4px; width:auto; color:#666;">操作时间<i class="q-tip">?<span class="q-text">默认查询近 30 天；单次查询时间跨度最长 90 天。</span></i></span>
+                        <div class="date-range-picker">
+                            <i class="fa-regular fa-clock"></i>
+                            <input type="text" id="lgStart" value="2026-10-23 00:00:00">
+                            <span>-</span>
+                            <input type="text" id="lgEnd" value="2026-11-21 23:59:59">
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-primary" onclick="queryLog()">查询</button>
+                        <button class="btn-primary" style="background:#fff; color:#333; border:1px solid #d9d9d9;" onclick="resetLog()">重置</button>
+                    </div>
+                </div>
+
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 150px;">操作时间</th>
+                            <th style="width: 100px;">变更类型</th>
+                            <th>变更内容<i class="q-tip">?<span class="q-text">展示"变更前 → 变更后"。手机号中间4位隐藏；密码类操作只记录"已修改"，不展示密码内容。</span></i></th>
+                            <th style="width: 230px;">原因 / 说明</th>
+                            <th style="width: 90px;">操作来源</th>
+                            <th style="width: 130px;">操作人</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logBody"></tbody>
+                </table>
+
+                <div class="pagination-container">
+                    <span id="lgTotal"></span>
+                    <select class="page-select" id="lgPageSize" onchange="lgState.page=1; renderLog()">
+                        <option value="20">20条/页</option>
+                        <option value="50">50条/页</option>
+                        <option value="100">100条/页</option>
+                    </select>
+                    <button class="page-btn" onclick="logPage(-1)">上一页</button>
+                    <span id="lgPageNo" style="font-size:13px; color:#666;"></span>
+                    <button class="page-btn" onclick="logPage(1)">下一页</button>
+                </div>
+
+                <div class="prd-note" style="margin-top: 24px;">
+                    <h4>📝 研发需求说明文档，研发阅读实际前端页面不展示</h4>
+
+                    <h5>一、入口与展示形式</h5>
+                    <ul>
+                        <li>入口：会员列表-操作-【更新日志】、会员【详情】弹窗底部【更新日志】。以弹窗打开，只展示当前会员的记录，不单独作为菜单页面。</li>
+                        <li>弹窗顶部展示会员信息：用户ID、用户昵称、账号状态、封号状态、禁言状态。
+                            <br>- 封号状态：正常 / 封号中（显示到期时间，永久封号显示"永久"）。
+                            <br>- 禁言状态：正常 / 禁言中（显示禁言范围和到期时间，永久禁言显示"永久"）。
+                            <br>- 状态取打开弹窗时的实时状态，便于商户先看到会员当前是否被平台处理。</li>
+                        <li>记录只能查看，不能编辑、不能删除。</li>
+                    </ul>
+
+                    <h5>二、哪些操作会产生记录</h5>
+                    <table>
+                        <tr><th style="width:110px;">操作来源</th><th style="width:110px;">变更类型</th><th>触发场景与记录内容</th></tr>
+                        <tr><td rowspan="9">商户后台</td><td>基本信息</td><td>更新用户中修改用户昵称、点击昵称【重置】、修改真实姓名；记录修改前后的值。</td></tr>
+                        <tr><td>手机号</td><td>改手机；记录修改前后的区号+手机号，手机号中间4位隐藏。</td></tr>
+                        <tr><td>密码</td><td>改密码；只记录"已修改登录密码 / 已修改支付密码"，不展示任何密码内容。</td></tr>
+                        <tr><td>账号状态</td><td>更新用户中修改账号状态（启用 / 停用 / 冻结 / 冻结余额）、列表【批量禁用】；批量操作在"原因 / 说明"中标注"批量禁用"，每位会员各生成一条记录。选择冻结余额时，系统自动生成的限制说明一并记在"原因 / 说明"中。</td></tr>
+                        <tr><td>用户层级</td><td>更新用户中修改用户层级；记录修改前后的层级名称。</td></tr>
+                        <tr><td>充值等级</td><td>更新用户中修改充值等级。</td></tr>
+                        <tr><td>红包限额</td><td>更新用户中修改红包限额。</td></tr>
+                        <tr><td>备注</td><td>编辑备注；记录修改前后的备注内容，原来为空时显示"空"。</td></tr>
+                        <tr><td>IM账号 / 返佣后台</td><td>解锁IM（含列表【批量解锁IM账号】，标注"批量解锁"）；返佣后台开通账号（记录绑定的返佣后台账号）、重置返佣后台密码（只记录"已重置密码"）。</td></tr>
+                        <tr><td rowspan="2">平台</td><td>封号</td><td>平台封号、提前解封。记录封号时长（到期时间或永久）、封号原因；解封记录解封原因。</td></tr>
+                        <tr><td>禁言</td><td>平台禁言、提前解除禁言。记录禁言范围（聊天室 / 直播间 / 全部）、禁言时长（到期时间或永久）、禁言原因；解除记录解除原因。</td></tr>
+                        <tr><td rowspan="2">系统</td><td>封号 / 禁言</td><td>封号、禁言到期后系统自动解除，生成一条"到期自动解除"记录。</td></tr>
+                        <tr><td>用户层级</td><td>会员达到层级条件后系统自动调整层级，"原因 / 说明"记为"满足层级条件自动调整"。</td></tr>
+                    </table>
+                    <ul>
+                        <li>只记录后台（商户后台、平台、系统）发起的变更；会员在前台自己修改的资料不在本功能记录。</li>
+                        <li>余额、充值、提现、划转、场馆转出等资金变动不在本功能记录，统一在资金明细中查看。</li>
+                        <li>只有提交成功的操作才生成记录；谷歌验证未通过、提交失败的不记录。值没有变化的项不记录（如更新用户时只改了真实姓名，只生成真实姓名一条）。</li>
+                        <li>一次保存修改了多项时，每项各生成一条记录，操作时间相同，方便按变更类型筛选。</li>
+                    </ul>
+
+                    <h5>三、列表展示规则</h5>
+                    <ul>
+                        <li>列表内容：操作时间、变更类型、变更内容、原因 / 说明、操作来源、操作人。按操作时间倒序，默认 20 条/页，可切换 50 / 100 条/页。</li>
+                        <li>变更内容：按"变更项：变更前 → 变更后"展示，变更前用灰色删除线，变更后加粗；原来没有值时显示"空"。</li>
+                        <li>操作人：
+                            <br>- 商户后台：显示后台账号，下方灰色显示操作IP。
+                            <br>- 平台：统一显示"平台"，不展示平台人员账号。
+                            <br>- 系统：显示"系统"。</li>
+                        <li>封号 / 禁言类记录整行浅红色底，变更类型用红色 / 橙色标签，方便在全部记录中快速识别。</li>
+                        <li>原因 / 说明：封号、禁言、解除时展示原因及时长；批量操作展示批量操作名称；其余操作无说明时显示"—"。</li>
+                    </ul>
+
+                    <h5>四、筛选与查询</h5>
+                    <ul>
+                        <li>所有记录（含封号、禁言）在同一个列表中展示，不分页签；需要只看封号或禁言时，通过变更类型筛选。</li>
+                        <li>变更类型：全部、基本信息、手机号、密码、账号状态、用户层级、充值等级、红包限额、备注、IM账号、返佣后台、封号、禁言。</li>
+                        <li>操作来源：全部、商户后台、平台、系统。</li>
+                        <li>操作人：输入后台账号模糊查询，只匹配商户后台的记录。</li>
+                        <li>操作时间：默认近 30 天，单次查询时间跨度最长 90 天，超出时提示"查询时间跨度不能超过 90 天"。</li>
+                        <li>【重置】恢复默认条件并重新查询。</li>
+                    </ul>
+
+                    <h5>五、记录保留与历史数据</h5>
+                    <ul>
+                        <li>记录长期保留，不随会员状态变化（如停用、待删除）而清除。</li>
+                        <li>本功能上线前的历史操作不补录，上线后新产生的操作开始记录。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-reset" onclick="closeTargetModal('logModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- 更新日志：模拟数据 ----------
+        const LOG_TYPES = ['基本信息', '手机号', '密码', '账号状态', '用户层级', '充值等级', '红包限额', '备注', 'IM账号', '返佣后台', '封号', '禁言'];
+        const BAN_TYPES = ['封号', '禁言'];
+
+        // changes: [[变更项, 变更前, 变更后]] 或 [[文本]]（无前后对比的操作）
+        const LOG_MEMBERS = {
+            '100039991': {
+                nick: '无家可归aegp', status: '启用',
+                ban: { on: false },
+                mute: { on: true, scope: '全部聊天室、直播间', until: '2026-11-23 21:45:08' },
+                logs: [
+                    { t: '2026-11-21 10:32:15', type: '备注', changes: [['备注', 'VIP客户', '这是一个大客户，请多关注。']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-20 21:45:08', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：全部聊天室、直播间<br>时长：3天（至 2026-11-23 21:45:08）<br>原因：聊天室发布引流广告', src: '平台' },
+                    { t: '2026-11-18 16:02:44', type: '用户层级', changes: [['用户层级', '默认层级 0-500可见', '总充值500-2000可见']], reason: '满足层级条件自动调整', src: '系统' },
+                    { t: '2026-11-18 15:20:11', type: '基本信息', changes: [['真实姓名', '', '喜欢123']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-18 15:20:11', type: '红包限额', changes: [['红包限额', '500', '1000']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-15 09:12:30', type: '手机号', changes: [['手机号', '+86 187****1234', '+86 187****4013']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
+                    { t: '2026-11-12 14:00:03', type: '密码', changes: [['已修改登录密码']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-11 10:05:20', type: '封号', changes: [['封号', '封号中', '正常']], reason: '提前解封<br>原因：会员申诉核实通过', src: '平台' },
+                    { t: '2026-11-10 20:30:41', type: '封号', changes: [['封号', '正常', '封号中']], reason: '时长：永久<br>原因：疑似多账号套利', src: '平台' },
+                    { t: '2026-11-09 11:40:02', type: '账号状态', changes: [['账号状态', '停用', '启用']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-08 11:11:11', type: '账号状态', changes: [['账号状态', '启用', '停用']], reason: '批量禁用', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-05 18:22:37', type: 'IM账号', changes: [['解锁IM账号']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
+                    { t: '2026-11-03 21:00:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '到期自动解除', src: '系统' },
+                    { t: '2026-11-03 15:16:09', type: '返佣后台', changes: [['开通返佣后台账号：admin_100039991']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-02 21:00:00', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：聊天室<br>时长：1天（至 2026-11-03 21:00:00）<br>原因：聊天室辱骂他人', src: '平台' },
+                    { t: '2026-10-30 13:48:55', type: '充值等级', changes: [['充值等级', '1', '0']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
+                    { t: '2026-10-28 10:02:19', type: '基本信息', changes: [['用户昵称', '无家可归', '无家可归aegp']], reason: '重置昵称', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-10-26 17:30:00', type: '备注', changes: [['备注', '', 'VIP客户']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
+                ]
+            },
+            '100039992': {
+                nick: '风行者', status: '启用',
+                ban: { on: false }, mute: { on: false },
+                logs: [
+                    { t: '2026-11-19 20:15:33', type: '返佣后台', changes: [['重置返佣后台密码']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-16 09:30:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '提前解除禁言<br>原因：误判', src: '平台' },
+                    { t: '2026-11-15 22:41:10', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：直播间<br>时长：7天（至 2026-11-22 22:41:10）<br>原因：直播间刷屏', src: '平台' },
+                    { t: '2026-11-10 14:22:05', type: '账号状态', changes: [['账号状态', '启用', '冻结余额']], reason: '余额锁定中，限制游戏、下单、打赏、发言。', src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-11 10:00:00', type: '账号状态', changes: [['账号状态', '冻结余额', '启用']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-01 08:59:41', type: '用户层级', changes: [['用户层级', '总充值500-2000可见', '总充值2000-9999可见']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
+                    { t: '2026-10-25 16:44:12', type: '密码', changes: [['已修改支付密码']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
+                ]
+            }
+        };
+
+        const lgState = { uid: null, list: [], page: 1 };
+        const LG_DEFAULT = { start: '2026-10-23 00:00:00', end: '2026-11-21 23:59:59' };
+
+        function openLogModal(uid) {
+            const m = LOG_MEMBERS[uid];
+            if (!m) return;
+            lgState.uid = uid;
+            document.getElementById('lgUid').textContent = uid;
+            document.getElementById('lgNick').textContent = m.nick;
+            document.getElementById('lgStatus').innerHTML = `<span class="log-badge ${m.status === '启用' ? 'lb-ok' : 'lb-gray'}">${m.status}</span>`;
+            document.getElementById('lgBan').innerHTML = m.ban.on
+                ? `<span class="log-badge lb-danger">封号中</span> <span class="text-gray">至 ${m.ban.until}</span>`
+                : '<span class="log-badge lb-ok">正常</span>';
+            document.getElementById('lgMute').innerHTML = m.mute.on
+                ? `<span class="log-badge lb-warn">禁言中</span> <span class="text-gray">${m.mute.scope} · 至 ${m.mute.until}</span>`
+                : '<span class="log-badge lb-ok">正常</span>';
+            resetLog(true);
+            fillTypeOptions();
+            queryLog();
+            document.querySelectorAll('.action-dropdown-menu.show').forEach(x => x.classList.remove('show'));
+            openTargetModal('logModal');
+            document.querySelector('#logModal .modal-body').scrollTop = 0;
+        }
+
+        function fillTypeOptions() {
+            document.getElementById('lgType').innerHTML = '<option value="">全部</option>' + LOG_TYPES.map(t => `<option>${t}</option>`).join('');
+        }
+
+        function resetLog(silent) {
+            document.getElementById('lgType').value = '';
+            document.getElementById('lgSource').value = '';
+            document.getElementById('lgOperator').value = '';
+            document.getElementById('lgStart').value = LG_DEFAULT.start;
+            document.getElementById('lgEnd').value = LG_DEFAULT.end;
+            if (silent !== true) queryLog();
+        }
+
+        function inRange(cond, l) {
+            if (cond.type && l.type !== cond.type) return false;
+            if (cond.src && l.src !== cond.src) return false;
+            if (cond.op && !(l.op && l.op.toLowerCase().includes(cond.op.toLowerCase()))) return false;
+            return l.t >= cond.start && l.t <= cond.end;
+        }
+
+        function queryLog() {
+            const cond = {
+                type: document.getElementById('lgType').value,
+                src: document.getElementById('lgSource').value,
+                op: document.getElementById('lgOperator').value.trim(),
+                start: document.getElementById('lgStart').value.trim(),
+                end: document.getElementById('lgEnd').value.trim()
+            };
+            const days = (new Date(cond.end.replace(' ', 'T')) - new Date(cond.start.replace(' ', 'T'))) / 86400000;
+            if (days > 90) { alert('查询时间跨度不能超过 90 天'); return; }
+
+            const all = LOG_MEMBERS[lgState.uid].logs.slice().sort((a, b) => b.t.localeCompare(a.t));
+            lgState.list = all.filter(l => inRange(cond, l));
+            lgState.page = 1;
+            renderLog();
+        }
+
+        const TYPE_BADGE = { '封号': 'lb-danger', '禁言': 'lb-warn', '账号状态': 'lb-purple', '密码': 'lb-gray', '返佣后台': 'lb-gray', 'IM账号': 'lb-gray' };
+        const valHtml = v => v === '' ? '<span class="empty-val">空</span>' : v;
+
+        function renderLog() {
+            const size = parseInt(document.getElementById('lgPageSize').value, 10);
+            const total = lgState.list.length;
+            const pages = Math.max(1, Math.ceil(total / size));
+            if (lgState.page > pages) lgState.page = pages;
+            const rows = lgState.list.slice((lgState.page - 1) * size, lgState.page * size);
+
+            document.getElementById('logBody').innerHTML = rows.length ? rows.map(l => {
+                const chg = l.changes.map(c => c.length === 1
+                    ? `<div class="chg-line">${c[0]}</div>`
+                    : `<div class="chg-line"><span class="lbl">${c[0]}：</span><span class="old">${valHtml(c[1])}</span><span class="arr">→</span><span class="new">${valHtml(c[2])}</span></div>`).join('');
+                const op = l.src === '商户后台'
+                    ? `${l.op}<br><span class="text-gray">${l.ip}</span>`
+                    : l.src;
+                const srcBadge = l.src === '商户后台' ? 'lb-blue' : (l.src === '平台' ? 'lb-danger' : 'lb-gray');
+                return `<tr class="${BAN_TYPES.includes(l.type) ? 'row-ban' : ''}">
+                    <td class="t-time">${l.t}</td>
+                    <td><span class="log-badge ${TYPE_BADGE[l.type] || 'lb-blue'}">${l.type}</span></td>
+                    <td>${chg}</td>
+                    <td>${l.reason || '<span class="text-gray">—</span>'}</td>
+                    <td><span class="log-badge ${srcBadge}">${l.src}</span></td>
+                    <td>${op}</td>
+                </tr>`;
+            }).join('') : '<tr><td colspan="6" class="log-empty">当前条件下暂无更新记录</td></tr>';
+
+            document.getElementById('lgTotal').textContent = `共 ${total} 条`;
+            document.getElementById('lgPageNo').textContent = `${lgState.page} / ${pages}`;
+        }
+
+        function logPage(d) {
+            const size = parseInt(document.getElementById('lgPageSize').value, 10);
+            const pages = Math.max(1, Math.ceil(lgState.list.length / size));
+            lgState.page = Math.min(pages, Math.max(1, lgState.page + d));
+            renderLog();
+        }
+
+        // 原型演示：编辑备注保存成功后，自动生成一条更新日志
+        const _origSaveRemark = saveRemark;
+        saveRemark = function () {
+            if (!currentRemarkRow) return;
+            const uid = currentRemarkRow.querySelector('td:nth-child(4) .text-gray').textContent.trim();
+            const before = currentRemarkRow.getAttribute('data-remark') || '';
+            const after = document.getElementById('modalRemarkInput').value;
+            _origSaveRemark();
+            if (LOG_MEMBERS[uid] && before !== after) {
+                const d = new Date(), p = n => String(n).padStart(2, '0');
+                const t = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+                LOG_MEMBERS[uid].logs.unshift({ t, type: '备注', changes: [['备注', before, after]], src: '商户后台', op: 'admin01', ip: '47.242.18.6' });
+            }
+        };
+    </script>
+<!-- 👆 更新日志弹窗结束 👆 -->
 
 </body>
 </html>
