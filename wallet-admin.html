@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>波币钱包 · 总后台交互原型 V1.0</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:13px/1.5 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#1f2329;background:#f0f2f5;overflow:hidden}
+a{color:#1677ff;cursor:pointer;text-decoration:none}
+#app{display:flex;height:100vh}
+#side{width:208px;background:#001529;color:#c7cdd6;overflow-y:auto;flex-shrink:0}
+#side .logo{height:56px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:600;background:#002140;letter-spacing:1px}
+#side .logo small{font-size:11px;color:#8aa0b8;margin-left:6px;font-weight:400}
+.mg{border-bottom:1px solid #0b2540}
+.mg-t{padding:11px 18px;cursor:pointer;display:flex;justify-content:space-between;font-size:13.5px;color:#e6ebf1}
+.mg-t:hover{color:#fff}
+.mg-t .ar{transition:.2s;font-size:10px;opacity:.6}
+.mg.open .mg-t .ar{transform:rotate(90deg)}
+.mg-c{display:none;background:#000c17}
+.mg.open .mg-c{display:block}
+.mi{padding:8px 18px 8px 34px;cursor:pointer;font-size:13px}
+.mi:hover{color:#fff}
+.mi.on{background:#1677ff;color:#fff}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#top{height:56px;background:#fff;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #e8e8e8;gap:16px;flex-shrink:0}
+#crumb{color:#8a8f99;flex:1}
+#crumb b{color:#1f2329;font-weight:600}
+.tg{border:1px solid #d9d9d9;border-radius:4px;padding:4px 10px;cursor:pointer;background:#fff;font-size:12px}
+.tg.on{background:#fffbe6;border-color:#faad14;color:#ad6800}
+#tabs{display:flex;gap:4px;padding:6px 16px 0;background:#fff;border-bottom:1px solid #e8e8e8;overflow-x:auto;flex-shrink:0}
+.tb{padding:5px 12px;border:1px solid #e8e8e8;border-bottom:none;border-radius:4px 4px 0 0;background:#fafafa;cursor:pointer;white-space:nowrap;font-size:12px}
+.tb.on{background:#fff;color:#1677ff;border-color:#1677ff}
+.tb i{margin-left:6px;font-style:normal;color:#999}
+#body{flex:1;display:flex;min-height:0}
+#proto{flex:1;overflow:auto;padding:16px;min-width:0}
+#notes{width:380px;flex-shrink:0;background:#fffdf5;border-left:3px solid #faad14;overflow-y:auto;padding:16px 18px}
+#notes.hide{display:none}
+#notes h3{font-size:15px;margin-bottom:8px;color:#ad6800;display:flex;align-items:center;gap:6px}
+#notes h3:before{content:"";width:4px;height:15px;background:#faad14;border-radius:2px}
+#notes h4{font-size:13px;margin:14px 0 6px;color:#1f2329;border-bottom:1px dashed #f0d58a;padding-bottom:4px}
+#notes ol,#notes ul{padding-left:18px}
+#notes li{margin:4px 0;color:#3d3d3d;font-size:12.5px}
+#notes li b{color:#c41d7f;font-weight:600}
+#notes .tag{display:inline-block;background:#fff1b8;color:#ad6800;border-radius:3px;padding:0 5px;font-size:11px;margin-right:4px}
+.card{background:#fff;border-radius:6px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card-h{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.card-h small{font-weight:400;color:#8a8f99;font-size:12px}
+.flt{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.fi{display:flex;align-items:center;gap:6px}
+.fi>label{color:#555;white-space:nowrap}
+input.ip,select.ip,textarea.ip{border:1px solid #d9d9d9;border-radius:4px;padding:4px 8px;font-size:12.5px;height:28px;background:#fff;outline:none;font-family:inherit}
+textarea.ip{height:64px;width:100%;resize:vertical}
+input.ip:focus,select.ip:focus,textarea.ip:focus{border-color:#1677ff}
+input.ip{width:150px}
+.dr{display:flex;align-items:center;gap:4px}
+.dr input{width:118px}
+.btns{display:flex;gap:8px;margin-top:12px}
+.bt{border:1px solid #d9d9d9;background:#fff;border-radius:4px;padding:4px 14px;cursor:pointer;font-size:12.5px;height:28px;white-space:nowrap}
+.bt:hover{border-color:#1677ff;color:#1677ff}
+.bt.p{background:#1677ff;border-color:#1677ff;color:#fff}
+.bt.p:hover{background:#4096ff;color:#fff}
+.bt.d{color:#ff4d4f;border-color:#ffccc7}
+.bt.g{background:#52c41a;border-color:#52c41a;color:#fff}
+.bt.sm{height:24px;padding:0 10px;font-size:12px}
+.tw{overflow-x:auto}
+table.t{border-collapse:collapse;width:100%;min-width:100%;font-size:12.5px}
+table.t th{background:#fafafa;font-weight:600;color:#333;white-space:nowrap}
+table.t th,table.t td{border:1px solid #f0f0f0;padding:8px 10px;text-align:center;white-space:nowrap}
+table.t tr:hover td{background:#f5faff}
+table.t td.l{text-align:left}
+table.t td .lk{margin:0 4px}
+.lk.r{color:#ff4d4f}
+.lk.g{color:#52c41a}
+.pg{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:12px;color:#666;font-size:12px}
+.pg span.n{border:1px solid #d9d9d9;padding:0 8px;border-radius:3px}
+.pg span.n.on{border-color:#1677ff;color:#1677ff}
+.st{display:inline-block;padding:0 8px;border-radius:10px;font-size:11.5px;line-height:20px}
+.s-g{background:#f6ffed;color:#389e0d;border:1px solid #b7eb8f}
+.s-r{background:#fff1f0;color:#cf1322;border:1px solid #ffa39e}
+.s-o{background:#fff7e6;color:#d46b08;border:1px solid #ffd591}
+.s-b{background:#e6f4ff;color:#0958d9;border:1px solid #91caff}
+.s-x{background:#f5f5f5;color:#8c8c8c;border:1px solid #d9d9d9}
+.s-p{background:#f9f0ff;color:#531dab;border:1px solid #d3adf7}
+.kp{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.k{background:#fff;border-radius:6px;padding:14px;border:1px solid #f0f0f0}
+.k .l{color:#8a8f99;font-size:12px}
+.k .v{font-size:21px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.k .s{font-size:11.5px;color:#8a8f99;margin-top:2px}
+.k.hl{border-color:#91caff;background:#f5faff}
+.sub{display:flex;gap:0;border-bottom:1px solid #e8e8e8;margin-bottom:14px}
+.sub a{padding:8px 16px;color:#555;border-bottom:2px solid transparent;margin-bottom:-1px}
+.sub a.on{color:#1677ff;border-color:#1677ff;font-weight:600}
+.frm{display:grid;grid-template-columns:150px 1fr;gap:12px 12px;align-items:center}
+.frm>label{text-align:right;color:#555}
+.frm>label.req:before{content:"* ";color:#ff4d4f}
+.frm .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.frm .full{grid-column:1/3}
+.tip{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:#bfbfbf;color:#fff;font-size:10px;margin-left:3px;cursor:help;position:relative;font-weight:600;vertical-align:middle}
+.tip:hover{background:#1677ff}
+.tip:hover:after{content:attr(data-t);position:absolute;left:18px;top:-4px;background:#262626;color:#fff;padding:6px 10px;border-radius:4px;width:max-content;max-width:280px;white-space:normal;font-weight:400;font-size:12px;line-height:1.5;z-index:99;text-align:left}
+.sw{display:inline-block;width:36px;height:20px;border-radius:10px;background:#bfbfbf;position:relative;cursor:pointer;vertical-align:middle;transition:.2s}
+.sw:after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.2s}
+.sw.on{background:#1677ff}
+.sw.on:after{left:18px}
+.rd{display:inline-flex;gap:14px}
+.rd label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.sec{font-weight:600;font-size:13px;margin:16px 0 10px;padding-left:8px;border-left:3px solid #1677ff}
+.sec:first-child{margin-top:0}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;z-index:50;padding-top:6vh;overflow:auto}
+.mdl{background:#fff;border-radius:8px;width:560px;max-width:94vw;margin-bottom:40px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.mdl-h{padding:14px 20px;border-bottom:1px solid #f0f0f0;font-weight:600;font-size:15px;display:flex;justify-content:space-between}
+.mdl-h a{color:#999;font-weight:400}
+.mdl-b{padding:18px 20px;max-height:72vh;overflow:auto}
+.mdl-f{padding:10px 20px;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px}
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 20px}
+.kv.c3{grid-template-columns:repeat(3,1fr)}
+.kv div{display:flex;gap:6px}
+.kv div span:first-child{color:#8a8f99;white-space:nowrap}
+.kv div span:last-child{word-break:break-all}
+.img{width:120px;height:76px;background:repeating-linear-gradient(45deg,#f5f5f5,#f5f5f5 6px,#ececec 6px,#ececec 12px);border:1px solid #e8e8e8;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;color:#999;font-size:11px}
+.chat{background:#f7f8fa;border-radius:6px;padding:10px;max-height:220px;overflow:auto}
+.chat p{margin:4px 0;font-size:12px}
+.chat p em{color:#999;font-style:normal;margin-right:6px}
+#toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#262626;color:#fff;padding:8px 18px;border-radius:6px;display:none;z-index:99;font-size:13px}
+.warn{background:#fff7e6;border:1px solid #ffd591;color:#ad4e00;padding:8px 12px;border-radius:4px;font-size:12px;margin-bottom:12px}
+.info{background:#e6f4ff;border:1px solid #91caff;color:#0958d9;padding:8px 12px;border-radius:4px;font-size:12px;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.node{display:flex;gap:0;align-items:center;margin:8px 0 4px;flex-wrap:wrap}
+.node .nd{border:1px solid #91caff;background:#f5faff;border-radius:6px;padding:8px 10px;min-width:140px;font-size:12px}
+.node .ln{width:24px;height:2px;background:#91caff}
+.bar{height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:#1677ff}
+.ph{height:160px;border:1px dashed #d9d9d9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#999}
+.flowv{display:flex;align-items:flex-end;gap:10px;height:140px;padding-top:10px}
+.flowv div{flex:1;background:#91caff;border-radius:3px 3px 0 0;position:relative}
+.flowv div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:11px;color:#888}
+.muted{color:#8a8f99}
+.red{color:#ff4d4f}.green{color:#389e0d}.blue{color:#1677ff}
+.chk{display:inline-flex;align-items:center;gap:4px;margin-right:12px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="app">
+ <aside id="side"><div class="logo">波币钱包<small>总后台 V1.0</small></div><div id="menu"></div></aside>
+ <div id="main">
+  <div id="top"><div id="crumb"></div><span class="tg on" id="ntg" onclick="toggleNotes()">需求说明：显示</span><span class="muted">admin ▾</span></div>
+  <div id="tabs"></div>
+  <div id="body"><section id="proto"></section><section id="notes"></section></div>
+ </div>
+</div>
+<div id="mroot"></div><div id="toast"></div>
+<script>
+/* ========== 基础组件 ========== */
+const $=s=>document.querySelector(s);
+const S={tab:{},open:[],cur:null,flags:{}};
+function esc(s){return String(s)}
+function tip(t){return `<span class="tip" data-t="${t}">?</span>`}
+function lbl(l){ // "名称?提示"
+  if(l.includes('?')){const [a,b]=l.split('?');return a+tip(b)}return l}
+function inp(ph='请输入',v='',w){return `<input class="ip" placeholder="${ph}" value="${v}" ${w?`style="width:${w}px"`:''}>`}
+function sel(o,v,w){return `<select class="ip" ${w?`style="width:${w}px"`:''}>${o.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('')}</select>`}
+function ta(ph='请输入',v=''){return `<textarea class="ip" placeholder="${ph}">${v}</textarea>`}
+function sw(on){return `<span class="sw ${on?'on':''}" onclick="this.classList.toggle('on');toast(this.classList.contains('on')?'已开启':'已关闭')"></span>`}
+let _rn=0;function rad(o,c=0){_rn++;return `<span class="rd">${o.map((x,i)=>`<label><input type="radio" name="r${_rn}" ${i===c?'checked':''}>${x}</label>`).join('')}</span>`}
+function chk(o,c=[]){return o.map((x,i)=>`<label class="chk"><input type="checkbox" ${c===true||c.includes(i)?'checked':''}>${x}</label>`).join('')}
+function dr(){return `<span class="dr"><input class="ip" placeholder="开始日期"> 至 <input class="ip" placeholder="结束日期"></span>`}
+function st(t,c){const m={g:'s-g',r:'s-r',o:'s-o',b:'s-b',x:'s-x',p:'s-p'};return `<span class="st ${m[c]||'s-x'}">${t}</span>`}
+function lk(t,fn,c=''){return `<a class="lk ${c}" onclick="${fn}">${t}</a>`}
+function bt(t,fn='',c=''){return `<button class="bt ${c}" onclick="${fn}">${t}</button>`}
+function card(h,b,extra=''){return `<div class="card">${h?`<div class="card-h"><span>${h}</span>${extra}</div>`:''}${b}</div>`}
+/* 筛选栏: [类型,标签,参数] */
+function F(items,extraBtns=''){
+  const h=items.map(it=>{
+    const [t,l,a]=it;
+    if(t==='i')return `<div class="fi"><label>${lbl(l)}</label>${inp()}</div>`;
+    if(t==='s')return `<div class="fi"><label>${lbl(l)}</label>${sel(a)}</div>`;
+    if(t==='d')return `<div class="fi">${Array.isArray(l)?sel(l):`<label>${l}</label>`}${dr()}</div>`;
+    if(t==='r')return `<div class="fi"><label>${l}</label><span class="dr">${inp('最小',"",70)} - ${inp('最大',"",70)}</span></div>`;
+    return '';
+  }).join('');
+  return `<div class="card"><div class="flt">${h}</div><div class="btns">${bt('查询',"toast('查询（原型演示）')",'p')}${bt('重置',"toast('已重置')")}${bt('导出',"toast('导出任务已创建，完成后在下载中心获取')")}${bt('刷新',"toast('已刷新')")}${extraBtns}</div></div>`;
+}
+/* 表格: cols 支持 "名称?提示" */
+function T(cols,rows,opt={}){
+  const th=cols.map(c=>`<th>${lbl(c)}</th>`).join('');
+  const tr=rows.map(r=>`<tr>${r.map(c=>`<td>${c===undefined||c===null?'-':c}</td>`).join('')}</tr>`).join('');
+  return `<div class="tw"><table class="t"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table></div>${opt.nopg?'':PG()}`;
+}
+function PG(){return `<div class="pg">共 999 条 <span class="n on">1</span><span class="n">2</span><span class="n">3</span> … <span class="n">20</span> ${sel(['50条/页','100条/页','200条/页','500条/页','1000条/页','2000条/页'],'50条/页',100)} 跳至 ${inp('',1,40)} 页</div>`}
+function frm(rows){ // [label, control, req]
+  return `<div class="frm">${rows.map(r=>r[0]==='--'?`<div class="full sec">${r[1]}</div>`:`<label class="${r[2]?'req':''}">${lbl(r[0])}</label><div class="row">${r[1]}</div>`).join('')}</div>`;
+}
+function kv(pairs,c3){return `<div class="kv ${c3?'c3':''}">${pairs.map(p=>`<div><span>${p[0]}：</span><span>${p[1]}</span></div>`).join('')}</div>`}
+function kpi(list){return `<div class="kp">${list.map(k=>`<div class="k ${k[3]?'hl':''}"><div class="l">${lbl(k[0])}</div><div class="v">${k[1]}</div><div class="s">${k[2]||''}</div></div>`).join('')}</div>`}
+function subTabs(key,names){
+  const cur=S.tab[key]||0;
+  return `<div class="sub">${names.map((n,i)=>`<a class="${i===cur?'on':''}" onclick="S.tab['${key}']=${i};render()">${n}</a>`).join('')}</div>`;
+}
+const GA=['谷歌验证码?涉及资金、审核、密钥类操作均需输入当前操作员的谷歌验证码',inp('请输入6位谷歌验证码'),1];
+/* 弹窗 */
+let _mid=0;
+function M(title,body,o={}){
+  _mid++;const id='m'+_mid;
+  const foot=o.foot!==undefined?o.foot:`${bt('取消',`closeM('${id}')`)}${bt(o.ok||'确认',`closeM('${id}');${o.fn||`toast('${o.msg||'操作成功（原型演示）'}')`}`,'p')}`;
+  const d=document.createElement('div');d.className='mask';d.id=id;
+  d.innerHTML=`<div class="mdl" style="width:${o.w||560}px"><div class="mdl-h"><span>${title}</span><a onclick="closeM('${id}')">✕</a></div><div class="mdl-b">${body}</div>${foot?`<div class="mdl-f">${foot}</div>`:''}</div>`;
+  d.addEventListener('click',e=>{if(e.target===d)closeM(id)});
+  $('#mroot').appendChild(d);
+}
+function closeM(id){const e=document.getElementById(id);e&&e.remove()}
+function CF(msg,fn,title='提示'){M(title,`<div style="padding:8px 0">${msg}</div>`,{w:420,fn:fn||`toast('操作成功（原型演示）')`})}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',1800)}
+function toggleNotes(){const n=$('#notes');n.classList.toggle('hide');$('#ntg').textContent='需求说明：'+(n.classList.contains('hide')?'隐藏':'显示');$('#ntg').classList.toggle('on')}
+/* 双人复核提交提示 */
+function DUAL(what){toast(`${what}已提交，进入【系统管理-双人复核】待复核，复核通过后生效`)}
+
+/* ========== 页面注册 ========== */
+const P={};
+const MENU=[];
+function G(name,items){MENU.push({name,items})}
+</script>
+<script>
+/* ================= 仪表盘 ================= */
+P.dash={t:'仪表盘',r:()=>{
+ return card('',`<div class="flt"><div class="fi">${sel(['今日','昨日','近7日','近30日','自定义'])}${dr()}</div><div class="fi"><label>公司</label>${sel(['全部','白宫','少林寺'])}</div><div class="fi"><label>商户</label>${sel(['全部','商户A','商户B'])}</div>${bt('查询',"toast('查询（原型演示）')",'p')}${bt('重置')}<span class="muted">数据每1分钟更新</span></div>`)+
+ card('C2C 交易概览',kpi([['C2C成交金额','3,286,400','笔数 8,214 / 人数 3,102',1],['大厅自选成交','1,926,100','占比 58.6%'],['快速买币成交','1,360,300','占比 41.4%'],['平均匹配时长?快速买币：从提交到创建成交订单的时间','2分36秒','大厅自选：即时'],['矿工兜底率?矿工完成的买币金额 ÷ 全部买币金额','12.4%','按笔数 10.8%',1],['订单成功率','96.2%','取消率 3.8%'],['申诉中订单','23','待处理 18 / 锁单中 5'],['在线矿工 / 可售矿工币','46 / 812,300','并发占用 63/138']]))+
+ card('资产与资金',kpi([['用户可销售币总额','8,610,220',''],['用户不可销售币总额','2,105,300','C2C 买入后待进入游戏'],['交易中待确认币','326,900',''],['矿工币总额','812,300',''],['USDT 买币（用户）','1,028,000','折合 USDT 155,051'],['矿工 USDT 购币','520,000','折合 USDT 78,078'],['闪兑出款 USDT','42,600','笔数 316'],['内部转账','186,400','笔数 522']]))+
+ card('商户 / 平台',kpi([['商户用户充值','132,456','笔数 5,899 / 人数 1,458'],['商户用户提现','98,210','笔数 4,102 / 人数 1,233'],['商户转给用户','132,456',''],['用户转给商户','5,899',''],['充值手续费','1,324',''],['提现手续费','982',''],['转账手续费','1,458',''],['合计手续费收入','3,764','']]))+
+ card('活动成本',kpi([['等待红包已发放','12,860','订单 1,024 笔'],['红包触发率?到达第一个红包节点的快速买币订单 ÷ 全部快速买币订单','34.2%','膨胀二档 11.6% / 三档 4.1%'],['抵用券核销','8,420','张数 1,206'],['矿工返利发放','9,312','冲回 120']]))+
+ card('近7日 C2C 成交趋势',`<div class="flowv">${[52,61,58,70,66,80,88].map((v,i)=>`<div style="height:${v}%"><span>11-${15+i}</span></div>`).join('')}</div><div style="height:22px"></div>`);
+},n:[
+ ['页面说明',['总后台首页，给运营与管理层查看钱包整体经营数据；默认展示今日数据，支持按日期区间、公司、商户筛选（公司/商户筛选仅影响“商户/平台”板块）。','数据每 1 分钟自动刷新一次，页面停留期间无需手动刷新。']],
+ ['指标口径',['<b>C2C成交金额</b>：统计时间内已完成的 C2C 买币订单金额合计，大厅自选与快速买币分开统计。','<b>平均匹配时长</b>：仅统计快速买币，从用户提交快速买币到系统创建成交订单的时间；大厅自选点击即成单，不计入。','<b>矿工兜底率</b>：矿工完成的买币订单金额 ÷ 全部买币订单金额，同时展示按笔数口径。','<b>订单成功率</b>：只按已结案订单和责任失败计算，进行中订单不计入。','资产板块为实时余额快照，<b>可销售币 / 不可销售币 / 待确认币 / 矿工币</b>四类资产分开统计、不可相加对比。','活动成本：等待红包只统计订单完成后实际到账的红包；抵用券成本 = 游戏平台全额上分金额 − 用户实际扣币金额。']],
+ ['交互',['点击指标卡可跳转到对应明细页面（如矿工兜底率 → 运营数据报表；申诉中订单 → 申诉处理-待处理）。']]
+]};
+
+/* ================= 用户管理 ================= */
+const U=[['178232','特朗普','李*五','+86138****3333','已实名',st('正常','g'),'已认证','10,000','3,200','1,500','0','中等 / 36','0'],
+ ['178205','艾尔登','-','+86138****3334','未实名',st('正常','g'),'未认证','-','0','200','0','欠佳 / 12','1'],
+ ['178309','阿叔卡机','*三','+86138****3322','已实名',st('限制卖币','o'),'已认证','10,000','12,000','0','300','优秀 / 82','3'],
+ ['178310','井川里予','王*','+86138****3311','已实名',st('冻结','r'),'未认证','-','500','0','0','V-2 恶意转账','0']];
+P.userList={t:'用户列表',r:()=>F([['i','会员ID'],['i','昵称'],['i','手机号'],['i','真实姓名'],['s','实名状态',['全部','已实名','未实名','审核中']],['s','商家状态',['全部','已认证','未认证']],['s','账户状态',['全部','正常','限制买币','限制卖币','冻结','安全冷却中']],['s','信用等级',['全部','极好','优秀','良好','中等','欠佳','V-1','V-2','V-3']],['d',['注册时间','实名认证时间','商家认证时间','最近登录时间']],['i','注册IP / 登录IP'],['i','邀请人ID']])+
+ card('用户列表',T(['会员ID','昵称','姓名','手机号','实名状态','账户状态?正常 / 限制买币 / 限制卖币 / 冻结 / 安全冷却中，由风控规则自动或人工设置','商家状态','保证金','可销售币?游戏平台提现回钱包、内部转账收到的币，可卖、可转、可闪兑','不可销售币?C2C 或 USDT 买到、尚未经过游戏平台“充值后提现回钱包”的币，不可卖/转/闪兑','待确认币?交易中锁定的金额','信用等级 / 信用分','24h责任失败','注册时间','注册IP / 最近登录IP','操作'],
+  U.map(u=>[...u,'2026-11-01 11:24:00','120.235.233.91<br>20.235.233.91',lk('查看详情',"userDetail()")+lk('限制/冻结',"userLimit()",'r')+lk('解除',"CF('确定解除该用户的全部交易限制？解除后立即生效，并记录操作人与原因。')")])),'')
+,n:[
+ ['页面说明',['查看与管理所有钱包普通用户（矿工账户在【矿工管理-矿工列表】中单独管理，不在此列表出现）。','默认按注册时间倒序；手机号、姓名默认脱敏展示，有“查看敏感信息”权限的角色可在详情中查看完整信息，每次查看记录操作日志。']],
+ ['资产口径',['总金额 = 可销售币 + 不可销售币 + 待确认币；可用 = 总金额 − 待确认币。','<b>可销售币</b>：从游戏平台提现回钱包、内部转账收到的币，可挂单卖出、内部转账、闪兑。','<b>不可销售币</b>：C2C 买入或 USDT 买入的币，只能用于游戏平台充值（充值时优先扣不可销售币），不可卖、不可转、不可闪兑。','<b>待确认币</b>：交易中被锁定的金额，订单完成/取消/判责后释放或扣减。']],
+ ['账户状态与风控',['<b>责任失败</b>：买家付款超时、延时后仍不付款、无理由取消；卖家在放币时限内不放币也不申诉；申诉以最终判责计入对应角色。','默认规则：24 小时内 3 次责任失败，自动限制相关交易功能 24 小时（买家限制买币、卖家限制卖币），规则在【配置管理-风控规则配置】调整。','<b>安全冷却中</b>：修改收款账户、重置支付密码或重要登录安全信息后，默认 24 小时内禁止卖币、内部转账、闪兑；买币和游戏平台充值不受影响。','“限制/冻结”可人工设置：限制买币、限制卖币、禁止登录、全部冻结，需填写时长（或永久）与原因；“解除”立即恢复，均记录操作日志。']],
+ ['详情弹窗',['基本信息、资产分层、收款方式（银行卡/微信/支付宝/数字人民币）、常用设备、交易数据、责任失败记录、邀请关系、操作记录。','收款方式列表展示“是否本人”：收款人姓名与实名姓名不一致时标红，普通用户必须使用本人实名收款账户。','常用设备可“删除设备 / 加入设备黑名单 / 移除黑名单”，加入黑名单后该设备上的所有账号无法登录。']]
+]};
+function userDetail(){
+ M('用户详情 - 178232',`
+ <div class="sec">基本信息</div>${kv([['会员ID','178232'],['昵称','特朗普'],['手机','+8613800138000'],['注册时间','2026-11-01 11:24:00'],['实名状态','已实名（2026-11-01 12:00:00）'],['姓名','李毅五'],['身份证号','321321199911111234'],['商家状态','已认证 / 保证金 10,000'],['信用等级','中等（36分）'],['账户状态','正常'],['注册IP','192.188.7.7'],['最近登录IP','192.188.7.7'],['邀请人','178001（老王）'],['安全冷却','无']])}
+ <div style="margin-top:8px">身份证图片 <span class="img">人像面</span> <span class="img">人脸识别</span></div>
+ <div class="sec">资产分层</div>${kpi([['总金额','14,700'],['可销售币','3,200'],['不可销售币','1,500'],['待确认币','0'],['抵用券','2 张 / 48','可用券']])}
+ <div class="sec">交易数据</div>${kv([['买币成交','56 笔 / 18,200'],['卖币成交','12 笔 / 6,000'],['成功率（买家）','98.2%'],['成功率（卖家）','91.6%'],['24h 责任失败','0 次'],['累计责任失败','2 次']],1)}
+ <div class="sec">收款方式</div>${T(['类型','名称/银行','账号','收款人','是否本人','添加时间'],[['银行卡','中国工商银行 北京支行','6214****0215','李毅五',st('是','g'),'2026-11-02'],['支付宝','-','138****8000','李毅五',st('是','g'),'2026-11-02'],['微信','-','lyw888','李大华',st('否','r'),'2026-11-03'],['数字人民币','-','0021****8845','李毅五',st('是','g'),'2026-11-05']],{nopg:1})}
+ <div class="sec">常用设备</div>${T(['设备型号','设备ID','最近登录时间','最近登录地','IP','状态','操作'],[['iPhone 15','2a1d4de6…3783','2026-11-20 22:22:22','广东省深圳市','192.222.33.3',st('正常','g'),lk('删除设备',"CF('确定删除这条设备记录？')")+lk('添加黑名单',"CF('确定将该设备加入黑名单？加入后该设备上所有账号无法登录。')",'r')],['Redmi K60','9b8ff9…ab16','2026-11-10 10:01:00','中国香港','103.2.1.9',st('黑名单','r'),lk('移除黑名单',"CF('确定移除黑名单？')")]],{nopg:1})}
+ <div class="sec">操作记录</div>${T(['时间','操作','操作人/来源','说明'],[['2026-11-03 10:00','新增收款方式-微信','用户','触发安全冷却 24h'],['2026-11-02 09:00','实名审核通过','admin','-']],{nopg:1})}
+ `,{w:920,foot:bt('关闭',"document.querySelector('.mask:last-child').remove()")});
+}
+function userLimit(){M('限制 / 冻结用户',frm([['会员ID','178232 / 特朗普'],['限制类型',chk(['限制买币','限制卖币','限制内部转账','限制闪兑','禁止登录'],[1]),1],['限制时长',sel(['24小时','3天','7天','30天','永久'])+tip('到期自动解除；永久需人工解除'),1],['原因',ta('请填写限制原因，用户端不展示'),1],GA]),{fn:"toast('已限制，用户端交易相关入口按限制类型拦截并提示')"})}
+
+/* 人工调账 */
+P.userAdjust={t:'用户人工调账',r:()=>{
+ const i=S.tab.userAdjust||0;let b='';
+ if(i<2){const add=i===0;
+  b=card('',subTabs('userAdjust',['人工加额','人工减额','人工调账记录'])+`<div class="warn">人工${add?'加':'减'}额属于资金操作，提交后进入双人复核，复核人确认后才实际${add?'入账':'扣减'}。</div>`+frm([
+  ['类型',sel([add?'单人加额':'单人减额',add?'批量加额':'批量减额']),1],
+  ['用户ID',`${inp('请输入会员ID')} ${bt('查询',"toast('已带出用户信息')")}`,1],
+  ['用户信息','<span class="muted">昵称：放大放基243　真实姓名：特朗普　可销售币：3,200　不可销售币：1,500</span>'],
+  ['资产类型?选择本次调整的资产账户；矿工币调账请到【矿工管理-矿工列表】操作',sel(['可销售币','不可销售币']),1],
+  [add?'增加金额':'扣减金额',inp('请输入金额'),1],
+  ['关联订单号?赔付/扣款对应的交易订单号，选填',inp('选填')],
+  ['调账原因',sel(['平台赔付','活动补发','问题商家扣款','误操作冲正','其他']),1],
+  ['备注',ta('请输入备注，记录到调账记录'),1],
+  ['批量导入?选择“批量”类型时显示，按模板填写会员ID、资产类型、金额、备注',`${bt('下载模板')} ${bt('Excel导入')}`],
+  GA,
+  ['',bt('提交复核',"DUAL('人工调账')",'p')]
+ ]));}
+ else b=card('',subTabs('userAdjust',['人工加额','人工减额','人工调账记录'])+F([['i','订单号'],['i','会员ID'],['i','昵称'],['s','调账类型',['全部','加额','减额']],['s','资产类型',['全部','可销售币','不可销售币']],['s','复核状态',['全部','待复核','已生效','已驳回']],['i','操作人'],['i','复核人'],['d','操作时间']]).replace('class="card"','')+T(['订单号','会员ID','昵称','姓名','调账类型','资产类型','调账金额','调账前余额','调账后余额','调账原因','关联订单','备注','操作人','复核人','复核状态','操作时间'],[
+  ['45645241256416541','178232','特朗普','李*五','加额','可销售币','1,000','3,200','4,200','平台赔付','2026112016…','申诉误判补偿','admin','finance01',st('已生效','g'),'2026-11-20 11:24:00'],
+  ['45645241256416542','178205','艾尔登','-','减额','不可销售币','200','500','300','问题商家扣款','-','-','admin','-',st('待复核','o'),'2026-11-20 11:30:00'],
+  ['45645241256416543','178309','阿叔卡机','*三','加额','可销售币','50','12,000','-','活动补发','-','-','ops02','finance01',st('已驳回','r'),'2026-11-19 09:00:00']]));
+ return b;
+},n:[
+ ['页面说明',['对普通用户钱包资产做人工加额、减额，以及查看调账记录。三个页签：人工加额 / 人工减额 / 人工调账记录。']],
+ ['业务规则',['<b>双人复核</b>：人工加币、扣币属于资金操作，操作人提交后进入【系统管理-双人复核】，由另一名有复核权限的人员确认后才生效；操作人与复核人不能是同一账号。','调账需选择资产类型：可销售币或不可销售币；矿工币调账在矿工列表中进行；待确认币不允许人工调整。','减额金额不能超过该资产类型当前可用余额；余额不足时提交失败并提示。','每笔调账记录：原因、关联订单号、调账前后余额、操作人、复核人、时间，全部可追溯。','批量调账：按模板导入，导入后先展示校验结果（用户不存在、余额不足的行标红），确认无误后整批提交复核。']],
+ ['调账记录',['复核状态：待复核 / 已生效 / 已驳回；驳回需填写原因。','调账后余额在复核生效后才有值；生效后同步生成一条用户资金明细（账变类型：人工加额 / 人工减额）。']]
+]};
+
+/* 实名审核 */
+P.kyc={t:'实名信息审核',r:()=>{const i=S.tab.kyc||0;
+ return card('',subTabs('kyc',['待审核','已审核'])+(i===0?
+ `<div class="flt">${['会员ID','手机号','姓名'].map(x=>`<div class="fi"><label>${x}</label>${inp()}</div>`).join('')}<div class="fi"><label>提交时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ T(['会员ID','昵称','手机号','姓名','证件号码','人脸识别结果?系统活体检测比对结果，仅供人工参考','状态','提交时间','操作'],[['178232','特朗普','+86138****3333','李*五','3101***********1234',st('通过 96%','g'),st('待审核','o'),'2026-11-20 11:24:00',lk('审核',"kycAudit()")],['178205','艾尔登','+86138****3334','王*','3101***********5678',st('疑似 61%','o'),st('待审核','o'),'2026-11-20 11:20:00',lk('审核',"kycAudit()")]])
+ :`<div class="flt">${['会员ID','手机号','审核人'].map(x=>`<div class="fi"><label>${x}</label>${inp()}</div>`).join('')}<div class="fi"><label>状态</label>${sel(['全部','通过','拒绝'])}</div><div class="fi">${sel(['提交时间','审核时间'])}${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ T(['会员ID','昵称','手机号','姓名','证件号码','状态','拒绝原因','提交时间','审核人','审核时间','操作'],[['178232','特朗普','+86138****3333','李*五','3101***********1234',st('通过','g'),'-','2026-11-20 11:24:00','admin','2026-11-20 11:30:00',lk('查看详情',"kycAudit(1)")],['178205','艾尔登','+86138****3333','/','3101***********1234',st('拒绝','r'),'人照不符','2026-11-20 11:24:00','admin','2026-11-20 11:30:00',lk('查看详情',"kycAudit(1)")]])));
+},n:[
+ ['页面说明',['审核用户提交的实名认证（身份证人像面 + 人脸识别）。两个页签：待审核 / 已审核。','买币、卖币、绑定收款账户、内部转账前必须完成实名；注册后未实名可浏览。']],
+ ['审核规则',['审核弹窗展示：会员ID、昵称、手机号、姓名、身份证号、身份证图片、人脸识别图片、系统比对结果。','审核结果：通过 / 拒绝；拒绝必须选择或填写原因（如人照不符、证件模糊、多账号、未成年），原因会在用户端“身份认证-失败”页展示，用户可重新认证。','同一身份证号只能绑定一个钱包账号；系统检测到重复时在审核弹窗标红提示“该证件已被会员 xxx 使用”。','审核需输入谷歌验证码。','实名通过后姓名不可修改；用户收款账户姓名须与实名一致（矿工除外）。','审核通过/拒绝后推送站内信与 APP 推送（极光推送）给用户。']]
+]};
+function kycAudit(view){M(view?'实名信息审核详情':'实名信息审核',kv([['会员ID','178232'],['昵称','特朗普'],['手机号','+86138****3333'],['姓名','李毅五'],['身份证号','321321199911113214'],['系统比对','活体通过，相似度 96%']])+`<div style="margin:12px 0;display:flex;gap:12px"><span class="img">身份证人像面</span><span class="img">人脸识别图片</span></div>`+(view?kv([['审核结果','拒绝'],['原因','人照不符'],['审核人','admin'],['审核时间','2026-11-20 11:30:00']]):frm([['审核结果',rad(['通过','拒绝']),1],['拒绝原因',sel(['请选择','人照不符','证件模糊无法辨认','证件已被使用（多账号）','未满18周岁','其他'])],['备注',ta('选填')],GA])),view?{foot:''}:{})}
+
+/* 商家认证审核 */
+P.merchantAuth={t:'商家认证审核',r:()=>{const i=S.tab.merchantAuth||0;
+ return card('',subTabs('merchantAuth',['待审核','已审核'])+`<div class="flt">${['会员ID','手机号'].map(x=>`<div class="fi"><label>${x}</label>${inp()}</div>`).join('')}${i?`<div class="fi"><label>状态</label>${sel(['全部','通过','拒绝'])}</div>`:''}<div class="fi">${i?sel(['提交时间','审核时间']):'<label>提交时间</label>'}${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ (i===0?T(['会员ID','昵称','手机号','Telegram','其他联系方式','保证金','保证金状态','状态','提交时间','操作'],[['178232','特朗普','+86138****3333','@*****u123','+86138****3333','10,000 BOB',st('已冻结','b'),st('待审核','o'),'2026-11-20 11:24:00',lk('审核',"maAudit()")],['178205','艾尔登','+86138****3333','@****hj12','-','10,000 BOB',st('已冻结','b'),st('待审核','o'),'2026-11-20 11:24:00',lk('审核',"maAudit()")]])
+ :T(['会员ID','昵称','手机号','Telegram','保证金','状态','备注','审核人','提交时间','审核时间','操作'],[['178232','特朗普','+86138****3333','@*****u123','10,000',st('通过','g'),'-','admin','2026-11-20 11:24:00','2026-11-20 12:00:00',lk('查看详情',"maAudit(1)")+lk('取消认证',"CF('确定取消该用户商家认证？保证金按规则处理（违规罚没或退回），并记录原因。')",'r')],['178205','艾尔登','+86138****3333','@****hj12','10,000',st('拒绝','r'),'劣迹商家','admin','2026-11-20 11:24:00','2026-11-20 12:00:00',lk('查看详情',"maAudit(1)")]])));
+},n:[
+ ['页面说明',['审核用户申请“认证商家（波币币商）”。用户端流程：上押保证金 → 等待审核 → 认证完成。']],
+ ['审核规则',['用户提交申请时保证金（默认 10,000 BOB，金额后台可配）即从可销售币冻结；审核拒绝后保证金自动解冻退回。','审核通过：用户获得商家标识与专属认证Logo、成交订单展示“商家”标签，大厅排序可适当靠前。','已审核页可“取消认证”：用于违规商家，可选择保证金“退回”或“罚没”（罚没需双人复核），均通知用户。','审核需输入谷歌验证码；审核结果推送站内信与 APP 推送。','商家违规（经查证）按规则警告或冻结，严重直接封号且不退押金，与用户端公告文案保持一致。']]
+]};
+function maAudit(v){M(v?'商家认证审核详情':'商家认证审核',kv([['会员ID','178232'],['昵称','特朗普'],['手机号','+8613800138000'],['Telegram','@talangpu234'],['其他联系方式','+8613812343333'],['保证金','10,000 BOB（已冻结）'],['实名','李毅五（已实名）'],['近30天成交','126 笔 / 成功率 97%']])+'<br>'+(v?kv([['审核结果','拒绝'],['备注','劣迹商家']]):frm([['审核结果',rad(['通过','拒绝']),1],['备注',ta('拒绝时必填')],GA])),v?{foot:''}:{})}
+
+/* 信用等级配置 */
+P.credit={t:'信用等级配置',r:()=>card('正等级配置',`<div class="btns" style="margin:0 0 12px">${bt('新增',"creditEdit()",'p')}</div>`+T(['信用等级','分数区间?信用分 0-100，由实名、交易行为、守约记录、用户评分综合计算','累计成交金额?达到门槛才可进入该等级','展示标签','大厅排序加权?同条件下高等级卖家排序靠前','状态','更新时间','操作'],[['极好','90-100','100,000',st('极好','g'),'+20%',st('启用','g'),'2026-11-01 11:24:00'],['优秀','75-89','10,000',st('优秀','o'),'+10%',st('启用','g'),'2026-11-01 11:24:00'],['良好','60-74','1,000',st('良好','o'),'0',st('启用','g'),'2026-11-01 11:24:00'],['中等','40-59','0',st('中等','o'),'0',st('启用','g'),'2026-11-01 11:24:00'],['欠佳','0-39','0',st('欠佳','r'),'-20%',st('启用','g'),'2026-11-01 11:24:00']].map(r=>[...r,lk('编辑',"creditEdit()")+lk('删除',"CF('确定删除这条数据？')",'r')]),{nopg:1}))+
+ card('信用分计算权重',frm([['身份认证?完善实名与支付信息可得分',inp('','20',80)+' 分'],['交易行为?按时完成、成交笔数、成交效率',inp('','40',80)+' 分'],['守约记录?逾期交易、频繁关闭订单、责任失败扣分',inp('','25',80)+' 分'],['用户评分?买卖双方单笔交易评价',inp('','15',80)+' 分'],['',bt('保存',"toast('已保存，下次计算周期生效')",'p')]]))+
+ card('负等级配置',`<div class="info">用户获得其中任一风控标签即标记为该负等级；负等级按绝对值高向低覆盖（V-3 优先）。负等级用户大厅不展示、不参与系统分单。</div>`+T(['负等级','风控标签','限制'],[['V-3','洗钱诈骗、P图骗分（严重）、大数据黑名单关联','冻结账户'],['V-2','恶意转账、威胁举报、入金风险','禁止卖币、禁止转账'],['V-1','恶意刷单、P图骗分、投诉商户','大厅不展示、不参与分单']].map(r=>[r[0],r[1],r[2]]),{nopg:1})+`<div class="btns">${bt('编辑负等级',"M('编辑负等级',frm([['V-3',inp('','洗钱诈骗,P图骗分很严重的,大数据黑名单关联信息',360)],['V-2',inp('','恶意转账,威胁举报,入金风险',360)],['V-1',inp('','恶意刷单,P图骗分,投诉商户',360)],GA]),{w:640})",'p')}</div>`),
+n:[
+ ['页面说明',['配置用户信用等级：正等级（极好/优秀/良好/中等/欠佳）与负等级（V-1/V-2/V-3）。','用户端“信用评级”页展示信用分与等级；卖家卡片展示等级标签。']],
+ ['规则',['信用分 = 身份认证 + 交易行为 + 守约记录 + 用户评分，权重可配，每日凌晨重新计算一次。','<b>责任失败</b>会扣减守约记录得分；申诉被判责的一方同时扣分。','正等级需同时满足分数区间与累计成交金额门槛。','负等级由风控标签触发，优先级高于正等级；负等级用户大厅不展示、不参与系统分单。','大厅排序加权：同等过滤条件下，加权高的卖家卡片靠前展示。']]
+]};
+function creditEdit(){M('新增/编辑信用等级',frm([['信用等级',inp('如：优秀'),1],['分数区间',inp('最小',"",80)+' - '+inp('最大',"",80),1],['累计成交金额',inp('','',120),1],['大厅排序加权',inp('','0',80)+' %'],['状态',rad(['启用','禁用'])]]))}
+
+/* 站内信管理 */
+P.msg={t:'站内信管理',r:()=>{const i=S.tab.msg||0;
+ if(i===0)return card('',subTabs('msg',['系统公告','站内信/推送模板','发送记录'])+`<div class="flt"><div class="fi"><label>标题</label>${inp()}</div><div class="fi"><label>展示方式</label>${sel(['全部','通知中心','首页弹窗','通知中心+首页弹窗'])}</div><div class="fi"><label>发送时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('新增公告',"annEdit()",'p')}</div><br>`+
+ T(['标题','内容','展示方式?通知中心：进入系统通知列表；首页弹窗：用户打开APP首页时弹出一次','同时APP推送?勾选后通过极光推送下发系统推送','发送对象','发送时间','状态','操作人','操作'],[['防骗警示','1、防范假客服套路：任何通过微信、支付宝转账0.01等小金额留言自称…','通知中心+首页弹窗','是','全部用户','2026-11-20 11:24:00',st('已发送','g'),'admin'],['【防止被骗/被盗用】注意警惕','尊敬的钱包用户：您好！如果您在使用钱包过程中收到“账户违规…','首页弹窗','否','全部用户','2026-11-21 10:00:00',st('定时待发','o'),'admin']].map(r=>[r[0],`<span class="l">${r[1]}</span>`,...r.slice(2),lk('编辑',"annEdit()")+lk('删除',"CF('确定删除这条数据？已发送的公告删除后用户端同步不再展示。')",'r')])));
+ if(i===1)return card('',subTabs('msg',['系统公告','站内信/推送模板','发送记录'])+`<div class="flt"><div class="fi"><label>模板类型</label>${sel(['全部','交易类','资产类','账户类','活动类','矿工类'])}</div><div class="fi"><label>标题</label>${inp()}</div>${bt('查询','','p')}${bt('重置')}</div><br>`+
+ T(['触发场景','模板类型','标题','内容','站内信','APP推送?极光推送，用户未打开APP时也能收到','操作人','操作'],[
+ ['卖单被下单（买家已下单）','交易类','有买家下单','买家已购买您的 {数量} BOB，请及时查看收款信息并核款放币。','✓','✓'],
+ ['买家已付款','交易类','买家已付款','订单 {订单号} 买家已付款，请登录收款账户确认到账后放币。','✓','✓'],
+ ['卖家已放币（买入成功）','交易类','购买成功','您已成功从卖家【{昵称}】购买了 {数量} BOB。','✓','✓'],
+ ['卖出成功','交易类','出售成功','您已成功向买家【{昵称}】出售了 {数量} BOB。','✓','✓'],
+ ['付款即将超时','交易类','请尽快付款','订单 {订单号} 将在 {分钟} 分钟后超时取消，请尽快付款。','✓','✓'],
+ ['放币即将超时','交易类','请尽快放币','订单 {订单号} 将在 {分钟} 分钟后自动放币，如未收到款请立即申诉。','✓','✓'],
+ ['快速买币匹配成功','交易类','匹配成功','已为您匹配到卖家，请在 {分钟} 分钟内完成付款。','✓','✓'],
+ ['等待红包到账','活动类','红包已到账','快速买币订单完成，等待红包 {金额} 已到账。','✓','✓'],
+ ['挂单创建成功 / 售罄 / 下架','交易类','挂单状态变更','您的挂单 {挂单号} 已{状态}。','✓','✗'],
+ ['申诉处理完成','交易类','申诉处理完成','您的申诉已处理完毕，处理结果：{结果}。','✓','✓'],
+ ['USDT 买币到账','资产类','USDT买入成功','您转入的 {USDT} USDT 已到账 {数量} BOB。','✓','✓'],
+ ['闪兑出款完成','资产类','闪兑成功','{数量} BOB 已兑换为 {USDT} USDT 并转出至 {地址}。','✓','✓'],
+ ['收到内部转账','资产类','收到转账','您收到来自 {昵称} 的转账 {数量} BOB。','✓','✓'],
+ ['抵用券到账 / 即将过期','活动类','抵用券提醒','您获得 {面额} 抵用券，有效期至 {日期}。','✓','✓'],
+ ['实名 / 商家认证结果','账户类','认证结果通知','您的{认证类型}审核{结果}。','✓','✓'],
+ ['交易功能被限制 / 解除','账户类','账户限制通知','因 {原因}，您的{功能}已被限制至 {时间}。','✓','✓'],
+ ['矿工申请审批结果','矿工类','矿工申请结果','您的矿工申请已{结果}。','✓','✓'],
+ ['矿工新订单 / 库存不足下线','矿工类','矿工接单提醒','您有新订单待处理 / 当前可售矿工币不足，已自动下线。','✓','✓']
+ ].map(r=>[...r.slice(0,3),`<span class="l">${r[3]}</span>`,r[4],r[5],'admin',lk('编辑',"tplEdit()")]),{nopg:1}));
+ return card('',subTabs('msg',['系统公告','站内信/推送模板','发送记录'])+`<div class="flt"><div class="fi"><label>会员ID</label>${inp()}</div><div class="fi"><label>渠道</label>${sel(['全部','站内信','APP推送'])}</div><div class="fi"><label>发送结果</label>${sel(['全部','成功','失败'])}</div><div class="fi"><label>发送时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('手动发送',"manualMsg()",'p')}</div><br>`+
+ T(['会员ID','渠道','触发场景','标题','发送时间','发送结果','失败原因','操作人'],[['178232','APP推送','买家已付款','买家已付款','2026-11-21 10:02:11',st('成功','g'),'-','系统'],['178205','APP推送','卖单被下单','有买家下单','2026-11-21 10:01:02',st('失败','r'),'设备未注册推送','系统'],['103234（**名）','站内信','手动发送','重要提示，您的申诉已经处理完毕。','2026-11-21 09:00:00',st('待复核','o'),'-','test001']]));
+},n:[
+ ['页面说明',['三个页签：系统公告 / 站内信·推送模板 / 发送记录。','用户端“通知中心”分为交易通知与系统通知：系统公告进入系统通知；模板消息按触发场景进入交易通知。']],
+ ['系统公告',['展示方式：通知中心 / 首页弹窗 / 两者都有；首页弹窗每条公告每个用户只弹一次，关闭后可在通知中心再次查看。','可设置立即发送或定时发送；勾选“同时APP推送”时通过极光推送下发。','发送对象：全部用户 / 指定会员ID（多个用逗号分隔）/ 指定人群（普通用户、认证商家、矿工）。']],
+ ['推送（极光推送）',['买币、卖币等阶段性消息必须同时走 APP 推送，避免用户挂了卖单后有人来买却不知道。','每个触发场景可分别开关“站内信”与“APP推送”；内容支持变量（订单号、数量、昵称、分钟数等）。','用户关闭系统通知权限时推送失败，发送记录中记录失败原因；站内信不受影响。','手动发送：选择对象与内容，属于群发操作需双人复核后发送。']]
+]};
+function annEdit(){M('新增/编辑系统公告',frm([['标题',inp('请输入标题','',360),1],['内容',ta('请输入公告内容'),1],['展示方式',rad(['通知中心','首页弹窗','通知中心+首页弹窗'],2),1],['同时APP推送',sw(true)],['发送对象',sel(['全部用户','认证商家','矿工','指定会员ID']),1],['发送时间',rad(['立即发送','定时发送'])+inp('选择时间')]]),{w:640})}
+function tplEdit(){M('编辑消息模板',frm([['触发场景','买家已付款'],['标题',inp('','买家已付款',300),1],['内容?可使用变量：{订单号}{数量}{昵称}{分钟}{金额}',ta('','订单 {订单号} 买家已付款，请登录收款账户确认到账后放币。'),1],['站内信',sw(true)],['APP推送',sw(true)]]),{w:620})}
+function manualMsg(){M('手动发送站内信',frm([['发送对象',sel(['指定会员ID','全部用户','认证商家','矿工']),1],['会员ID',inp('多个用逗号分隔','',300)],['标题',inp('','',300),1],['内容',ta(),1],['同时APP推送',sw(false)]]),{fn:"DUAL('群发站内信')",w:620})}
+
+/* 设备黑名单 */
+P.deviceBlack={t:'设备黑名单',r:()=>F([['i','设备ID'],['i','最近登录会员ID'],['d','最近登录时间']],bt('新增',"M('新增设备黑名单',frm([['设备ID',inp('请输入设备ID','',300),1],['原因',ta(),1]]))",'p'))+card('设备黑名单',T(['设备ID','设备型号','最近登录会员ID','关联账号数?该设备登录过的账号数量','最近登录时间','最近登录地址','IP地址','加入原因','操作人','操作'],[['24e0c35e665d231d9bf8ee6c56b08a27…','iPhone 11','6159363','4','2026-11-10 22:22:22','广东省深圳市','192.222.33.3','多账号刷单','admin'],['9b8ff9a1c2…','Redmi K60','6159364','1','2026-11-10 22:22:22','中国香港','103.2.1.9','诈骗','admin']].map(r=>[...r,lk('关联账号',"M('关联账号',T(['会员ID','昵称','状态'],[['6159363','aa','冻结'],['6159365','bb','正常']],{nopg:1}),{foot:''})")+lk('移除',"CF('确定移除黑名单？移除后该设备可正常登录。')",'r')]))),
+n:[['页面说明',['管理被禁止登录的设备。加入黑名单的设备上，所有钱包账号（含矿工账号）都无法登录，提示“当前设备存在风险，请联系客服”。']],['规则',['来源：用户详情“常用设备”中加入，或本页手动新增设备ID。','“关联账号”展示该设备登录过的全部账号，便于排查多账号。','移除黑名单立即生效，并记录操作日志。']]]};
+
+G('仪表盘',[['dash','仪表盘']]);
+G('用户管理',[['userList','用户列表'],['userAdjust','用户人工调账'],['kyc','实名信息审核'],['merchantAuth','商家认证审核'],['credit','信用等级配置'],['msg','站内信管理'],['deviceBlack','设备黑名单']]);
+/* ================= 矿工管理 ================= */
+P.minerApply={t:'矿工申请审批',r:()=>{const i=S.tab.minerApply||0;
+ return card('',subTabs('minerApply',['待审批','已审批'])+`<div class="flt"><div class="fi"><label>会员ID</label>${inp()}</div><div class="fi"><label>手机号</label>${inp()}</div><div class="fi"><label>邀请人ID</label>${inp()}</div><div class="fi"><label>申请来源</label>${sel(['全部','APP申请入口','上级分享链接'])}</div><div class="fi"><label>申请时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ (i===0?T(['申请ID','会员ID','手机号','注册时间','申请来源','邀请人?通过上级分享链接注册的自动带出，APP内申请可手填','资格校验?新注册、未实名、余额为零三项全部满足才可审批通过','注册设备 / IP','申请时间','操作'],[
+ ['MA20261121001','190021','+86139****1201','2026-11-21 09:58:00','上级分享链接','190001（矿工A）',st('通过','g'),'iPhone 13 / 113.1.2.3','2026-11-21 10:00:00',lk('审批',"minerAudit()")],
+ ['MA20261121002','190022','+86139****1202','2026-11-21 10:10:00','APP申请入口','-',st('通过','g'),'OPPO R17 / 113.1.2.9','2026-11-21 10:12:00',lk('审批',"minerAudit()")],
+ ['MA20261121003','178232','+86138****3333','2026-11-01 11:24:00','APP申请入口','-',st('不通过：已实名/有余额','r'),'iPhone 15 / 120.2.3.1','2026-11-21 10:20:00',lk('审批',"minerAudit(1)")]])
+ :T(['申请ID','会员ID','手机号','申请来源','邀请人','审批结果','备注','审批人','申请时间','审批时间'],[['MA20261120001','190011','+86139****1101','上级分享链接','190001',st('通过','g'),'-','admin','2026-11-20 10:00:00','2026-11-20 10:30:00'],['MA20261120002','190012','+86139****1102','APP申请入口','-',st('拒绝','r'),'同设备多账号','admin','2026-11-20 10:05:00','2026-11-20 10:31:00']])));
+},n:[
+ ['页面说明',['审批用户提交的矿工申请。矿工是平台的流动性兜底卖家：只在普通卖家无法承接快速买币时才被系统分单。']],
+ ['申请资格',['必须是<b>新注册、未实名、账户余额为零</b>的账号；任一条件不满足，“资格校验”显示不通过，审批时不可选“通过”。','申请页可填写邀请人；上级矿工分享“矿工申请链接”，好友通过链接注册后自动绑定邀请关系并进入待审批。','邀请返利模块默认关闭，但邀请关系照常保存。']],
+ ['审批规则',['审批结果：通过 / 拒绝（必填原因）；需谷歌验证码。','审批通过后该账号转为矿工账号：可添加任意收款账户、设置收款方式和并发接单数、点击上线；不可买币、游戏充值、内部转账、普通闪兑。','审批结果通过站内信 + APP 推送通知申请人。','同一设备 / IP 有多个申请时在审批弹窗提示，便于人工判断。']]
+]};
+function minerAudit(bad){M('矿工申请审批',kv([['会员ID','190021'],['手机号','+8613912341201'],['注册时间','2026-11-21 09:58:00'],['申请来源','上级分享链接'],['邀请人','190001（矿工A）'],['同设备申请数','1']])+`<div class="sec" style="margin-top:14px">资格校验</div>`+T(['校验项','结果'],[['新注册账号（注册后未进行任何交易）',bad?st('不满足','r'):st('满足','g')],['未实名',bad?st('不满足：已实名','r'):st('满足','g')],['账户余额为零',bad?st('不满足：余额 4,700','r'):st('满足','g')]],{nopg:1})+'<br>'+frm([['审批结果',bad?'<span class="red">资格不满足，只能拒绝</span>':rad(['通过','拒绝']),1],['备注',ta('拒绝时必填')],GA]))}
+
+const MN=[['190001','矿工A','+86139****1001',st('在线','g'),'86,200','12,400','3 / 5','银行卡、支付宝、微信',st('正常','g'),'98.6%','1分12秒','5'],
+ ['190002','矿工B','+86139****1002',st('离线','x'),'0','0','0 / 3','支付宝',st('库存不足自动下线','o'),'97.1%','1分40秒','0'],
+ ['190003','矿工C','+86139****1003',st('在线','g'),'21,000','1,000','1 / 2','数字人民币',st('冻结','r'),'82.0%','3分05秒','1']];
+P.minerList={t:'矿工列表',r:()=>F([['i','矿工会员ID'],['i','手机号'],['s','在线状态',['全部','在线','离线']],['s','账户状态',['全部','正常','冻结','暂停分单']],['s','收款方式',['全部','银行卡','支付宝','微信','数字人民币']],['i','邀请人ID'],['d','审批通过时间']],bt('全局暂停矿工分单',"CF('确定暂停全部矿工分单？暂停后快速买币只匹配普通卖家，矿工在线状态保留。','toast(\\'已暂停矿工池\\')')",'d'))+
+ card('矿工列表',T(['会员ID','昵称','手机号','在线状态','可售矿工币','锁定中','当前接单 / 并发上限?矿工本人设置的并发与后台最大并发取较小值','收款方式','账户状态','放币成功率','平均放币时长?从买家点击已付款到矿工放币','今日返利','邀请人','操作'],MN.map(m=>[...m,'-',lk('详情',"minerDetail()")+lk('调整配置',"minerCfg()")+lk('矿工币调账',"minerAdj()")+lk('强制下线',"CF('确定强制下线该矿工？进行中订单不受影响，新订单不再分给该矿工。')",'r')+lk('冻结',"CF('确定冻结该矿工？冻结后不可上线、不可放币以外的资金操作。')",'r')]))),
+n:[
+ ['页面说明',['管理已审批通过的矿工账号：在线状态、库存、并发、收款方式、返利与冻结。']],
+ ['分单与库存规则',['矿工只在<b>没有合格普通卖家</b>时进入快速买币分单；大厅自选单不进入矿工兜底。','矿工可同时承接的订单数 = min(本人接单配置, 后台最大并发)；每个订单创建即锁定对应矿工币。','剩余可售矿工币不足订单金额时不再分单；矿工币售完自动下线（状态“库存不足自动下线”），补币后可重新上线。','矿工在买家端展示与普通卖家完全一致，不出现矿工标识。']],
+ ['操作',['调整配置：修改该矿工的最大并发、每小时接单上限、单笔金额区间、是否暂停分单。','矿工币调账：人工加/扣矿工币，需双人复核。','强制下线：只停止新订单分配，进行中的订单照常完成。','冻结：不可上线；进行中订单转人工处理。','全局暂停矿工分单：紧急开关，暂停后快速买币只匹配普通卖家。']]
+]};
+function minerDetail(){M('矿工详情 - 190001',`<div class="sec">账户</div>${kv([['会员ID','190001'],['手机号','+8613912341001'],['审批通过','2026-11-15 10:00:00'],['邀请人','-'],['下级矿工','3 人'],['账户状态','正常']])}
+<div class="sec">资产</div>${kpi([['可售矿工币','86,200'],['锁定中','12,400'],['累计购币','520,000'],['累计返利','6,320']])}
+<div class="sec">接单配置</div>${kv([['在线状态','在线（今日在线 6.2 小时）'],['本人并发','5'],['后台最大并发','8'],['单笔金额区间','100 - 5,000'],['收款方式','银行卡 2 个、支付宝 1 个、微信 1 个']])}
+<div class="sec">收款账户（矿工可添加任意收款账户）</div>${T(['类型','账号','收款人','状态','添加时间'],[['银行卡','6214****0215','张学友','启用','2026-11-15'],['支付宝','138****1001','刘德华','启用','2026-11-15']],{nopg:1})}
+<div class="sec">近期订单</div>${T(['订单号','金额','收款方式','放币时长','返利','状态'],[['20261121102233','1,000','支付宝','1分10秒','40（4%）',st('已完成','g')],['20261121101500','500','银行卡','2分30秒','0（超时无返利）',st('已完成','g')]],{nopg:1})}`,{w:860,foot:''})}
+function minerCfg(){M('调整矿工配置 - 190001',frm([['最大并发?该矿工可同时承接的订单上限，与矿工本人设置取较小值',inp('','8',80),1],['每小时接单上限',inp('','20',80)+' 单'],['单笔金额区间',inp('','100',80)+' - '+inp('','5000',80)],['暂停分单',sw(false)],['备注',ta()]]))}
+function minerAdj(){M('矿工币调账',frm([['矿工','190001 / 矿工A　可售矿工币 86,200'],['调账类型',rad(['加额','减额']),1],['金额',inp(),1],['原因',sel(['返利补发','返利冲回','购币补单','误操作冲正','其他']),1],['关联订单号',inp('选填')],['备注',ta(),1],GA]),{fn:"DUAL('矿工币调账')"})}
+
+P.minerBuy={t:'矿工USDT购币订单',r:()=>{const i=S.tab.minerBuy||0;
+ return card('',subTabs('minerBuy',['待确认','已完成','异常单'])+`<div class="flt"><div class="fi"><label>订单号</label>${inp()}</div><div class="fi"><label>矿工ID</label>${inp()}</div><div class="fi"><label>网络</label>${sel(['全部','TRC20','ERC20'])}</div><div class="fi"><label>链上交易哈希</label>${inp()}</div><div class="fi"><label>发起时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ T(['订单号','矿工ID','网络','接收地址','发送地址','链上交易哈希','USDT数量','确认数?达到后台配置的确认数后自动入账','矿工专属汇率?订单创建时锁定的汇率快照','到账矿工币','状态','发起时间','完成时间','操作'],
+ (i===0?[['MB20261121001','190001','TRC20','TQ7vLw…Gt2A','TRx9Yk…Rb7U','a3f9…c21e','1,000','12 / 20','6.66','6,660',st('链上确认中','b'),'2026-11-21 10:00:00','-',lk('详情',"toast('详情')")]]
+ :i===1?[['MB20261120001','190001','TRC20','TQ7vLw…Gt2A','TRx9Yk…Rb7U','77de…a910','10,000','20 / 20','6.66','66,600',st('已入账','g'),'2026-11-20 10:00:00','2026-11-20 10:02:10',lk('详情',"toast('详情')")]]
+ :[['MB20261119003','190003','ERC20','0x52bb…c3c5','0x506f…3324','c1d0…9e77','50','12 / 12','6.66','-',st('低于最低购币额','r'),'2026-11-19 10:00:00','-',lk('人工补单',"CF('按实际到账 50 USDT × 6.66 补入 333 矿工币？补单需双人复核。','DUAL(\\'矿工购币补单\\')')")+lk('标记退回',"toast('已标记，财务线下退回')",'r')],['MB20261119004','190002','TRC20','TQ7vLw…Gt2A','TKa1…98Qz','f3e2…1bb0','1,000.5','20 / 20','6.66','-',st('金额与订单不一致','r'),'2026-11-19 11:00:00','-',lk('人工补单',"DUAL('矿工购币补单')")]])));
+},n:[
+ ['页面说明',['矿工向平台指定地址转入 USDT，链上确认后按矿工专属汇率记入矿工币。三个页签：待确认 / 已完成 / 异常单。']],
+ ['规则',['支持网络：TRC20、ERC20；接收地址、确认数、最低和最高购币额、矿工专属汇率、购币开关均在后台配置（地址在【USDT地址配置】，汇率在【汇率中心】）。','达到确认数后自动入账矿工币，无需人工审核；入账后推送通知矿工。','矿工购币汇率独立于普通用户 USDT 买币和闪兑汇率，订单创建时锁定汇率快照，后续汇率调整不影响该订单。','异常单：低于最低购币额、超过最高额、金额与订单不一致、超时未到账等；可“人工补单”（按实际到账 USDT × 订单汇率入账，需双人复核）或“标记退回”。','链上重复通知只入账一次，不会重复加币。']]
+]};
+
+P.minerRebate={t:'矿工返利记录',r:()=>F([['i','订单号'],['i','矿工ID'],['s','收款方式',['全部','银行卡','支付宝','微信','数字人民币']],['s','返利状态',['全部','已发放','未达时效不发放','已冲回','待扣回']],['s','返利类型',['全部','放币返利','一级邀请返利','二级邀请返利']],['d','发放时间']])+
+ card('返利记录',kpi([['今日返利发放','9,312'],['未达时效订单','46','超过2分钟放币'],['已冲回','120',''],['待扣矿工币?冲回时矿工余额不足形成的待扣金额','300','']])+'<br>'+T(['返利单号','订单号','矿工ID','返利类型','收款方式','订单金额','返利比例','返利金额','放币时长?从买家点击已付款到矿工放币的时长，超过2分钟不发放返利','状态','发放时间','操作'],[
+ ['RB001','20261121102233','190001','放币返利','支付宝','1,000','4%','40','1分10秒',st('已发放','g'),'2026-11-21 10:23:40',lk('冲回',"rebateBack()",'r')],
+ ['RB002','20261121101500','190001','放币返利','银行卡','500','-','0','2分30秒',st('未达时效不发放','x'),'-','-'],
+ ['RB003','20261120090011','190003','放币返利','数字人民币','1,000','3%','30','0分58秒',st('已冲回','r'),'2026-11-20 09:02:00','-'],
+ ['RB004','20261120080011','190002','放币返利','微信','2,000','3%','60','1分20秒',st('待扣回 60','o'),'2026-11-20 08:02:00','-']])),
+n:[
+ ['页面说明',['查看矿工每笔订单的放币返利，以及（开启后）邀请返利。']],
+ ['发放规则',['矿工完成放币<b>且从买家点击“已付款”起 2 分钟内放币</b>，才获得该笔返利；超过 2 分钟仍可正常放币，但不发返利（状态“未达时效不发放”）。','返利比例按【返利配置】中该收款方式的金额阶梯计算，订单创建时保存返利策略快照。','返利以矿工币实时入账，可继续销售。']],
+ ['冲回',['订单后续被仲裁撤销时，按订单号冲回对应返利；矿工余额不足时形成“待扣矿工币”，后续入账优先抵扣。','人工冲回需填写原因并双人复核；同一订单的返利只发一次、只冲回一次。']]
+]};
+function rebateBack(){M('返利冲回',frm([['订单号','20261121102233'],['返利金额','40'],['冲回原因',sel(['订单仲裁撤销','违规刷单','其他']),1],['备注',ta(),1],GA]),{fn:"DUAL('返利冲回')"})}
+
+P.minerRebateCfg={t:'矿工返利配置',r:()=>card('放币返利阶梯',`<div class="info">每种收款方式独立配置金额阶梯与比例，可独立启停；返利时效：从买家点击已付款起 ${inp('','2',50)} 分钟内放币才发放。</div>`+
+ ['银行卡','支付宝','微信','数字人民币'].map((p,k)=>`<div class="sec">${p} ${sw(true)}</div>`+T(['金额区间（起）','金额区间（止）','返利比例','操作'],[[100,500,['3%','4%','3.5%','3%'][k]],[501,1000,['2.5%','3.5%','3%','3%'][k]],[1001,5000,'2%']].map(r=>[inp('',r[0],90),inp('',r[1],90),inp('',r[2],70),lk('删除','','r')]),{nopg:1})+`<a style="font-size:12px">+ 新增阶梯</a>`).join('')+`<div class="btns">${bt('保存',"DUAL('返利配置变更')",'p')}<span class="muted" style="line-height:28px">配置变更需双人复核，复核通过后对新订单生效</span></div>`)+
+ card('邀请返利（可选模块）',frm([['邀请返利开关',sw(false)+' <span class="muted">默认关闭</span>'],['一级返利比例?基数为下级矿工实际获得的有效放币返利，不以卖币本金为基数',inp('','10',60)+' %'],['二级返利比例',inp('','5',60)+' %'],['结算条件',sel(['下级返利实时结算','下级返利按日结算'])],['',bt('保存',"DUAL('邀请返利配置')",'p')]])),
+n:[['页面说明',['配置矿工放币返利阶梯与邀请返利。']],['规则',['银行卡、支付宝、微信、数字人民币四种收款方式分别配置金额阶梯，各自可启停；例如支付宝 100-500 为 4%，数字人民币 100-1000 为 3%。','返利时效默认 2 分钟，可配置。','邀请返利默认关闭；开启后支持一级、二级比例，基数是下级矿工实际获得的有效返利，不以卖币本金为基数。','所有配置变更需双人复核，版本化保存并记录生效时间；订单保存创建时的返利策略快照，历史订单不受新配置影响。']]]};
+
+G('矿工管理',[['minerApply','矿工申请审批'],['minerList','矿工列表'],['minerBuy','矿工USDT购币订单'],['minerRebate','矿工返利记录'],['minerRebateCfg','矿工返利配置']]);
+
+/* ================= OTC交易管理 ================= */
+P.ads={t:'挂单列表',r:()=>F([['i','挂单ID'],['i','卖家会员ID'],['s','状态',['全部','出售中','挂单中','已售罄','已下架','暂停']],['s','收款方式',['全部','银行卡','支付宝','微信','数字人民币']],['s','是否拆分',['全部','拆分','不拆分']],['d',['挂单时间','下架时间']]])+
+ card('挂单列表',T(['挂单ID','卖家会员ID','卖家昵称','单价','收款方式','是否拆分?拆分：买家可在单笔范围内买走部分；不拆分：只能整单买走','总库存','单笔范围','已售 / 剩余','锁定中?交易中订单锁定的数量','成交笔数','状态','挂单时间','下架时间','操作'],[
+ ['1479011957929529344','173136','快速发货','1.00','银行卡/支付宝/微信/数字人民币','拆分','1,500','100 - 1,500','0 / 1,500','0','0',st('挂单中','b'),'2026-11-21 14:10:04','-'],
+ ['1479011957929529345','173136','快速发货','1.01','支付宝','不拆分','10,000','10,000','0 / 10,000','10,000','1',st('出售中','g'),'2026-11-21 14:10:04','-'],
+ ['1479011957929529346','173137','我是卖家','0.99','银行卡','拆分','2,000','100 - 500','2,000 / 0','0','6',st('已售罄','x'),'2026-11-20 14:10:04','-'],
+ ['1479011957929529347','173138','速买秒发货呀','1.00','微信','拆分','5,000','100 - 1,000','800 / 4,200','0','3',st('已下架','x'),'2026-11-20 14:10:04','2026-11-20 18:28:40']].map(r=>[...r,lk('查看详情',"adDetail()")+(r[11].includes('挂单中')||r[11].includes('出售中')?lk('暂停',"CF('确定暂停挂单？暂停后不再接收新订单。')")+lk('下架',"CF('确定下架挂单？下架仅停止新订单，交易中订单不受影响。')",'r'):'')]))),
+n:[
+ ['页面说明',['查看所有普通卖家的卖币挂单，可暂停、下架。']],
+ ['挂单规则',['卖家只能出售<b>可销售币</b>；所有挂单总库存 + 交易中锁定总额不得超过卖家可销售币余额。','卖币最低金额、最高金额、金额步长由后台【交易配置】统一配置；挂单的总库存、单笔最低和最高成交额均须符合金额步长。','卖家可选择一个或多个收款方式，可选择拆分或不拆分，可创建多条挂单。','买家一次只创建一笔订单，由该卖家完整完成，不跨卖家拆分。']],
+ ['状态',['<b>挂单中</b>：已上架，暂无交易中订单；<b>出售中</b>：有交易中订单；<b>已售罄</b>：剩余为 0；<b>已下架</b>：卖家或后台下架；<b>暂停</b>：卖家或后台暂停。','下架 / 暂停只停止新订单，不影响交易中订单；后台操作需填写原因并通知卖家。']]
+]};
+function adDetail(){M('挂单详情',kv([['挂单ID','1479011957929529344'],['卖家','173136 / 快速发货'],['单价','1.00 CNY/BOB'],['收款方式','银行卡、支付宝、微信、数字人民币'],['是否拆分','拆分'],['单笔范围','100 - 1,500'],['总库存','1,500'],['已售 / 剩余','0 / 1,500'],['状态','挂单中'],['挂单时间','2026-11-21 14:10:04']])+'<div class="sec" style="margin-top:14px">交易记录</div>'+T(['交易ID','下单方式','买家ID','数量','总价','状态','发起时间','完成时间'],[['1483320767762518016','大厅自选','100033','200','200',st('进行中','b'),'2026-11-21 14:10:04','-'],['1483320767762518017','快速买币','174560','500','500',st('已完成','g'),'2026-11-21 14:10:04','2026-11-21 14:18:40']]),{w:900,foot:''})}
+
+const OD=[['20261121141004001','大厅自选','100033','孔*磊','173136','普通卖家','银行卡','1.00','200','200',st('待付款','o'),'10:00 / 已延时0次'],
+ ['20261121141004002','快速买币','174560','刘*','190001','矿工','支付宝','1.00','1,000','1,000',st('待放币','b'),'放币剩余 06:12'],
+ ['20261121141004003','快速买币','181517','张*','173137','普通卖家','微信','1.00','500','500',st('申诉中','r'),'-'],
+ ['20261121141004004','大厅自选','181518','王*','173138','普通卖家','数字人民币','0.99','300','297',st('已完成','g'),'-'],
+ ['20261121141004005','大厅自选','181519','陈*','173136','普通卖家','银行卡','1.00','100','100',st('已取消-买家超时','x'),'-']];
+P.orders={t:'交易订单',r:()=>F([['i','订单号'],['i','挂单ID'],['s','下单方式',['全部','大厅自选','快速买币']],['s','承接方',['全部','普通卖家','矿工']],['i','买家ID'],['i','卖家/矿工ID'],['s','付款方式',['全部','银行卡','支付宝','微信','数字人民币']],['s','状态',['全部','待付款','付款中','待放币','申诉中','已完成','已取消']],['s','责任方',['全部','买家责任','卖家责任','无责']],['d',['创建时间','完成时间']]])+
+ card('交易订单',T(['订单号','下单方式','买家ID','买家姓名','卖家/矿工ID','承接方?仅后台可见，买家端不展示矿工标识','付款方式','单价','数量','总价','状态','时限','创建时间','操作'],OD.map(o=>[...o,'2026-11-21 14:10:04',lk('查看详情',"orderDetail()")+(o[10].includes('待')||o[10].includes('申诉')?lk('提前取消',"CF('取消交易：卖家不放币，锁定的币退回卖家。确定取消？需填写原因并记责任方。')",'r')+lk('提前完成',"CF('完成交易：卖家直接放币给买家。确定完成？')",'g'):'')]))),
+n:[
+ ['页面说明',['查看全部 C2C 买币订单（大厅自选 + 快速买币），支持查看详情、聊天记录、凭证，以及后台提前取消 / 提前完成。']],
+ ['订单状态机',['<b>待付款</b>：买家线下按订单收款信息付款；默认付款期 10 分钟，未点击已付款前可申请 1 次延时 5 分钟（次数、分钟数后台可配）。','<b>付款中</b>：买家上传完整付款截图后点击“已付款”；之后买家不可自行取消，只能申诉。','<b>待放币</b>：卖家/矿工核对实际到账和付款人后放币或申诉；默认 10 分钟内未放币也未申诉则<b>自动放币</b>（时限后台可配）。','<b>申诉中</b>：冻结自动放币，由运营按证据判责。','<b>已完成 / 已取消</b>：更新余额、成功率、责任失败和风控计数。','买家买到的币进入<b>不可销售币</b>。']],
+ ['核验规则',['买家必须使用本人实名收款账户付款并上传完整凭证；卖家必须以实际到账为准，不得只凭截图放币。','订单页向卖家展示多个随机姓名，卖家选择实际付款人姓名；与买家实名不一致时可点击“转账人不一致”进入人工申诉。']],
+ ['后台操作',['提前取消 / 提前完成：需选择原因与责任方、输入谷歌验证码，记录操作日志；重试不会重复扣币或重复放币。','详情含：订单快照（费率、时限、红包、分单策略）、收付款信息、付款人姓名核验结果、聊天记录、凭证、状态流转时间线。']]
+]};
+function orderDetail(){M('交易订单详情 - 20261121141004002',`<div class="sec">订单信息</div>${kv([['订单号','20261121141004002'],['下单方式','快速买币'],['状态','待放币'],['承接方','矿工 190001'],['买家','174560 / 刘德华（实名）'],['卖家/矿工','190001 / 矿工A'],['单价','1.00'],['数量 / 总价','1,000 BOB / 1,000 CNY'],['付款方式','支付宝 138****1001（张学友）'],['付款人核验','卖家选择：刘德华 ✓ 与买家实名一致'],['延时','未使用'],['等待红包','已到达 7 分钟节点 · 第二档（订单完成后到账）']])}
+<div class="sec">策略快照（订单创建时生效）</div>${kv([['付款时限','10 分钟 + 延时 1 次 5 分钟'],['放币时限','10 分钟后自动放币'],['矿工返利','支付宝 501-1000：3.5%'],['红包策略','等待红包活动 V3（2026-11-18 生效）'],['分单策略','普通卖家优先，矿工介入 5 分钟'],['汇率','-']])}
+<div class="sec">时间线</div>${T(['时间','节点','说明'],[['14:10:04','提交快速买币','金额 1,000，支付宝'],['14:13:04','到达 3 分钟节点','获得等待红包资格'],['14:15:04','矿工池启动','普通卖家仍优先'],['14:16:30','匹配成功','由矿工 190001 承接，锁定矿工币 1,000'],['14:17:04','到达 7 分钟节点','红包膨胀至第二档'],['14:20:11','买家点击已付款','已上传凭证 1 张']],{nopg:1})}
+<div class="sec">聊天记录与凭证</div><div class="chat"><p><em>14:16:30 系统</em>下单成功，请在 10 分钟内完成付款</p><p><em>14:16:40 买家</em>请确认订单信息</p><p><em>14:20:11 买家</em>我已支付，请查收，谢谢！</p></div><div style="margin-top:8px">转账凭证：<span class="img">凭证1</span></div>`,{w:900,foot:`${bt('提前取消',"CF('确定取消交易？')",'d')}${bt('提前完成',"CF('确定完成交易？')",'g')}`})}
+
+P.quickMatch={t:'快速买币匹配单',r:()=>F([['i','匹配单号'],['i','买家ID'],['s','匹配状态',['全部','匹配中','已成单','用户取消','匹配失败']],['s','是否矿工介入',['全部','是','否']],['s','最终红包档位',['全部','无','基础','第二档','第三档']],['d','提交时间']])+
+ card('快速买币匹配单',kpi([['匹配中','38','',1],['今日平均匹配时长','2分36秒'],['5分钟内成单率','78%'],['矿工介入单','124','成单 96']])+'<br>'+T(['匹配单号','买家ID','买币金额','付款方式','已等待','已到达节点','矿工介入?到达矿工介入时间后矿工池启动，普通卖家始终优先','匹配状态','成交订单号','承接方','红包档位','提交时间','操作'],[
+ ['QM20261121001','174560','1,000','支付宝','06:30','3分钟 ✓ / 5分钟 ✓','是',st('已成单','g'),'20261121141004002','矿工','第二档','2026-11-21 14:10:04',lk('详情',"qmDetail()")],
+ ['QM20261121002','174561','500','银行卡','02:10','-','否',st('匹配中','b'),'-','-','-','2026-11-21 14:20:00',lk('详情',"qmDetail()")],
+ ['QM20261121003','174562','2,000','微信','11:20','3/5/7/10 ✓','是',st('匹配中','b'),'-','-','第三档（未到账）','2026-11-21 14:00:00',lk('详情',"qmDetail()")],
+ ['QM20261121004','174563','300','数字人民币','01:00','-','否',st('用户取消','x'),'-','-','不发放','2026-11-21 13:40:00',lk('详情',"qmDetail()")]])),
+n:[
+ ['页面说明',['记录每一笔快速买币从提交到成单的匹配过程，便于排查匹配慢、红包与矿工介入情况。']],
+ ['匹配规则',['快速买币只支持整百金额；最低买币金额和金额步长后台配置。','0 至矿工介入前：只匹配普通卖家，按付款方式、可售余额、单笔范围、在售状态、并发和风险状态过滤，上架时间轮询为主，响应慢 / 成功率低 / 失败多的账号后置。','矿工介入后（默认 5 分钟）：普通卖家始终优先，只有没有合格普通卖家时才分配矿工。','订单创建时二次校验卖家余额、并发和在线状态，避免超卖。']],
+ ['等待红包',['记录已到达节点、矿工介入状态、红包类型、计算方式、随机结果、最终档位和发放状态。','每笔订单最多一个最终红包，订单完成后自动到账；用户取消、付款超时、风控取消或未完成时不发放。']]
+]};
+function qmDetail(){M('匹配单详情 - QM20261121001',`<div class="node"><div class="nd">提交<br>14:10:04</div><div class="ln"></div><div class="nd">3分钟 获得红包<br>随机 6.00（券）</div><div class="ln"></div><div class="nd">5分钟 矿工池启动<br>普通卖家优先</div><div class="ln"></div><div class="nd">06:26 匹配成功<br>矿工 190001</div><div class="ln"></div><div class="nd">7分钟 膨胀二档<br>12.00（券）</div></div>`+kv([['买币金额','1,000'],['付款方式','支付宝'],['活动快照','等待红包活动 V3'],['红包类型','抵用券'],['计算方式','固定金额区间'],['最终档位','第二档 12.00'],['发放状态','待订单完成'],['成交订单','20261121141004002']]),{w:900,foot:''})}
+
+P.appeal={t:'申诉处理',r:()=>{const i=S.tab.appeal||0;
+ return card('',subTabs('appeal',['待处理','已处理'])+`<div class="flt">${['交易ID','挂单ID','买家ID','卖家ID'].map(x=>`<div class="fi"><label>${x}</label>${inp()}</div>`).join('')}<div class="fi"><label>申诉原因</label>${sel(['全部','不合规的转账凭证','没收到买家打款','金额与订单不符','付款卡与实名不符','转账人不一致','到期未发货','其他'])}</div><div class="fi"><label>申诉方</label>${sel(['全部','买家','卖家','矿工'])}</div>${i?`<div class="fi"><label>判责结果</label>${sel(['全部','买家责任','卖家责任','无责'])}</div>`:''}<div class="fi"><label>申诉时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ T(['交易ID','申诉方','申诉原因','补充描述','买家ID','卖家/矿工ID','承接方','数量','总价','补证截止?被申诉方需在时限内补充证据','锁单人',...(i?['处理结果','判责','处理人','处理时间']:[]),'申诉时间','操作'],[
+ ['1483320767762518016','卖家','没收到买家打款','这是自定义输入的描述内容…','100033','173136','普通卖家','200','200','14:40:00','-'],
+ ['1483320767762518017','卖家','转账人不一致','付款人为“周杰棍”，与买家实名不符','174560','190001','矿工','1,000','1,000','14:45:00','admin'],
+ ['1483320767762518018','买家','到期未发货','-','181517','173137','普通卖家','500','500','14:50:00','-']].map(r=>[...r,...(i?['取消交易(币归属卖家)','买家责任','admin','2026-11-21 15:00:00']:[]),'2026-11-21 14:10:04',i?lk('查看详情',"appealDo(1)"):(r[10]==='-'?lk('锁单',"toast('已锁单，其他人员不可处理')"):lk('解锁单',"toast('已解锁')"))+lk('处理',"appealDo()")])));
+},n:[
+ ['页面说明',['处理买卖双方在订单中发起的申诉。两个页签：待处理 / 已处理。']],
+ ['处理规则',['申诉中的订单冻结自动放币；处理前需先“锁单”，锁单期间其他人员不可处理，避免重复操作。','申诉证据：付款截图、银行或收款流水、必要文字说明；保留提交时间、补证时限、操作日志和最终判责。','处理结果二选一：<b>取消交易（币归属卖家）</b> / <b>完成交易（币归属买家）</b>，同时选择判责：买家责任 / 卖家责任 / 无责。','判责计入对应角色的责任失败次数和信用分；达到阈值自动触发交易限制。','“转账人不一致”：卖家在订单页选择实际付款人姓名后发起，系统附带买家实名与卖家选择的姓名供核对。','矿工订单被判“取消交易”且已发返利时，自动冲回返利。','处理结果推送给买卖双方（站内信 + APP 推送）。']]
+]};
+function appealDo(v){M(v?'申诉详情':'申诉处理',`${kv([['交易ID','1483320767762518017'],['状态','申诉中'],['申诉方','卖家（矿工）'],['申诉原因','转账人不一致'],['补充描述','付款人为“周杰棍”，与买家实名不符'],['买家','174560 / 周杰伦（实名）'],['卖家选择的付款人','周杰棍'],['付款方式','支付宝 138****1001'],['数量 / 总价','1,000 / 1,000'],['下单方式','快速买币']])}
+<div class="sec" style="margin-top:14px">证据</div>买家凭证 <span class="img">付款截图</span>　卖家流水 <span class="img">收款流水</span>
+<div class="sec">消息记录</div><div class="chat"><p><em>14:16 买家</em>请确认订单信息</p><p><em>14:20 买家</em>我已支付，请查收，谢谢！</p><p><em>14:22 卖家</em>付款人姓名不一致，已申诉</p></div><br>`+(v?kv([['处理结果','取消交易(币归属卖家)'],['判责','买家责任'],['处理人','admin']]):frm([['处理结果',rad(['取消交易（币归属卖家）','完成交易（币归属买家）']),1],['判责',rad(['买家责任','卖家责任','无责']),1],['处理说明',ta('将展示给买卖双方'),1],GA])),{w:880,foot:v?'':undefined})}
+
+P.report={t:'举报列表',r:()=>F([['i','交易ID'],['i','举报人ID'],['i','被举报人ID'],['s','举报类型',['全部','虚假信息','欺诈行为','骚扰或不当行为','违反交易协议','支付问题','技术问题','不当广告','其他']],['s','举报方',['全部','买家','卖家']],['s','处理状态',['全部','待处理','已处理']],['d','举报时间']])+
+ card('举报列表',T(['举报ID','交易ID','举报方','举报人ID','被举报人ID','举报类型','补充描述','举报图片','处理状态','处理结果','举报时间','操作'],[['RP001','1483320767762518016','买家','100033','173136','虚假信息','-','-',st('待处理','o'),'-','2026-11-21 14:10:04'],['RP002','1483320767762518017','卖家','173136','174560','欺诈行为','这是自定义输入的描述内容…','2张',st('已处理','g'),'打风控标签：P图骗分','2026-11-21 14:10:04']].map(r=>[...r,lk('处理',"M('处理举报',frm([['举报类型','欺诈行为'],['处理结果',rad(['举报不成立','警告被举报人','打风控标签','限制/冻结被举报人']),1],['风控标签',sel(['请选择','恶意刷单','P图骗分','恶意转账','威胁举报','入金风险','洗钱诈骗'])],['处理说明',ta(),1]]))")]))),
+n:[['页面说明',['处理用户在订单内或个人中心提交的举报（举报买家 / 举报卖家）。']],['规则',['举报类型来自【申诉举报选项配置】。','处理结果：举报不成立 / 警告 / 打风控标签 / 限制或冻结；打标签后自动影响负信用等级。','恶意举报经查证可降低举报人信誉度，严重时暂时冻结（与用户端温馨提示一致）。','处理后通知举报人。']]]};
+
+G('OTC交易管理',[['ads','挂单列表'],['orders','交易订单'],['quickMatch','快速买币匹配单'],['appeal','申诉处理'],['report','举报列表']]);
+/* ================= 平台交易管理 ================= */
+P.usdtBuy={t:'USDT买币订单',r:()=>{const i=S.tab.usdtBuy||0;
+ return card('',subTabs('usdtBuy',['待确认','已完成','异常单'])+`<div class="info">链上自动确认：接收地址检测到到账且达到确认数后，按订单锁定汇率自动记入用户<b>不可销售币</b>；金额不符、超时等进入异常单人工处理。</div><div class="flt">${['订单号','用户ID','链上交易哈希'].map(x=>`<div class="fi"><label>${x}</label>${inp()}</div>`).join('')}<div class="fi"><label>网络</label>${sel(['全部','TRC20','ERC20'])}</div><div class="fi">${sel(['发起时间','完成时间'])}${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ T(['订单号','用户ID','网络','接收地址','发送地址','链上交易哈希','订单USDT数量','实际到账USDT','汇率?订单创建时锁定的普通用户USDT买币汇率','到账BOB（不可销售币）','确认数','状态','发起时间','完成时间','操作'],
+ i===0?[['UB20261121001','123456','TRC20','TQ7vLw…Gt2A 复制','-','-','1,000','-','6.83','6,830','0 / 20',st('等待转入','o'),'2026-11-21 14:10:04','-',lk('详情',"toast('详情')")],['UB20261121002','123457','ERC20','0x52bb…c3c5 复制','0x506f…3324','a3f9…c21e','500','500','6.83','3,415','8 / 12',st('链上确认中','b'),'2026-11-21 14:00:04','-',lk('详情',"toast('详情')")]]
+ :i===1?[['UB20261120001','123456','TRC20','TQ7vLw…Gt2A','TRx9Yk…Rb7U','77de…a910','1,000','1,000','6.83','6,830','20 / 20',st('已到账','g'),'2026-11-20 14:10:04','2026-11-20 14:12:30',lk('详情',"toast('详情')")]]
+ :[['UB20261119001','123456','TRC20','TQ7vLw…Gt2A','TRx9Yk…Rb7U','c1d0…9e77','1,000','80','6.83','-','20 / 20',st('低于100 USDT','r'),'2026-11-19 14:10:04','-',lk('人工补单',"usdtFix()")+lk('拒绝',"CF('确认拒绝该订单？用户端显示“到账金额不足，无法处理”。')",'r')],['UB20261119002','123458','TRC20','TQ7vLw…Gt2A','-','-','500','-','6.83','-','-',st('超时未到账','x'),'2026-11-19 10:10:04','-',lk('关闭',"toast('已关闭')")]]));
+},n:[
+ ['页面说明',['普通用户通过“USDT购买BOB”向平台指定地址转入 USDT，到账后按普通用户买币汇率记入<b>不可销售币</b>。三个页签：待确认 / 已完成 / 异常单。']],
+ ['规则',['支持 TRC20、ERC20；每次付款获取最新地址（地址池轮换），地址在【USDT地址配置】维护。','到账金额需不低于 100 USDT（最低额后台可配），否则无法自动处理，进入异常单。','汇率在用户确认页锁定（默认 60 秒，超时重新报价），订单保存汇率快照。','异常单处理：人工补单（按实际到账 USDT × 订单汇率入账，需双人复核）/ 拒绝 / 关闭；补单与拒绝都通知用户。','同一链上交易只入账一次。']]
+]};
+function usdtFix(){M('人工补单',frm([['订单号','UB20261119001'],['实际到账USDT','80'],['订单汇率','6.83'],['补入不可销售币','546.4'],['补单原因',ta(),1],GA]),{fn:"DUAL('USDT买币补单')"})}
+
+P.swap={t:'闪兑订单',r:()=>F([['i','订单号'],['i','用户ID'],['i','外部USDT地址'],['s','网络',['全部','TRC20','ERC20']],['s','状态',['全部','待出款','出款中','已完成','出款失败','已退回']],['d','提交时间']])+
+ card('闪兑订单',kpi([['今日闪兑出款','42,600 USDT'],['笔数','316'],['出款失败','2',''],['热钱包余额?闪兑出款钱包当前 USDT 余额，低于预警值时提醒财务补充','186,200 USDT','预警线 50,000',1]])+'<br>'+T(['订单号','用户ID','扣除可销售币','锁定汇率?用户确认页锁价，默认60秒','出款USDT','网络','外部收款地址','链上交易哈希','状态','提交时间','完成时间','操作'],[
+ ['SW20261121001','178232','693','6.93 BOB = 1 U','100','TRC20','TXa9…Kf2Q','e91b…aa10',st('已完成','g'),'2026-11-21 14:10:04','2026-11-21 14:11:20',lk('详情',"toast('详情')")],
+ ['SW20261121002','178233','6,930','6.93 BOB = 1 U','1,000','ERC20','0x91a…7cde','-',st('出款中','b'),'2026-11-21 14:20:04','-',lk('详情',"toast('详情')")],
+ ['SW20261121003','178234','3,465','6.93 BOB = 1 U','500','TRC20','TQz…9a1c','-',st('出款失败','r'),'2026-11-21 13:20:04','-',lk('重新出款',"CF('确定重新发起出款？')")+lk('退回',"CF('确定退回？扣除的可销售币原路退回用户钱包。')",'r')]])),
+n:[
+ ['页面说明',['普通用户把<b>可销售币</b>直接兑换为 USDT 并链上转出到外部地址；平台不建立普通用户 USDT 资产账户。']],
+ ['规则',['只能使用可销售币；不可销售币、矿工币不可闪兑；矿工不可使用闪兑。','用户填写外部 USDT 地址和网络（TRC20/ERC20）→ 输入金额 → 锁价（默认 60 秒）→ 输入支付密码 → 钱包链上出款。','闪兑汇率在【汇率中心】单独配置，例如 6.93 BOB = 1 U；平台成本和收益体现在汇率中，不单列手续费或限额。','安全冷却期内（修改收款账户、重置支付密码等 24 小时内）不可闪兑。','出款失败可重新出款或退回；退回原路返还可销售币并通知用户。','热钱包余额低于预警值时，在仪表盘和站内提醒财务。']]
+]};
+
+P.transfer={t:'内部转账记录',r:()=>F([['i','转账单号'],['i','转出用户ID'],['i','收款钱包账号'],['s','状态',['全部','成功','失败']],['d','转账时间']],`<span style="margin-left:auto;display:flex;align-items:center;gap:6px">内部转账总开关 ${sw(true)}</span>`)+
+ card('内部转账记录',T(['转账单号','转出用户ID','转出用户姓名','收款钱包账号','收款人真实姓名','姓名校验?用户填写的真实姓名与收款账号实名一致才可转账','金额（可销售币）','手续费','状态','转账时间'],[['TF20261121001','178232','李*五','Bd79a4…0775','王*明',st('一致','g'),'1,000','0',st('成功','g'),'2026-11-21 14:10:04'],['TF20261121002','178233','张*','Bd71c2…0012','刘*',st('不一致','r'),'500','0',st('失败','r'),'2026-11-21 14:00:04']])),
+n:[['页面说明',['普通实名用户之间的钱包内部转账记录。']],['规则',['仅普通实名钱包可用；只能转出<b>可销售币</b>；收款方收到后计入其可销售币。','转账时填写收款钱包账号和收款人真实姓名，系统校验一致才可转账；需输入支付密码。','不收手续费、不设限额；后台保留总开关，关闭后用户端入口隐藏。','矿工账号不可转出也不可接收内部转账。','安全冷却期内不可转账。']]]};
+
+G('平台交易管理',[['usdtBuy','USDT买币订单'],['swap','闪兑订单'],['transfer','内部转账记录']]);
+
+/* ================= 活动管理 ================= */
+P.redCfg={t:'等待红包膨胀配置',r:()=>card('活动基础',frm([['活动开关',sw(true),1],['活动名称',inp('','快速买币等待红包',260),1],['活动时间',dr(),1],['适用快速买币金额区间',inp('','100',90)+' - '+inp('','50000',90),1],['奖励类型?红包以抵用券或币的形式发放',rad(['抵用券','币（可销售币）']),1],['计算方式',rad(['固定金额区间','按买币订单金额比例区间']),1],['矿工介入时间?到达该时间后启动矿工池，普通卖家仍优先',inp('','5',60)+' 分钟',1],['最终发放时点',sel(['订单完成后立即自动到账']),1]]))+
+ card('路线节点配置',`<div class="node"><div class="nd">0′ 开始匹配</div><div class="ln"></div><div class="nd">3′ 获得等待红包</div><div class="ln"></div><div class="nd">5′ 正在调度更多卖家</div><div class="ln"></div><div class="nd">7′ 红包膨胀一次</div><div class="ln"></div><div class="nd">10′ 红包再次膨胀</div><div class="ln"></div><div class="nd">完成 红包自动到账</div></div><br>`+
+ T(['节点','触发时间（分钟）','前台节点文案','后台业务动作','档位金额 / 比例区间?每个节点独立配置随机区间，或配置为在上一档基础上的膨胀倍数','操作'],[
+ ['节点1',inp('','3',50),inp('','获得等待红包',140),'生成基础红包资格（显示在路线节点，未到账）',inp('','2',60)+' - '+inp('','8',60)+' 元',lk('删除','','r')],
+ ['节点2',inp('','5',50),inp('','正在调度更多卖家',140),'启动矿工池匹配（普通卖家优先）','-',lk('删除','','r')],
+ ['节点3',inp('','7',50),inp('','红包膨胀一次',140),'最终红包升级至第二档',sel(['膨胀倍数','随机区间'])+inp('','2',50)+' 倍',lk('删除','','r')],
+ ['节点4',inp('','10',50),inp('','红包再次膨胀',140),'最终红包升级至第三档',sel(['膨胀倍数','随机区间'])+inp('','3',50)+' 倍',lk('删除','','r')]],{nopg:1})+`<a style="font-size:12px">+ 新增节点</a><div class="btns">${bt('保存并发布',"DUAL('等待红包活动配置')",'p')}${bt('预览前台等待页',"M('等待页预览',`<div class=ph>前台：快速买币等待页（计时器 + 路线节点 + 前进动画）</div>`,{foot:''})")}</div>`),
+n:[
+ ['页面说明',['配置快速买币“等待红包膨胀”活动：用户在快速买币匹配等待期间，按等待时长获得红包并逐级膨胀，鼓励用户继续等待、减少矿工兜底成本。']],
+ ['规则',['前台等待页展示实时计时器、路线进度和前进动画，告知用户系统正在优先匹配普通卖家；<b>不保证在某一节点必定成交</b>。','默认节点：3 分钟获得等待红包 → 5 分钟启动矿工池 → 7 分钟膨胀一次 → 10 分钟再次膨胀 → 订单完成红包自动到账。','每笔订单<b>最多形成一个最终红包</b>，按订单最后达到的档位发放，订单完成后自动到账。','用户取消、付款超时、风控取消或订单未完成时不发放；不设每日、每人、每个 KYC 或每笔订单的领取次数限制。','奖励类型：抵用券或币；计算方式：固定金额区间，或按买币订单金额比例区间；每个节点可独立配置区间，也可配置为膨胀倍数。','大厅自选订单不参与该活动。']],
+ ['发布',['配置变更需双人复核；版本化保存并记录生效时间。','订单创建时保存活动与奖励策略快照，历史订单不受新配置影响。']]
+]};
+
+P.redRecord={t:'等待红包记录',r:()=>F([['i','订单号'],['i','用户ID'],['s','最终档位',['全部','基础','第二档','第三档']],['s','奖励类型',['全部','抵用券','币']],['s','发放状态',['全部','待订单完成','已到账','不发放']],['d','创建时间']])+
+ card('等待红包记录',kpi([['已发放金额','12,860'],['发放订单数','1,024'],['基础 / 二档 / 三档','812 / 166 / 46'],['不发放?订单取消、超时、风控取消','214']])+'<br>'+T(['红包单号','订单号','用户ID','订单金额','到达节点','最终档位','奖励类型','计算方式','随机结果','发放金额','发放状态','活动版本','到账时间'],[
+ ['RP001','20261121141004002','174560','1,000','3/5/7','第二档','抵用券','固定金额区间','6 × 2','12',st('待订单完成','o'),'V3','-'],
+ ['RP002','20261121140001001','174561','2,000','3/5/7/10','第三档','币','订单金额比例','0.3% × 3','18',st('已到账','g'),'V3','2026-11-21 14:30:12'],
+ ['RP003','20261121130001001','174562','500','3','基础','抵用券','固定金额区间','5','0',st('不发放-用户取消','x'),'V3','-']])),
+n:[['页面说明',['查看每笔快速买币订单的等待红包形成与发放情况。']],['规则',['一笔订单一条记录；发放金额 = 最终档位金额。','状态：待订单完成 / 已到账 / 不发放（用户取消、付款超时、风控取消、订单未完成）。','申诉结案为“取消交易”时不发放；结案为“完成交易”时发放。','重试或重复回调不会重复发放。']]]};
+
+P.coupon={t:'抵用券管理',r:()=>{const i=S.tab.coupon||0;
+ if(i===0)return card('',subTabs('coupon',['抵用券模板','发放记录','使用记录'])+`<div class="flt"><div class="fi"><label>券名称</label>${inp()}</div><div class="fi"><label>发放方式</label>${sel(['全部','注册触发','实名触发','累计充值次数','累计充值金额','等待红包','人工发放'])}</div><div class="fi"><label>状态</label>${sel(['全部','启用','停用'])}</div>${bt('查询','','p')}${bt('重置')}${bt('新增模板',"couponEdit()",'p')}</div><br>`+
+ T(['模板ID','券名称','面额 / 比例','最低使用金额','发放方式','发放人群','有效期','可叠加','已发 / 已用','状态','操作'],[['CT001','新人注册券','28','100','注册触发','全部新用户','领取后7天','否','1,200 / 680',st('启用','g')],['CT002','实名礼券','10','50','实名触发','完成实名用户','领取后7天','否','800 / 402',st('启用','g')],['CT003','等待红包券','随机','0','等待红包','快速买币用户','领取后3天','否','1,024 / 590',st('启用','g')],['CT004','充值满3次券','5%（上限20）','200','累计充值次数≥3','全部','领取后15天','否','300 / 80',st('停用','x')]].map(r=>[...r,lk('编辑',"couponEdit()")+lk('人工发放',"couponSend()")+lk('停用',"CF('停用后不再发放，已发放的券仍可使用至过期。')",'r')])));
+ if(i===1)return card('',subTabs('coupon',['抵用券模板','发放记录','使用记录'])+`<div class="flt"><div class="fi"><label>用户ID</label>${inp()}</div><div class="fi"><label>模板</label>${sel(['全部','新人注册券','实名礼券','等待红包券'])}</div><div class="fi"><label>券状态</label>${sel(['全部','未使用','已使用','已过期','已撤销'])}</div><div class="fi"><label>发放时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}</div><br>`+
+ T(['券码','用户ID','券名称','面额','来源','发放时间','到期时间','状态','操作人','操作'],[['C8812001','178232','新人注册券','28','注册触发','2026-11-20 10:00','2026-11-27 10:00',st('未使用','b'),'系统',lk('撤销',"CF('确定撤销该券？撤销后用户券包不再显示，需双人复核。','DUAL(\\'撤销抵用券\\')')",'r')],['C8812002','178233','等待红包券','12','等待红包 订单20261121…','2026-11-21 14:30','2026-11-24 14:30',st('已使用','g'),'系统','-'],['C8812003','178234','活动补偿券','50','人工发放','2026-11-19 10:00','2026-11-26 10:00',st('已撤销','x'),'admin','-']]));
+ return card('',subTabs('coupon',['抵用券模板','发放记录','使用记录'])+T(['使用单号','券码','用户ID','游戏平台（商户）','充值订单号','充值金额','券抵扣','钱包实际扣币','扣不可销售币','扣可销售币','游戏上分','订单状态','券处理'],[['US001','C8812002','178233','商户A','G20261121001','100','28','72','72','0','100',st('已完成','g'),'已核销'],['US002','C8812005','178236','商户B','G20261121002','200','10','190','150','40','200',st('失败','r'),'已退回券包']]));
+},n:[
+ ['页面说明',['前期推广钱包用的红包 / 抵用券功能。三个页签：抵用券模板 / 发放记录 / 使用记录。']],
+ ['使用规则',['<b>只能用于游戏平台充值</b>；不得用于 C2C 买卖、内部转账、闪兑、矿工购币或矿工卖币。','单次充值默认只能使用 1 张；特殊活动可在模板中开启叠加。','抵用券只抵用户钱包扣币金额，游戏平台仍按订单全额上分。示例：充值游戏 100，使用 28 券时，钱包优先从不可销售币扣 72，游戏上分 100；余下 28 不可销售币仍留在钱包，不能销售。','充值订单未完成时券自动退回券包（前提是仍在有效期）；订单已完成不退券。']],
+ ['模板配置',['券面额或比例（比例可设上限）、发放人群、发放触发（注册、实名、累计充值次数或金额、等待红包、人工）、最低使用金额、有效期（固定日期或领取后 N 天）。','人工发放、撤销属于资金类操作，需双人复核。','即将过期（到期前 24 小时）推送提醒用户。']]
+]};
+function couponEdit(){M('新增/编辑抵用券模板',frm([['券名称',inp('','',260),1],['券类型',rad(['固定面额','按充值金额比例']),1],['面额 / 比例',inp('','',90)+' 比例上限 '+inp('','',80)],['最低使用金额?充值金额达到该值才可使用',inp('','0',90)],['发放触发',sel(['注册触发','实名触发','累计充值次数','累计充值金额','等待红包','人工发放']),1],['触发门槛',inp('如：3（次）/ 1000（金额）','',180)],['发放人群',sel(['全部','普通用户','认证商家'])],['有效期',rad(['领取后N天','固定日期'])+inp('','7',60)],['允许叠加?默认单次充值只能用1张',sw(false)],['状态',rad(['启用','停用'])]]),{w:640})}
+function couponSend(){M('人工发放抵用券',frm([['券模板','新人注册券（28）'],['发放对象',ta('输入会员ID，多个用逗号或换行分隔'),1],['每人张数',inp('','1',60),1],['原因',ta(),1],GA]),{fn:"DUAL('人工发放抵用券')"})}
+
+G('活动管理',[['redCfg','等待红包膨胀配置'],['redRecord','等待红包记录'],['coupon','抵用券管理']]);
+
+/* ================= 配置管理 ================= */
+P.tradeCfg={t:'交易配置',r:()=>card('买币',frm([['--','买币大厅'],['大厅开关',sw(true)],['大厅卖家卡片展示?不得展示真实姓名、手机号、完整收款账号或矿工标识',chk(['昵称','成交笔数','成功率','可售余额','单笔成交范围','可用付款方式','信用等级标签'],true)],['--','快速买币'],['快速买币开关',sw(true)],['最低买币金额',inp('','100',90)],['金额步长?快速买币只支持整百金额',inp('','100',90)],['最高买币金额',inp('','50000',90)],['快捷金额按钮',inp('','100,200,300,500,1000,3000,5000,10000',300)],['--','付款方式'],['可用付款方式',chk(['银行卡','支付宝','微信','数字人民币'],true)]]))+
+ card('卖币',frm([['卖币最低金额',inp('','100',90)],['卖币最高金额',inp('','100000',90)],['金额步长?挂单总库存和单笔最低/最高成交额均须符合步长',inp('','100',90)],['每人最多挂单数',inp('','10',90)],['建议单价区间?用户端出售页提示建议单价区间',inp('','0.98',70)+' - '+inp('','1.01',70)],['允许拆分',sw(true)]]))+
+ card('订单时限',frm([['付款期限',inp('','10',60)+' 分钟'],['延时次数',inp('','1',60)+' 次'],['每次延时时长',inp('','5',60)+' 分钟'],['自动放币时限?买家点击已付款后，卖家在该时限内未放币也未申诉则自动放币',inp('','10',60)+' 分钟'],['补证时限',inp('','30',60)+' 分钟'],['评价时限',inp('','24',60)+' 小时'],['',bt('保存',"DUAL('交易配置变更')",'p')+' <span class="muted">变更需双人复核，复核通过后对新订单生效</span>']])),
+n:[['页面说明',['配置买币大厅、快速买币、卖币挂单的开关、金额规则与订单时限。']],['规则',['一期采用“买币大厅自选为主、快速买币自动匹配为辅；卖币挂单由系统分发”的混合模式。','大厅展示普通卖家卡片：昵称、成交笔数、成功率、可售余额、单笔成交范围、可用付款方式；不得展示真实姓名、手机号、完整收款账号或矿工标识。','大厅点击即生成订单并锁定卖家对应库存；卖家无需再次接单。库存或挂单状态变化导致创建失败时，提示用户重新选择。','快速买币只支持整百金额，最低金额和步长可配。','所有配置版本化保存、记录生效时间；订单保存创建时生效的时限快照。']]]};
+
+P.dispatchCfg={t:'分单配置',r:()=>card('分单策略',frm([['--','硬过滤（不可关闭）'],['过滤条件','<span class="muted">付款方式匹配、余额足够、单笔范围覆盖、已上架、未冻结、未超并发、风险允许</span>'],['--','普通卖家排序'],['排序方式',sel(['上架时间轮询为主'])],['成功率权重',inp('','20',60)+' %'],['响应速度权重',inp('','20',60)+' %'],['近期失败后置?近N小时有责任失败的卖家排到后面',inp('','24',60)+' 小时内'],['普通卖家并发上限',inp('','3',60)],['--','矿工兜底'],['矿工池开关',sw(true)],['矿工介入时间',inp('','5',60)+' 分钟'],['矿工介入金额区间',inp('','100',80)+' - '+inp('','5000',80)],['矿工最大并发',inp('','8',60)],['矿工每小时接单上限',inp('','20',60)],['矿工日预算?当日矿工承接金额达到预算后暂停矿工分单',inp('','2,000,000',120)],['',bt('保存',"DUAL('分单配置变更')",'p')]])),
+n:[['页面说明',['配置快速买币系统分单与矿工兜底策略。']],['规则',['阶段一（0 至矿工介入前）：只匹配普通卖家，按硬过滤筛选后上架时间轮询为主，效率和成功率微调。','阶段二（矿工介入后，默认 5 分钟）：普通卖家始终优先；只有没有合格普通卖家时才分配矿工。','矿工同样受余额、接单并发、收款方式、在线状态和风险状态限制。','订单创建时锁定订单金额；完成、取消或判责结案后释放或扣减。','矿工日预算达到后自动暂停矿工分单，次日恢复。','变更需双人复核，版本化保存。']]]};
+
+P.rate={t:'汇率中心',r:()=>card('价源',frm([['主价源',sel(['币安','欧易'])],['备用价源',sel(['欧易','币安'])],['拉取频率',inp('','30',60)+' 秒'],['异常阈值?主价源与备用价源偏差超过该值时自动暂停报价并告警',inp('','1',60)+' %'],['人工固定价',sw(false)+' '+inp('6.66',"",80)],['报价暂停',sw(false)],['当前参考价','<b>1 USDT = 6.66 CNY</b> <span class="muted">（币安，10秒前更新）</span>']]))+
+ card('业务汇率（三套独立配置）',T(['业务','计算方式','上下浮动','当前汇率','锁价时长','开关','最近修改'],[['普通用户 USDT 买币','参考价 ± 浮动',sel(['上浮','下浮'],'上浮',70)+inp('','0.25',60)+'%','1 U = 6.83 BOB',inp('','60',50)+'秒',sw(true),'admin 11-20'],['普通用户闪兑（BOB→USDT）','参考价 ± 浮动',sel(['上浮','下浮'],'上浮',70)+inp('','4.05',60)+'%','6.93 BOB = 1 U',inp('','60',50)+'秒',sw(true),'admin 11-20'],['矿工 USDT 购矿工币','参考价 ± 浮动',sel(['上浮','下浮'],'上浮',70)+inp('','0',60)+'%','1 U = 6.66 矿工币',inp('','60',50)+'秒',sw(true),'admin 11-20'],['商户 USDT 充值','参考价 ± 浮动',sel(['上浮','下浮'],'上浮',70)+inp('','3.3',60)+'%','1 U = 6.88 BOB',inp('','60',50)+'秒',sw(true),'admin 11-20']],{nopg:1})+`<div class="btns">${bt('保存',"DUAL('汇率配置变更')",'p')}${bt('变更记录',"M('汇率变更记录',T(['时间','业务','变更前','变更后','操作人','复核人'],[['2026-11-20 10:00','普通用户闪兑','6.90','6.93','admin','finance01']],{nopg:1}),{foot:'',w:760})")}</div>`),
+n:[['页面说明',['统一管理参考价源与各业务汇率（原 USDT 汇率配置并入本页）。']],['规则',['价源支持币安、欧易；配置主源、备用源、拉取频率、异常阈值、人工固定价和暂停开关。','普通用户 USDT 买币、普通用户闪兑、矿工 USDT 购币分别配置，不共用费率；例如参考币安 1 U = 6.66，普通用户买币 1 U = 6.63~6.83 币，矿工 1 U = 6.66 矿工币，闪兑 6.93 币 = 1 U，实际数字均在此配置。','按参考价设置上浮或下浮点位；平台成本和收益统一体现在实际兑换汇率中，不单列普通闪兑手续费或限额。','用户确认页默认锁价 60 秒，超时重新报价；锁价秒数可配。','汇率变更需双人复核；订单保存创建时的汇率快照。']]]};
+
+P.riskCfg={t:'风控规则配置',r:()=>card('责任失败规则',T(['角色','滚动时间窗口','失败次数阈值','限制类型','限制时长','人工解冻','状态','操作'],[['买家','24 小时','3','限制买币','24 小时','客服可解冻',st('启用','g')],['普通卖家','24 小时','3','限制卖币、挂单自动下架','24 小时','客服可解冻',st('启用','g')],['矿工','24 小时','2','矿工自动下线、暂停分单','24 小时','客服可解冻',st('启用','g')]].map(r=>[...r,lk('编辑',"M('编辑责任失败规则',frm([['角色','买家'],['时间窗口',inp('','24',60)+' 小时'],['失败次数',inp('','3',60)],['限制类型',chk(['限制买币','限制卖币','禁止登录','矿工下线'],[0])],['限制时长',inp('','24',60)+' 小时'],['允许客服解冻',sw(true)]]))")]),{nopg:1}))+
+ card('责任失败认定',T(['场景','计入'],[['买家付款超时 / 延时后仍不付款 / 无理由取消','买家责任失败'],['卖家或矿工在放币时限内不放币也不申诉','卖家责任失败'],['申诉判责','按最终判责计入对应角色']],{nopg:1}))+
+ card('安全冷却',frm([['触发事件',chk(['修改/新增收款账户','重置支付密码','修改手机号','新设备登录','修改手势密码'],[0,1,2])],['冷却时长',inp('','24',60)+' 小时'],['冷却期禁止',chk(['卖币/挂单','内部转账','闪兑','矿工上线'],[0,1,2])],['不受影响','<span class="muted">买币、游戏平台充值</span>'],['',bt('保存',"DUAL('风控规则变更')",'p')]])),
+n:[['页面说明',['配置责任失败限制规则与安全冷却规则。']],['规则',['默认：24 小时内 3 次责任失败，限制相关交易功能 24 小时；按角色、时间窗口、失败数、限制类型、持续时长和人工解冻配置。','安全冷却：修改收款账户、重置支付密码或重要登录安全信息后，默认 24 小时内禁止卖币、转账、闪兑等敏感操作；买币和游戏平台充值不受影响。','普通卖家收款账户须与 KYC 一致；矿工可添加任意收款账户；所有修改留痕。','用户端被限制时，相关入口点击提示“因 xxx，该功能已被限制至 xx:xx”，并可联系客服。']]]};
+
+P.optCfg={t:'申诉举报选项配置',r:()=>F([['i','选项内容'],['s','类型',['全部','申诉-买家','申诉-卖家','举报','取消交易原因','订单异常原因']],['s','状态',['全部','启用','禁用']],['d','操作时间']],bt('新增',"optEdit()",'p'))+card('选项列表',T(['选项内容','类型','排序','状态','备注','操作人','操作时间','操作'],[['不合规的转账凭证','申诉-卖家','1',st('启用','g'),'-'],['没收到买家打款','申诉-卖家','2',st('启用','g'),'-'],['转账人不一致','申诉-卖家','3',st('启用','g'),'卖家选择的付款人与买家实名不符'],['金额与订单不符','申诉-卖家','4',st('启用','g'),'-'],['到期未发货','申诉-买家','1',st('启用','g'),'-'],['卖家收款账户与实名有出入','取消交易原因','1',st('启用','g'),'-'],['资金不足','取消交易原因','2',st('启用','g'),'-'],['虚假信息','举报','1',st('启用','g'),'-'],['欺诈行为','举报','2',st('启用','g'),'-']].map(r=>[...r,'admin','2026-11-20 11:24:00',lk('编辑',"optEdit()")+lk('删除',"CF('确定删除选项？')",'r')]))),
+n:[['页面说明',['配置用户端可选的申诉原因、举报类型、取消交易原因、订单异常原因。']],['规则',['类型区分买家与卖家视角，用户端只展示对应角色的选项；按排序值升序展示。','禁用后用户端不再展示，历史记录保留原文。','“其他”选项用户必须填写补充说明。']]]};
+function optEdit(){M('新增/编辑选项',frm([['选项内容',inp('','',260),1],['类型',sel(['申诉-买家','申诉-卖家','举报','取消交易原因','订单异常原因']),1],['排序',inp('','1',60)],['状态',rad(['启用','禁用'])],['备注',ta()]]))}
+
+P.addrCfg={t:'USDT地址配置',r:()=>F([['i','接收地址'],['s','网络',['全部','TRC20','ERC20']],['s','用途',['全部','普通用户买币','矿工购币','商户充值','闪兑出款热钱包']],['s','状态',['全部','启用','禁用']]],bt('新增',"addrEdit()",'p')+bt('批量上传',"toast('请上传地址文件')"))+
+ card('地址列表',kpi([['确认数 TRC20',inp('','20',60)],['确认数 ERC20',inp('','12',60)],['普通用户最低到账',inp('','100',60)+' U'],['矿工购币最低/最高',inp('','100',60)+' / '+inp('','50000',70)]])+'<br>'+T(['网络','地址（公钥）','用途','当前余额?链上余额，定时刷新','分配次数','状态','备注','操作人','操作时间','操作'],[['TRC20','TR7xK9mP2aL8vQ4nY6sD1eF3hJ5cN8rWtU 复制','普通用户买币','12,300 U','326',st('启用','g'),'-'],['ERC20','0x52bb4fd6a3aa0c8ad52a921f9490f56c0971c3c5 复制','普通用户买币','2,100 U','58',st('启用','g'),'-'],['TRC20','TR7xK9mP2aL8vQ1nY6sD1eF3hJ5cN8rWtU 复制','矿工购币','86,000 U','41',st('启用','g'),'-'],['TRC20','TR7xK9mP2aL8vQ2nY6sD1eF3hJ5cN8rWtU 复制','商户充值','5,000 U','12',st('启用','g'),'-'],['TRC20','TR7xK9mP2aL8vQ3nY6sD1eF3hJ5cN8rWtU 复制','闪兑出款热钱包','186,200 U','-',st('启用','g'),'预警线 50,000']].map(r=>[...r,'admin','2026-11-20 11:24:00',lk('编辑',"addrEdit()")+lk('删除',"CF('确定删除地址？')",'r')]))),
+n:[['页面说明',['维护各业务的 USDT 收款地址池与闪兑出款热钱包。']],['规则',['网络支持 TRC20、ERC20；用途区分普通用户买币、矿工购币、商户充值、闪兑出款热钱包。','用户每次付款从对应用途的启用地址池中分配最新地址。','确认数、最低/最高金额在本页配置；地址修改需双人复核并记录操作日志。']]]};
+function addrEdit(){M('新增/编辑USDT地址',frm([['网络',sel(['TRC20','ERC20']),1],['接收地址（公钥）',inp('','',320),1],['用途',sel(['普通用户买币','矿工购币','商户充值','闪兑出款热钱包']),1],['状态',rad(['启用','禁用'])],['备注',ta()],GA]),{w:640,fn:"DUAL('USDT地址变更')"})}
+
+P.adCfg={t:'广告配置',r:()=>F([['s','广告位置',['全部','启动页','首页横幅','首页图标-一键买币','首页图标-USDT买币','首页快速了解','USDT购买页横幅']],['s','状态',['全部','启用','禁用']],['i','操作人'],['d','操作时间']],bt('新增',"adEdit()",'p'))+card('广告列表',T(['广告位置','图片','标题','跳转方式','跳转位置','排序','展示时间','状态','操作人','操作时间','操作'],[['首页横幅','<span class="img" style="width:80px;height:36px">图</span>','认证币商','内部地址','商家认证','1','长期',st('启用','g')],['首页横幅','<span class="img" style="width:80px;height:36px">图</span>','一键买币','内部地址','快速买币','2','长期',st('启用','g')],['首页图标-USDT买币','<span class="img" style="width:80px;height:36px">图</span>','USDT购买波币','内部地址','USDT购买BOB','1','长期',st('启用','g')],['USDT购买页横幅','<span class="img" style="width:80px;height:36px">图</span>','波币钱包快速赚钱指南','内部地址','快速赚钱指南','1','长期',st('启用','g')],['首页快速了解','<span class="img" style="width:80px;height:36px">图</span>','帮助中心','外部地址','https://help.xxx.com','1','长期',st('禁用','x')]].map(r=>[...r,'admin','2026-11-20 11:24:00',lk('编辑',"adEdit()")+lk('删除',"CF('确定删除广告？')",'r')]))),
+n:[['页面说明',['配置 APP 各广告位的图片与跳转。']],['规则',['首页横幅支持多张轮播，按排序展示。','跳转方式：内部地址（选择 APP 内页面）/ 外部地址（填写链接）。','展示时间可设长期或时间段；过期自动下线。','图片格式 png、jpg，推荐尺寸在上传处提示。']]]};
+function adEdit(){M('新增/编辑广告',frm([['广告位置',sel(['首页横幅','首页图标-一键买币','首页图标-USDT买币','首页快速了解','USDT购买页横幅','启动页']),1],['标题',inp('','',260),1],['图片?推荐尺寸 690×280，png、jpg 格式',bt('选择上传')],['跳转方式',sel(['内部地址','外部地址']),1],['跳转位置',sel(['快速买币','买币大厅','挂单卖币','USDT购买BOB','商家认证','快速赚钱指南','常见问题']),1],['排序',inp('','1',60)],['展示时间',rad(['长期','时间段'])],['状态',rad(['启用','禁用'])],['备注',ta()]]),{w:640})}
+
+P.shareCfg={t:'分享链接配置',r:()=>{const i=S.tab.shareCfg||0;
+ return card('',subTabs('shareCfg',['主域名','分享落地页'])+(i===0?`<div class="flt"><div class="fi"><label>主域名</label>${inp()}</div><div class="fi"><label>CDN节点</label>${sel(['全部','Cloudflare','AWS','阿里云'])}</div><div class="fi"><label>验证状态</label>${sel(['全部','待验证','已验证','验证失败','已停用'])}</div>${bt('查询','','p')}${bt('重置')}${bt('新增',"M('新增域名',frm([['域名',inp('','',260),1],['选择节点',sel(['Cloudflare','AWS','阿里云']),1],['证书选择','系统免费证书']])+'<div class=info style=margin-top:12px>提示：1.只能添加拥有自主控制权的域名。2.添加后请将域名以NS方式解析至CDN服务商提供的权威服务器。3.主域名状态为【已验证】后即可使用。</div>')",'p')}</div><br>`+
+ T(['CDN节点','主域名','NS 服务器','子域名数','验证状态','状态','证书','有效期至','操作人','操作时间','操作'],[['Cloudflare','8s51gdb.org 复制','ns1: deb.ns.cloudflare.com<br>ns2: ignat.ns.cloudflare.com','4',st('待验证','o'),'默认','系统自带','2026-08-30'],['AWS','481gdb.org 复制','ns-123.awsdns-45.com','2',st('已验证','g'),'默认','系统自带','2026-08-30'],['阿里云','gdb1988.cc 复制','vip1.alidns.com','0',st('验证失败','r'),'默认','系统自带','2026-08-30']].map(r=>[...r,'admin','2026-11-20 11:24:00',lk('验证',"toast('验证中…')")+lk('查看子域名',"M('子域名',T(['子域名','用途','使用状态'],[['www.11ph19.pro','分享落地页','使用中'],['123.11ph19.pro','分享落地页','使用中']],{nopg:1}),{foot:''})")+lk('编辑')+lk('删除',"CF('确定删除域名？')",'r')]))
+ :`<div class="flt"><div class="fi"><label>生效域名</label>${inp()}</div><div class="fi"><label>解析状态</label>${sel(['全部','已生效','未生效'])}</div>${bt('查询','','p')}${bt('重置')}${bt('新增',"M('新增分享落地页',frm([['主域名',sel(['hh45f.com','brightterra.net','lunavoxel.org']),1],['子域名?填写@表示直接使用主域名；相同子域名不可重复添加',inp('如：www / @','',200)+' .hh45f.com'],['落地页类型',sel(['用户邀请落地页','矿工申请落地页'])]]))",'p')}</div><br>`+
+ T(['CDN节点','生效域名','落地页类型','解析状态','状态','证书','有效期至','操作人','操作时间','操作'],[['Cloudflare','8s51gdb.org 复制','用户邀请落地页',st('已生效','g'),'默认','系统自带','2026-08-30'],['AWS','123.481gdb.org 复制','矿工申请落地页',st('未生效','o'),'默认','系统自带','2026-08-30']].map(r=>[...r,'admin','2026-11-20 11:24:00',lk('解析',"toast('解析中…')")+lk('删除',"CF('确定删除？')",'r')]))));
+},n:[['页面说明',['管理用户分享链接（邀请好友）与矿工申请链接使用的域名。两个页签：主域名 / 分享落地页。']],['规则',['主域名需验证通过才可添加分享落地页；落地页按 NS 自动解析。','落地页类型：用户邀请落地页、矿工申请落地页（好友通过矿工申请链接注册后自动绑定邀请关系并进入矿工待审批）。','分享链接随机使用已生效的域名，单个域名被封时自动切换。']]]};
+
+G('配置管理',[['tradeCfg','交易配置'],['dispatchCfg','分单配置'],['rate','汇率中心'],['riskCfg','风控规则配置'],['optCfg','申诉举报选项配置'],['addrCfg','USDT地址配置'],['adCfg','广告配置'],['shareCfg','分享链接配置']]);
+/* ================= 商户管理 ================= */
+P.company={t:'公司配置',r:()=>F([['i','公司名称'],['s','状态',['全部','启用','禁用']],['i','操作人'],['d','操作时间']],bt('新增',"M('新增公司',frm([['公司名称',inp(),1],['状态',rad(['启用','禁用'])],['备注',ta()]]))",'p'))+card('公司列表',T(['公司名称','下属商户','状态','备注','操作人','操作时间','操作'],[['白宫','5',st('启用','g'),'这是备注信息…'],['少林寺','2',st('启用','g'),'这是备注信息…']].map(r=>[...r,'admin','2026-11-20 11:24:00',lk('编辑',"M('编辑公司',frm([['公司名称',inp('','白宫')],['状态',rad(['启用','禁用'])],['备注',ta()]]))")+lk('禁用',"M('确认关闭公司','确定禁用该公司及下属所有商户？'+frm([GA]),{w:440})",'r')+lk('删除',"CF('确定删除公司？有下属商户时不可删除。')",'r')]))),
+n:[['页面说明',['商户（合作游戏平台）的上级公司维护。']],['规则',['禁用公司会同时禁用下属所有商户，需谷歌验证。','有下属商户的公司不可删除。']]]};
+
+P.merchants={t:'商户列表',r:()=>F([['i','商户ID'],['i','商户名称'],['i','登录账号'],['s','所属公司',['全部','白宫','少林寺']],['s','状态',['全部','启用','禁用']],['d','创建时间']],bt('新增',"merEdit()",'p'))+card('商户列表',T(['商户ID','商户名称','所属公司','登录账号','BOB余额','商户用户充值费率','商户用户提现费率','商户充值费率','商户转账费率','支持抵用券?开启后该商户的游戏充值可使用抵用券','状态','代付订单反查地址','创建时间','操作'],[['178232','七乐视频','白宫','qile188','10,000','1%','1%','0.5%','0.5%',st('支持','g'),st('启用','g'),'https://api-test.examplepay.com/…'],['178205','艾尔登','白宫','shanghu111','10,000','1%','1%','0.5%','0.5%',st('不支持','x'),st('启用','g'),'https://api-test.examplepay.com/…']].map(r=>[...r,'2026-11-20 11:24:00',lk('编辑',"merEdit(1)")+lk('配置',"merCfg()")+lk('重置支付秘钥',"CF('确定重置支付秘钥？重置后旧秘钥立即失效。'+frm([GA]))")+lk('重置提现秘钥',"CF('确定重置提现秘钥？'+frm([GA]))")]))),
+n:[['页面说明',['管理接入钱包的商户（合作游戏平台）：账号、费率、秘钥、回调地址。']],['规则',['新增商户成功后弹窗展示账号初始信息（登录账号、登录密码、二级密码、支付秘钥、提现秘钥），提供“复制信息”，仅展示一次。','编辑登录密码 / 二级密码 / 重置秘钥后同样弹窗展示新信息并提供复制。','费率：商户用户充值费率、商户用户提现费率、商户充值费率、商户转账费率；修改需谷歌验证。','“支持抵用券”开启后，用户在该商户游戏充值时可使用抵用券，抵扣部分由平台承担，商户按订单全额上分。','用户游戏充值时优先扣不可销售币，不足部分扣可销售币；用户从游戏提现回钱包得到可销售币。']]]};
+function merEdit(e){M(e?'编辑商户':'新增商户',frm([['商户名称',inp('','',240),1],['所属公司',sel(['白宫','少林寺']),1],['登录账号',inp('','',240),1],['登录密码',inp('','',180)+' '+bt('随机生成'),1],['二级密码',inp('','',120)+' '+bt('随机生成'),1],['状态',rad(['启用','禁用'])],['备注',ta()],GA]),{w:620,fn:`merDone(${e?1:0})`})}
+function merDone(e){M('商户'+(e?'编辑':'创建')+'成功',kv([['商户名称','七乐视频'],['所属公司','白宫'],['登录账号','qile188'],['登录密码','hf1s1g45ffad5'],['二级密码','159875'],['支付秘钥','8f3a9c2e…f6c1'],['提现秘钥','c9e2a7f4…c8f1']])+'<div class="warn" style="margin-top:12px">请将以上账号信息发送给商户，关闭后不再展示</div>',{foot:bt('复制信息',"toast('已复制')",'p')})}
+function merCfg(){M('配置商户',frm([['商户用户充值费率',inp('','1',60)+' %'],['商户用户提现费率',inp('','1',60)+' %'],['商户充值费率',inp('','0.5',60)+' %'],['商户转账费率',inp('','0.5',60)+' %'],['支持抵用券',sw(true)],['代付订单反查地址',inp('','',300)],['商户USDT充币地址',inp('','',300)],GA]),{w:640})}
+
+P.merAdjust={t:'商户人工调账',r:()=>{const i=S.tab.merAdjust||0;
+ if(i<2){const a=i===0;return card('',subTabs('merAdjust',['人工加额','人工减额','人工调账记录'])+`<div class="warn">资金操作，提交后进入双人复核。</div>`+frm([['类型',sel([a?'单个加额':'单个减额',a?'批量加额':'批量减额']),1],['商户ID',inp()+' '+bt('查询'),1],['商户信息','<span class="muted">商户名称：天上人间123　余额：123,456</span>'],[a?'增加金额':'扣减金额',inp(),1],['备注',ta(),1],['批量导入',bt('下载模板')+' '+bt('Excel导入')],GA,['',bt('提交复核',"DUAL('商户调账')",'p')]]))}
+ return card('',subTabs('merAdjust',['人工加额','人工减额','人工调账记录'])+T(['订单号','商户ID','商户名称','所属公司','调账类型','调账金额','调账后余额','备注','操作人','复核人','复核状态','操作时间'],[['45645241256416541','178232','商户1','白宫','加额','123,456','-','平台赔付','admin','finance01',st('已生效','g'),'2026-11-20 11:24:00'],['45645241256416542','178205','商户2','白宫','减额','1,000','-','问题商家扣款','admin','-',st('待复核','o'),'2026-11-20 11:24:00']]));
+},n:[['页面说明',['对商户钱包余额人工加额 / 减额及查看记录。']],['规则',['与用户人工调账一致：资金操作需双人复核；减额不得超过余额；记录调账前后余额、原因、操作人和复核人。']]]};
+
+P.merUsdt={t:'商户USDT充币审核',r:()=>{const i=S.tab.merUsdt||0;
+ return card('',subTabs('merUsdt',['待审核','已审核'])+`<div class="flt">${['商户USDT充币ID','商户ID'].map(x=>`<div class="fi"><label>${x}</label>${inp()}</div>`).join('')}${i?`<div class="fi"><label>状态</label>${sel(['全部','审核通过','审核拒绝'])}</div>`:''}<div class="fi"><label>发起时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ T(['商户USDT充币ID','所属公司','商户名称','商户ID','网络','发送地址','商户USDT充币地址','充值USDT数量','链上到账','汇率','到账BOB数量',...(i?['状态','完成时间']:['锁单人']),'发起时间','操作'],[['1483320767762518016','白宫','特朗普','123456','TRC20','TRx9Yk…Rb7U','TQ7vLw…Gt2A 复制','1,000','1,000 ✓','6.88','6,880',...(i?[st('审核通过','g'),'2026-11-20 15:10:04']:['-']),'2026-11-20 14:10:04',i?'-':lk('锁单')+lk('通过',"CF('请确认接收地址已收到转账，是否确认通过放币？'+frm([GA]))",'g')+lk('拒绝',"CF('是否确认拒绝放币？')",'r')]]));
+},n:[['页面说明',['商户通过商户后台用 USDT 充值钱包余额，平台审核后按商户 USDT 充值汇率入账。']],['规则',['审核前需锁单；通过/拒绝需谷歌验证。','页面展示链上到账检测结果，链上已到账且金额一致时才可通过。','汇率取【汇率中心-商户 USDT 充值】，订单保存汇率快照。']]]};
+
+P.merTransfer={t:'商户转币审核',r:()=>{const i=S.tab.merTransfer||0;
+ return card('',subTabs('merTransfer',['待审核','已审核'])+`<div class="flt">${['商户转币ID','接收用户ID'].map(x=>`<div class="fi"><label>${x}</label>${inp()}</div>`).join('')}<div class="fi"><label>公司</label>${sel(['全部','白马会'])}</div><div class="fi"><label>商户</label>${sel(['全部','K01商户'])}</div><div class="fi"><label>发起时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}${bt('导出')}</div><br>`+
+ T(['商户转币ID','公司','商户','转账BOB数量','手续费','接收用户ID','接收BOB地址',...(i?['状态','商户资金明细ID']:[]),'发起时间','操作'],[['1483320767762518016','白马会','K01商户','1,000','5','100033','Bf4cc6aa…ee61 复制',...(i?[st('审核通过','g'),'20767762518016']:[]),'2026-11-20 14:10:04',i?'-':lk('锁单')+lk('通过',"CF('是否确认审核通过？')",'g')+lk('拒绝',"CF('是否确认审核拒绝？')",'r')]]));
+},n:[['页面说明',['商户从商户钱包向指定用户钱包转币的审核。']],['规则',['审核通过后从商户余额扣除（含手续费），用户收到的币计入<b>可销售币</b>（视同从游戏平台提现回钱包）。','审核需锁单，拒绝后商户余额不变。']]]};
+
+G('商户管理',[['company','公司配置'],['merchants','商户列表'],['merAdjust','商户人工调账'],['merUsdt','商户USDT充币审核'],['merTransfer','商户转币审核']]);
+
+/* ================= 商户用户管理 ================= */
+function merUserOrder(dep){return F([['i',dep?'商户用户充币ID':'商户用户提币ID'],['i','外部订单号'],['i','用户ID'],['s','公司',['全部','白马会']],['s','商户',['全部','K01商户']],['s','订单状态',['全部','待支付','支付成功','失败取消','超时取消','用户取消']],['s','回调状态',['全部','待回调','回调中','已回调','回调失败']],['d',['发起时间','完成时间']]])+
+ card(dep?'商户用户充币订单（用户钱包 → 游戏平台）':'商户用户提币订单（游戏平台 → 用户钱包）',T([dep?'商户用户充币ID':'商户用户提币ID','外部订单号','公司','商户','用户ID','真实姓名','用户钱包地址','金额',...(dep?['抵用券抵扣','扣不可销售币','扣可销售币']:['计入可销售币']),'手续费','订单状态','回调状态','发起时间','结束时间','操作'],[
+ ['1483320767762518016','178585154191565','白马会','K01商户','174560','奥巴马','Bf4cc6…ee61 复制','100',...(dep?['28','72','0']:['100']),'1',st('支付成功','g'),st('待回调','o'),'2026-11-21 14:10:04','2026-11-21 14:10:20'],
+ ['1483320767762518017','178585154191566','白马会','K02商户','181517','布什','Bf4cc6…ee62 复制','100,000',...(dep?['0','2,000','98,000']:['100,000']),'1,000',st('失败取消','r'),st('回调失败','r'),'2026-11-21 14:10:04','2026-11-21 14:12:04']].map(r=>[...r,lk('重新回调',"CF('是否确认重新回调？')")+lk('手动回调',"CF('回调状态变为【已回调】，是否确认手动回调？')")])));}
+P.merUserDep={t:'商户用户充币订单',r:()=>merUserOrder(1),n:[['页面说明',['用户在游戏平台选择“波币支付”，从钱包向游戏平台充值的订单（用户端“波币支付”页）。']],['扣款规则',['充值时<b>优先扣除不可销售币</b>，不足部分扣可销售币。','使用抵用券时：券只抵用户钱包扣币金额，游戏平台仍按订单全额上分；例：充值 100 用 28 券，扣不可销售币 72，上分 100。','订单失败/取消时：扣除的币原路退回对应资产类型，抵用券在有效期内退回券包。','矿工币不可用于游戏充值。']],['回调',['回调状态：待回调 / 回调中 / 已回调 / 回调失败；失败可重新回调或手动标记已回调。']]]};
+P.merUserWd={t:'商户用户提币订单',r:()=>merUserOrder(0),n:[['页面说明',['用户从游戏平台提现回钱包的订单。']],['规则',['到账计入<b>可销售币</b>，用户即可挂单卖出、内部转账或闪兑；这是不可销售币“转化”为可销售币的唯一路径（不可销售币转化率统计依据）。','回调规则同充币订单。']]]};
+G('商户用户管理',[['merUserDep','商户用户充币订单'],['merUserWd','商户用户提币订单']]);
+
+/* ================= 数据统计 ================= */
+P.daily={t:'每日数据统计',r:()=>F([['d','日期']])+card('每日数据统计',T(['日期','注册人数','实名认证人数','商家认证人数','矿工新增','USDT买币人数','USDT买币数量','C2C买币人数','C2C买币数量','大厅自选 / 快速买币','挂单人数','挂单数量','闪兑USDT','内部转账','游戏充值','游戏提现'],['11-21','11-20','11-19','11-18','11-17'].map(d=>['2026-'+d,'1,234','812','12','6','203','1,028,000','3,102','3,286,400','58% / 42%','420','4,120,000','42,600','186,400','2,980,000','2,610,000'])))
+,n:[['页面说明',['按日汇总的核心经营数据，支持日期区间查询与导出。']],['口径',['C2C 买币数量按已完成订单统计；大厅自选与快速买币分开展示占比。','游戏充值 / 游戏提现取商户用户充币 / 提币订单中已成功的金额。']]]};
+
+P.report2={t:'运营数据报表',r:()=>F([['d','统计日期'],['s','维度',['按日','按周','按月']]])+
+ card('匹配与兜底',kpi([['买币匹配时长?买家提交快速买币至创建成交订单的时间','2分36秒','大厅自选：即时'],['矿工兜底率（金额）','12.4%'],['矿工兜底率（笔数）','10.8%'],['取消率','3.8%'],['普通卖家占比','87.6%'],['矿工占比','12.4%']]))+
+ card('成本',kpi([['矿工补贴成本?矿工购币成本 + 本单矿工返利 + 已启用邀请返利 − 可归因商户服务费和价差收益','18,420'],['矿工返利','9,312'],['等待红包成本?已完成快速买币订单实际发放的券或币金额','12,860','3分 8,120 / 7分 3,040 / 10分 1,700'],['抵用券成本?游戏全额上分 − 用户实际扣币','8,420'],['红包触发率','34.2%'],['券使用率','56.7%']]))+
+ card('资产转化',kpi([['不可销售币转化率?游戏充值并成功提现回钱包成为可销售币的金额 ÷ C2C 买入不可销售币金额','61.3%'],['C2C 买入不可销售币','3,286,400'],['游戏提现回可销售币','2,014,560']]))+
+ card('订单成功率（按角色）',T(['角色','已结案订单','责任失败','成功率','异常订单'],[['买家','8,214','312','96.2%','23'],['普通卖家','7,196','88','98.8%','12'],['矿工','1,018','9','99.1%','2']],{nopg:1})),
+n:[['页面说明',['方案中“关键数据口径”的运营报表，支持按日/周/月查看与导出。']],['指标口径',['<b>买币匹配时长</b>：买家提交快速买币至创建成交订单的时间；大厅自选与快速买币分开统计。','<b>矿工兜底率</b>：矿工完成的买币订单数或金额 ÷ 全部买币订单数或金额。','<b>矿工补贴成本</b>：矿工购币成本 + 本单矿工返利 + 已启用邀请返利 − 可归因商户服务费和价差收益。','<b>订单成功率</b>：按买家、普通卖家、矿工分别统计；只以责任失败和已结案订单计算。','<b>不可销售币转化率</b>：进入游戏平台充值并成功提现回钱包成为可销售币的金额 ÷ C2C 买入不可销售币金额。','<b>抵用券成本</b>：游戏平台全额上分金额 − 用户实际扣除币金额；与商户服务费和后续行为分开核算。','<b>等待红包成本</b>：已完成快速买币订单实际发放的券或币金额；按 3 分钟、7 分钟、10 分钟等最终档位分别统计。']]]};
+
+P.userFund={t:'用户资金明细',r:()=>F([['i','账变ID'],['i','用户ID'],['s','用户类型',['全部','普通用户','矿工']],['s','资产类型',['全部','可销售币','不可销售币','待确认币','矿工币']],['s','账变类型',['全部','人工加额','人工减额','C2C买币','C2C卖币','交易锁定','交易解锁','USDT买币','闪兑','内部转出','内部转入','游戏充值','游戏提现','商户转账给用户','等待红包','矿工购币','矿工返利','返利冲回']],['d','账变时间']])+
+ card('用户资金明细',T(['账变ID','用户ID','用户类型','资产类型','类型','账变类型','关联单号','账变前余额','账变金额','账变后余额','账变时间','备注'],[['415648954895641','123456','普通用户','不可销售币','收入','C2C买币','20261121…002','0','+1,000','1,000','2026-11-21 14:20:10','-'],['415648954895642','123456','普通用户','不可销售币','支出','游戏充值','G20261121001','1,000','-72','928','2026-11-21 14:30:10','使用抵用券28'],['415648954895643','123456','普通用户','可销售币','收入','游戏提现','W20261121001','0','+500','500','2026-11-21 15:00:10','-'],['415648954895644','190001','矿工','矿工币','支出','C2C卖币','20261121…002','87,200','-1,000','86,200','2026-11-21 14:20:10','-'],['415648954895645','190001','矿工','矿工币','收入','矿工返利','20261121…002','86,200','+35','86,235','2026-11-21 14:20:10','支付宝 3.5%']])),
+n:[['页面说明',['普通用户与矿工的全部资金账变流水，以账本流水为准。']],['规则',['四类资产（可销售币、不可销售币、待确认币、矿工币）分别记账，不可混用。','每条流水对应唯一关联单号；任何重试不会产生重复账变。','余额以账本流水为准，交易中的冻结和释放与订单状态同步。']]]};
+
+P.merFund={t:'商户资金明细',r:()=>F([['i','账变ID'],['i','商户ID'],['s','公司',['全部','白宫']],['s','商户',['全部','特朗普']],['s','账变类型',['全部','人工加额','人工减额','商户USDT充币','商户用户充币','商户用户提币','商户转账给用户','抵用券补贴']],['d','账变时间']])+card('商户资金明细',T(['账变ID','公司','商户名称','商户ID','类型','账变类型','账变前余额','账变金额','账变后余额','账变时间','备注'],[['415648954895641','白宫','特朗普','123456','支出','商户转账给用户','10,000','-100','9,900','2026-11-21 14:10:04','-'],['415648954895642','白宫','特朗普','123456','收入','商户用户充币','9,900','+100','10,000','2026-11-21 15:10:04','其中券抵扣28由平台补贴']])),
+n:[['页面说明',['商户钱包余额的全部账变流水。']],['规则',['用户使用抵用券充值时，商户按订单全额入账，其中券抵扣部分由平台补贴，备注中注明。']]]};
+G('数据统计',[['daily','每日数据统计'],['report2','运营数据报表'],['userFund','用户资金明细'],['merFund','商户资金明细']]);
+
+/* ================= 系统管理 ================= */
+P.dual={t:'双人复核',r:()=>{const i=S.tab.dual||0;
+ return card('',subTabs('dual',['待我复核','我提交的','全部记录'])+`<div class="flt"><div class="fi"><label>业务类型</label>${sel(['全部','人工调账','矿工币调账','返利冲回','补单','抵用券发放/撤销','配置变更','群发站内信'])}</div><div class="fi"><label>提交人</label>${inp()}</div><div class="fi"><label>提交时间</label>${dr()}</div>${bt('查询','','p')}${bt('重置')}</div><br>`+
+ T(['复核单号','业务类型','内容摘要','金额','关联对象','提交人','提交原因','提交时间','状态','操作'],[['DR20261121001','人工调账-加额','可销售币 +1,000','1,000','会员 178232','admin','申诉误判补偿','2026-11-21 11:24:00',st('待复核','o')],['DR20261121002','配置变更-汇率中心','闪兑汇率 6.90 → 6.93','-','汇率中心','ops01','币安价格上涨','2026-11-21 10:00:00',st('待复核','o')],['DR20261120003','补单-USDT买币','80 USDT → 546.4','546.4','订单 UB20261119001','admin','金额不足补单','2026-11-20 09:00:00',st('已通过','g')]].map(r=>[...r,r[8].includes('待')?lk('复核',"dualDo()"):lk('查看',"dualDo(1)")])));
+},n:[['页面说明',['所有需双人复核的操作在此集中处理：人工加币、扣币、改订单金额、手工发放或扣回返利、补单、抵用券人工发放/撤销、关键配置变更、群发消息。']],['规则',['操作人提交后生成复核单，业务在复核通过后才生效；<b>操作人与复核人不能是同一账号</b>。','复核单记录：原因、订单号、前后余额（或配置前后值）、时间和人员。','复核结果：通过 / 驳回（驳回需填写原因），结果通知提交人。','待复核超过 24 小时自动失效，需重新提交。']]]};
+function dualDo(v){M('复核详情',kv([['复核单号','DR20261121001'],['业务类型','人工调账-加额'],['关联对象','会员 178232 / 特朗普'],['资产类型','可销售币'],['金额','+1,000'],['调账前余额','3,200'],['调账后余额','4,200'],['关联订单','20261120…'],['提交人','admin'],['提交原因','申诉误判补偿']])+'<br>'+(v?'':frm([['复核结果',rad(['通过','驳回']),1],['复核意见',ta()],GA])),v?{foot:''}:{})}
+
+P.admins={t:'后台账号',r:()=>F([['i','账号'],['s','角色',['全部','超级管理员','运营','客服','财务','风控']],['s','状态',['全部','启用','禁用']]],bt('新增',"M('新增后台账号',frm([['账号',inp(),1],['姓名',inp(),1],['角色',sel(['运营','客服','财务','风控','超级管理员']),1],['初始密码',inp()+' '+bt('随机生成'),1],['绑定谷歌验证',sw(true)],['IP白名单',ta('选填，一行一个')]]))",'p'))+card('后台账号',T(['账号','姓名','角色','谷歌验证','最近登录','最近登录IP','状态','操作'],[['admin','管理员','超级管理员','已绑定','2026-11-21 09:00','120.1.2.3',st('启用','g')],['finance01','财务A','财务（复核人）','已绑定','2026-11-21 09:10','120.1.2.4',st('启用','g')],['cs01','客服A','客服','已绑定','2026-11-21 08:30','120.1.2.5',st('启用','g')]].map(r=>[...r,lk('编辑')+lk('重置密码',"CF('确定重置密码？')")+lk('重置谷歌',"CF('确定重置谷歌验证？')")+lk('禁用',"CF('确定禁用？')",'r')]))),
+n:[['页面说明',['管理总后台登录账号。']],['规则',['所有账号必须绑定谷歌验证；资金、审核、密钥类操作需输入谷歌验证码。','可配置 IP 白名单，非白名单 IP 无法登录。']]]};
+
+P.roles={t:'角色权限',r:()=>card('角色权限',`<div class="btns" style="margin:0 0 12px">${bt('新增角色','','p')}</div>`+T(['角色','说明','人数','操作'],[['超级管理员','全部权限','1'],['运营','交易、活动、配置（不含复核）','4'],['客服','用户查询、申诉处理、解冻','6'],['财务','调账、补单、复核','2'],['风控','风控规则、冻结、举报处理','2']].map(r=>[...r,lk('配置权限',"M('配置权限 - 运营',['仪表盘','用户管理','矿工管理','OTC交易管理','平台交易管理','活动管理','配置管理','商户管理','商户用户管理','数据统计','系统管理'].map(g=>'<div class=sec>'+g+'</div>'+chk(['查看','编辑','审核','导出','双人复核'],[0,1])).join('')+'<div class=sec>敏感权限</div>'+chk(['查看完整手机号/姓名/证件号','查看完整收款账号'],[]),{w:640})")]),{nopg:1})),
+n:[['页面说明',['按角色配置菜单与操作权限。']],['规则',['权限粒度：查看 / 编辑 / 审核 / 导出 / 双人复核。','“查看敏感信息”单独授权；查看完整手机号、证件号、收款账号时记录操作日志。','“双人复核”权限与资金操作权限分开授予。']]]};
+
+P.oplog={t:'操作日志',r:()=>F([['i','操作人'],['s','模块',['全部','用户管理','矿工管理','OTC交易管理','平台交易管理','活动管理','配置管理','商户管理','系统管理']],['i','关键字'],['d','操作时间']])+card('操作日志',T(['时间','操作人','IP','模块','操作','对象','变更前','变更后'],[['2026-11-21 11:24:00','admin','120.1.2.3','用户管理','限制用户','会员 178232','正常','限制卖币 24h'],['2026-11-21 10:00:00','ops01','120.1.2.6','配置管理','汇率变更（提交复核）','闪兑汇率','6.90','6.93'],['2026-11-21 09:30:00','cs01','120.1.2.5','用户管理','查看敏感信息','会员 178232','-','手机号']])),
+n:[['页面说明',['记录后台全部写操作与敏感信息查看，用于审计。']],['规则',['日志不可删除、不可编辑；保留期限不少于 1 年。','配置类操作记录变更前后值。']]]};
+G('系统管理',[['dual','双人复核'],['admins','后台账号'],['roles','角色权限'],['oplog','操作日志']]);
+
+/* ================= 渲染 ================= */
+function buildMenu(){
+ $('#menu').innerHTML=MENU.map((g,gi)=>`<div class="mg ${S.open.includes(gi)?'open':''}" id="mg${gi}"><div class="mg-t" onclick="tgGroup(${gi})"><span>${g.name}</span><span class="ar">▶</span></div><div class="mg-c">${g.items.map(it=>`<div class="mi ${S.cur===it[0]?'on':''}" onclick="go('${it[0]}')">${it[1]}</div>`).join('')}</div></div>`).join('');
+}
+function tgGroup(i){const k=S.open.indexOf(i);k>=0?S.open.splice(k,1):S.open.push(i);buildMenu()}
+const TABS=[];
+function go(k){S.cur=k;if(!TABS.includes(k))TABS.push(k);if(TABS.length>8)TABS.shift();
+ const gi=MENU.findIndex(g=>g.items.some(i=>i[0]===k));if(!S.open.includes(gi))S.open.push(gi);
+ location.hash=k;buildMenu();render();}
+function closeTab(e,k){e.stopPropagation();const i=TABS.indexOf(k);TABS.splice(i,1);if(S.cur===k)go(TABS[TABS.length-1]||'dash');else render()}
+function render(){
+ const p=P[S.cur];const g=MENU.find(g=>g.items.some(i=>i[0]===S.cur));
+ $('#crumb').innerHTML=`${g?g.name+' / ':''}<b>${p.t}</b>`;
+ $('#tabs').innerHTML=TABS.map(k=>`<span class="tb ${k===S.cur?'on':''}" onclick="go('${k}')">${P[k].t}<i onclick="closeTab(event,'${k}')">✕</i></span>`).join('');
+ $('#proto').innerHTML=p.r();
+ $('#notes').innerHTML=`<h3>需求说明 · ${p.t}</h3>`+p.n.map(s=>`<h4>${s[0]}</h4><ol>${s[1].map(x=>`<li>${x}</li>`).join('')}</ol>`).join('');
+ $('#proto').scrollTop=0;
+}
+S.open=[0];
+go(P[location.hash.slice(1)]?location.hash.slice(1):'dash');
+</script>
+</body>
+</html>
