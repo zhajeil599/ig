@@ -474,7 +474,7 @@ V['c-friend']=()=>phone('选择好友',FRIENDS.map(([L,ids])=>`<div class="lette
 function myRecs(){return RECORDS.filter(r=>r.from===ME||r.to===ME)}
 V['c-history']=()=>{
  let l=myRecs();if(S.histTab==='out')l=l.filter(r=>r.from===ME);if(S.histTab==='in')l=l.filter(r=>r.to===ME);
- return phone('划转记录',`${l.length?l.map(r=>{const out=r.from===ME,o=out?r.to:r.from;return `<div class="rec" onclick="go('c-detail',{detail:'${r.no}'})"><div class="l"><b>${out?'转出给 ':'收到 '}${MEMBERS[o].n}</b><p>对方ID：${o}<br>订单号：${r.no}<br>时间：${r.t}</p></div><div class="r"><div class="st">成功</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div></div></div>`}).join(''):'<div class="empty">暂无划转记录</div>'}`,
+ return phone('划转记录',`${l.length?l.map(r=>{const out=r.from===ME,o=out?r.to:r.from;return `<div class="rec" onclick="go('c-detail',{detail:'${r.no}'})"><div class="l"><b>${out?'转给 ':'收到 '}${MEMBERS[o].n}</b><p>对方ID：${o}<br>订单号：${r.no}<br>时间：${r.t}</p></div><div class="r"><div class="st">成功</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div></div></div>`}).join(''):'<div class="empty">暂无划转记录</div>'}`,
  {back:'c-transfer',right:'',foot:''}).replace('<div class="ph-bd" id="phbd">',`<div class="tabs">${[['all','全部'],['out','转出'],['in','转入']].map(([k,n])=>`<div class="${S.histTab===k?'on':''}" onclick="S.histTab='${k}';render()">${n}</div>`).join('')}</div><div class="timef">${['今天','昨天','近7天','近30天'].map(x=>`<span class="${S.histTime===x?'on':''}" onclick="S.histTime='${x}';render()">${x}</span>`).join('')}</div><div class="ph-bd" id="phbd">`);
 };
 V['c-detail']=()=>{
@@ -522,7 +522,7 @@ log:`<h3>需求背景</h3>会员之间可互相划转余额。仅后台配置过
 'c-mine':`<h3>我的</h3><ol><li>余额区在「充值」和「提现」之间增加「划转」按钮，点击进入划转页。</li><li>仅后台已配置且开启划转功能的会员展示划转按钮；不展示时，余额区保持充值、提现两个按钮。</li><li>页面其余内容为现有内容，不做改动。</li></ol>`,
 'c-transfer':`<h3>划转</h3><ol><li>右上角「划转记录」：点击进入划转记录页查看历史订单。</li><li>收款人：输入用户ID，输入框失去焦点后查询并展示对方头像、昵称、ID；用户不存在提示「用户ID不存在」，输入自己的ID提示「不能划转给自己」。</li><li>点击输入框右侧图标进入通讯录选择好友，确认后自动带入收款人。</li><li>添加好友：查询到的收款人还不是好友时，在收款人信息右侧展示「添加好友」按钮，已是好友则不展示。点击直接跳转添加好友页面并带入对方信息，完成添加后返回划转页，已填写的收款人、金额保留，「添加好友」按钮不再展示，对方同步出现在通讯录好友中。</li><li>划转金额：输入框提示展示该会员的单次限额区间；下方展示可用余额。超出区间提示「划转金额超限」，超过余额提示「可用余额不足」。</li><li>打码量：发起划转不受打码量限制；收款方到账后按转出方配置的稽核倍数增加打码量。</li><li>支付密码：输入错误提示「支付密码不正确」；「忘记密码？」进入现有重置支付密码页面。</li><li>收款人、金额、密码均填写后「确认划转」才可点击。</li><li>划转成功即时扣款到账，弹出成功提示，可查看详情或完成（清空表单停留本页）。</li></ol>`,
 'c-friend':`<h3>选择好友</h3><ol><li>展示当前会员的通讯录好友，按昵称首字母分组。</li><li>单选，选中后「确认选择」可点击，返回划转页并带入收款人。</li></ol>`,
-'c-history':`<h3>划转记录</h3><ol><li>入口：划转页右上角。</li><li>页签：全部 / 转出 / 转入；时间筛选：今天、昨天、近7天、近30天。</li><li>每条展示：转出给/收到 + 对方昵称、对方ID、订单号、时间、状态、金额（转出为 -，转入为 +）。</li><li>划转即时完成，状态均为「成功」。</li><li>按时间倒序，点击进入划转详情。</li></ol>`,
+'c-history':`<h3>划转记录</h3><ol><li>入口：划转页右上角。</li><li>页签：全部 / 转出 / 转入；时间筛选：今天、昨天、近7天、近30天。</li><li>每条展示：转给/收到 + 对方昵称、对方ID、订单号、时间、状态、金额（转出为 -，转入为 +）。</li><li>划转即时完成，状态均为「成功」。</li><li>按时间倒序，点击进入划转详情。</li></ol>`,
 'c-detail':`<h3>划转详情</h3><ol><li>展示类型（划转支出/划转收入）、金额、状态、对方昵称、对方ID、订单号（可复制）、划转时间。</li><li>转入记录额外展示本笔需完成的打码量（到账金额 × 转出方配置的稽核倍数）；倍数为0时不展示。</li></ol>`,
 'c-trade':`<h3>交易记录</h3><ol><li>增加「划转」页签，展示划转收入与划转支出，点击进入划转详情。</li><li>划转订单只在「划转」页签展示，与划转记录页数据一致。</li></ol>`,
 'c-addfriend':`<h3>添加好友</h3><ol><li>现有页面，页面内容不做改动。</li><li>从划转页收款人信息的「添加好友」进入时，自动带入对方头像、昵称、ID，验证信息默认带入「我是+本人昵称」，可修改。</li><li>点击「发送申请」完成添加后，提示「添加好友成功」并返回划转页；点击左上角返回也回到划转页。</li></ol>`,
