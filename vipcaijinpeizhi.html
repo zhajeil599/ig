@@ -324,7 +324,7 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
   <div class="prd-wrap">
     <div class="prd">
       <h1>VIP彩金（晋级奖励 / 周工资 / 月工资）需求说明</h1>
-      <div class="text-gray-400 text-xs">更新：2026-11-05 · 包含后台「VIP彩金配置」与前台「升级模式」页面</div>
+      <div class="text-gray-400 text-xs">更新：2026-11-25 · 包含后台「VIP彩金配置」与前台「升级模式」页面</div>
 
       <h2>一、后台 · VIP彩金配置列表</h2>
       <ol>
@@ -357,31 +357,37 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
         <tr><td>稽核倍数 <span class="text-red-500">*</span></td><td>默认 1</td><td>领取的彩金需完成「彩金金额 × 倍数」的有效投注后方可提现，0 表示不需要稽核。三类奖励共用。</td></tr>
         <tr><td colspan="3" class="bg-gray-50 font-semibold">晋级奖励配置</td></tr>
         <tr><td>领取条件统计周期</td><td>当日 / 上周 / 上月，默认当日</td><td>判断充值、打码要求时统计的时间范围（定义见第四节）。</td></tr>
-        <tr><td>跨级领取</td><td>可领取途经所有等级 / 只能领取最高一档，默认可领取途经所有等级</td><td>一次晋升多个等级时，是每个途经等级的晋级奖励都可领，还是只可领到达的最高等级奖励。</td></tr>
-        <tr><td>奖励领取过期天数 <span class="text-red-500">*</span></td><td>默认 30</td><td>从达到该等级起算，逾期未领取的晋级奖励失效；0 表示永久有效。</td></tr>
+          <tr><td>奖励领取过期天数 <span class="text-red-500">*</span></td><td>默认 30</td><td>从达到该等级起算，逾期未领取的晋级奖励失效；0 表示永久有效。</td></tr>
         <tr><td colspan="3" class="bg-gray-50 font-semibold">周工资配置 / 月工资配置（规则相同）</td></tr>
         <tr><td>领取条件统计周期</td><td>当日 / 上周 / 上月；周工资默认上周，月工资默认上月</td><td>判断充值、打码要求时统计的时间范围。</td></tr>
         <tr><td>领取时间</td><td>随时可领取 / 指定日期领取；默认指定：周工资每周一，月工资每月1号</td><td>指定日期时：周工资可选周一至周日；月工资可选 1–28 号（保证每个月都有该日）。</td></tr>
         <tr><td>文案内容</td><td>富文本</td><td>展示在前台「活动详情」顶部。</td></tr>
       </table>
 
-      <h2>四、领取规则</h2>
-      <h3>4.1 统计周期定义（按站点时区）</h3>
+      <h2>四、后台手动变更会员等级规则</h2>
+      <ul>
+        <li>后台在会员列表中修改会员的「充值等级」，即视为修改该会员的 VIP 等级。</li>
+        <li>后台变更用户等级前，前端需弹窗提示：「后台变更用户等级后，用户无法领取当前等级及之前等级的晋升奖励。后续正常升级晋升奖励不受影响」。</li>
+        <li>用户确认后，才提交本次等级变更；取消则不变更。</li>
+        <li>后台手动变更等级后，用户当前等级及之前等级的晋升奖励不可领取；后续通过正常升级达到的新等级，其晋升奖励领取不受影响。</li>
+      </ul>
+
+      <h2>五、领取规则</h2>
+      <h3>5.1 统计周期定义（按站点时区）</h3>
       <ul>
         <li><b>当日：</b>领取当天 00:00:00 至领取时刻的累计充值 / 有效投注。</li>
         <li><b>上周：</b>上一个自然周（周一 00:00:00 至周日 23:59:59）。</li>
         <li><b>上月：</b>上一个自然月（1号 00:00:00 至月末 23:59:59）。</li>
         <li>充值、打码两项要求需同时满足才可领取。</li>
       </ul>
-      <h3>4.2 晋级奖励</h3>
+      <h3>5.2 晋级奖励</h3>
       <ul>
         <li>会员累计充值达到某等级总存款即视为达到该等级，该等级晋级奖励进入可领取范围，每个等级只能领取一次。</li>
         <li>领取时需满足该等级配置的充值、打码要求（按晋级奖励的统计周期计算），未满足时前台显示具体差额要求。</li>
-        <li>跨级晋升：选「可领取途经所有等级」时每级都可领；选「只能领取最高一档」时，低于最高等级且尚未领取的等级显示「不可领取」。</li>
         <li>达到等级后超过过期天数未领取，该等级显示「已过期」，不可再领。</li>
         <li>不设领取金额封顶。</li>
       </ul>
-      <h3>4.3 周工资 / 月工资</h3>
+      <h3>5.3 周工资 / 月工资</h3>
       <ul>
         <li>按会员<b>领取时的当前等级</b>发放该等级的周 / 月工资，每个自然周 / 自然月只能领取一次。</li>
         <li>领取时需满足当前等级配置的充值、打码要求（按各自统计周期计算）。</li>
@@ -389,26 +395,26 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
         <li>领取时间为「随时可领取」时：本周 / 本月内任意时间可领，周期结束未领取即过期。</li>
         <li>不设领取金额封顶。</li>
       </ul>
-      <h3>4.4 稽核</h3>
+      <h3>5.4 稽核</h3>
       <ul><li>每笔领取的彩金按领取时的稽核倍数生成稽核要求，完成后方可提现。</li></ul>
 
-      <h2>五、前台 · 升级模式页面</h2>
-      <h3>5.1 周俸禄 / 月俸禄按钮</h3>
+      <h2>六、前台 · 升级模式页面</h2>
+      <h3>6.1 周俸禄 / 月俸禄按钮</h3>
       <table>
         <tr><th style="width:150px">状态</th><th>展示</th></tr>
         <tr><td>可领取</td><td>金色按钮「立即领取」，点击提示「领取成功」后变为已领取。</td></tr>
         <tr><td>未到领取时间</td><td>灰色，显示「每周一领取」/「每月1号领取」。</td></tr>
-        <tr><td>未达标</td><td>灰色，显示「未达标」。具体条件可在活动详情表头的「周俸禄 / 月俸禄」弹窗中查看。</td></tr>
+        <tr><td>未达标</td><td>灰色，显示差的条件，例：「需上周充值 1000 / 需上周有效投注 10000」。</td></tr>
         <tr><td>本期已领取</td><td>灰色，显示「下周再来」/「下月再来」。</td></tr>
         <tr><td>当前等级无此奖励</td><td>灰色，显示「暂无」。</td></tr>
       </table>
       <ul><li>按钮下方展示领取提示，文案由后台配置自动生成，例：「周俸禄每周一领取，月俸禄每月1号领取，过期不可领取」。</li></ul>
-      <h3>5.2 等级可领列表</h3>
+      <h3>6.2 等级可领列表</h3>
       <ul>
         <li>展示所有开启的等级，每个等级显示领取条件（含统计周期，例「需当日充值 40 / 需当日有效投注 200」）和晋级奖金额。</li>
-        <li>按钮状态：立即领取 / 未达标 / 已领取 / 不可领取（只领最高一档时）/ 已过期 / 等待升级（未达到该等级）。</li>
+        <li>按钮状态：立即领取 / 未达标 / 已领取/ 已过期 / 等待升级（未达到该等级）。</li>
       </ul>
-      <h3>5.3 其他</h3>
+      <h3>6.3 其他</h3>
       <ul>
         <li>顶部表盘、总充值、当前等级卡片（距离下一级的充值差额）按会员实际数据展示。</li>
         <li>活动详情：上方为后台文案内容；下方表格展示各等级总存款、晋级礼金、周俸禄、月俸禄，表格只显示各等级金额，不展示领取条件。表头中「晋级礼金 / 周俸禄 / 月俸禄」做成按钮样式（带「›」），点击分别弹窗展示该奖励的说明：标题为「XX领取条件」；领取时间（晋级礼金：达到对应等级后可领取、每级限领一次及过期天数；周/月俸禄：按后台配置的领取时间，过期不可领取，按领取时的VIP等级发放）；领取条件表格列出各等级的奖励金额、充值要求、打码要求（列名随统计周期变化，如「上周充值 / 上周打码」，为 0 时显示「无要求」，奖励为 0 的等级不列出）；底部说明「需要满足以上条件方可领取彩金。」；点击「知道了」或弹窗外区域关闭。</li>
@@ -433,7 +439,7 @@ let levels=[
  {lv:6,dep:10000,up:{r:1000,b:10000,a:600},mon:{r:5000,b:50000,a:3800},wk:{r:2500,b:25000,a:1000},on:true,ct:'2026-07-10 09:35:08'},
 ];
 let cfg={audit:1,
- up:{period:'day',cross:'all',expire:30},
+ up:{period:'day',expire:30},
  wk:{period:'lastweek',claim:'fixed',day:1},
  mon:{period:'lastmonth',claim:'fixed',day:1},
  content:'<h2 style="color:#ff9900;font-weight:bold;font-size:16px;">👑 VIP 尊享特权</h2><p style="margin-top:8px;">VIP福利全面升级，周工资、月工资惊喜不断！晋级即发丰厚奖励！</p>'};
@@ -457,7 +463,7 @@ function claimWhen(k){const c=cfg[k];
   if(c.claim==='any')return k==='wk'?'本周内随时可领取':'本月内随时可领取';
   return k==='wk'?`每${WD[c.day]}领取`:`每月${c.day}号领取`;}
 function tipOf(k){
-  if(k==='up'){const c=cfg.up;return `达到等级后可领取，每个等级限领一次；领取条件按${P[c.period]}充值/打码统计；跨级晋升${c.cross==='all'?'可领取途经所有等级的奖励':'只能领取最高一档'}；${+c.expire>0?`达到等级后 ${c.expire} 天内未领取则过期`:'永久有效'}`;}
+  if(k==='up'){const c=cfg.up;return `达到等级后可领取，每个等级限领一次；领取条件按${P[c.period]}充值/打码统计；${+c.expire>0?`达到等级后 ${c.expire} 天内未领取则过期`:'永久有效'}`;}
   return `${claimWhen(k)}，过期不可领取；领取条件按${P[cfg[k].period]}充值/打码统计；按会员领取时的等级发放`;}
 const q=t=>`<span class="q" data-tip="${t}">?</span>`;
 
@@ -563,7 +569,6 @@ function openCfg(){
   $('cfg-sections').innerHTML=`
    <div><h4 class="font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">晋级奖励配置</h4><div class="space-y-3 ml-4">
      ${period('up')}
-     ${row('跨级领取',radio('c-up-cross','all',cfg.up.cross,'可领取途经所有等级')+radio('c-up-cross','highest',cfg.up.cross,'只能领取最高一档'),'一次晋升多个等级时，是每个途经等级的晋级奖励都可领取，还是只可领取到达的最高等级奖励')}
      ${row('奖励领取过期天数',`<input id="c-up-expire" value="${cfg.up.expire}" class="border border-gray-300 rounded px-3 py-1 w-24 text-center">`,'从达到该等级起算，逾期未领取的晋级奖励失效；0表示不过期',true)}
    </div></div>
    <div><h4 class="font-bold text-gray-700 mb-3 pb-2 border-b border-gray-100">周工资配置</h4><div class="space-y-3 ml-4">${period('wk')}${claimRow('wk')}</div></div>
@@ -576,7 +581,7 @@ function saveCfg(){
   if(!/^\d{1,4}$/.test(ex))return $('cfg-err').textContent='过期天数须为≥0的整数';
   const v=n=>document.querySelector(`input[name=${n}]:checked`).value;
   cfg.audit=+a;
-  cfg.up={period:v('c-up-period'),cross:v('c-up-cross'),expire:+ex};
+  cfg.up={period:v('c-up-period'),expire:+ex};
   for(const k of['wk','mon'])cfg[k]={period:v(`c-${k}-period`),claim:v(`c-${k}-claim`),day:+$(`c-${k}-day`).value};
   cfg.content=$('c-content').innerHTML;
   closeModal('cfg-modal');admToast('保存成功');renderAll();
@@ -600,7 +605,7 @@ function salaryBtn(k){
   const d=D(sim.date),c=cfg[k];
   if(c.claim==='fixed'&&(k==='wk'?wday(d)!==c.day:d.getDate()!==c.day))
     return grey(`<div class="text-[#555] text-[11px] font-bold">${claimWhen(k)}</div>`);
-  if(!met(k,l[k]))return grey(`<div class="text-[#8b2323] text-[11px] font-bold">未达标</div>`);
+  if(!met(k,l[k]))return grey(`<div class="text-[#8b2323] text-[9px] bg-black/10 rounded py-1 px-2 leading-tight font-bold w-11/12">${needTxt(k,l[k])}</div>`);
   return `<div onclick="claimSalary('${k}')" class="flex-1 bg-gold-gradient rounded-xl py-2 px-1 text-center border-b-4 border-[#9c6f1a] cursor-pointer active:translate-y-1 flex flex-col justify-center items-center min-h-[72px]">
      <div class="flex items-center gap-1 mb-1.5"><div class="text-[#3e2708] font-bold text-[15px]">${name}</div><div class="text-[#8b2323] font-bold text-[13px]">￥${fmt(amt)}</div></div>
      <div class="bg-[#8b2323] text-[#FDE19F] text-[11px] px-4 py-1 rounded-full font-bold w-10/12">立即领取</div></div>`;
@@ -610,7 +615,6 @@ function upBtn(l,cl){
   if(l.lv>cl)return g('等待升级');
   if(claimed.up.has(l.lv))return `<button class="bg-[#6b7280] text-white text-xs px-4 py-1.5 rounded-md">已领取</button>`;
   if(!l.up.a)return g('暂无');
-  if(cfg.up.cross==='highest'&&l.lv<cl)return g('不可领取');
   if(!met('up',l.up))return g('未达标');
   return `<button onclick="claimUp(${l.lv})" class="bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] font-bold text-xs px-4 py-1.5 rounded-md shadow">立即领取</button>`;
 }
@@ -651,7 +655,7 @@ function renderFront(){
     <div class="flex justify-center mb-4"><div class="bg-[#2a2015] border border-[#d4a054] px-6 py-1 rounded-md text-[#d4a054] font-bold">♠ 等级可领 ♠</div></div>
     <div class="bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl p-4 h-[350px] overflow-y-auto space-y-3">
       ${ls.map((l,i)=>{const c=COLORS[(l.lv-1)%COLORS.length];const reach=l.lv<=cl;
-        const need=reach&&!claimed.up.has(l.lv)&&!met('up',l.up)&&!(cfg.up.cross==='highest'&&l.lv<cl);
+        const need=reach&&!claimed.up.has(l.lv)&&!met('up',l.up);
         return `<div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
         <div class="flex items-center"><div class="w-10 h-10 rounded-full bg-${c}-500/20 flex items-center justify-center mr-3 border border-${c}-500/50"><span class="text-${c}-400 font-bold">v${l.lv}</span></div>
           <div><div class="text-white font-bold text-lg">v${l.lv}</div>
