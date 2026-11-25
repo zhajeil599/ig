@@ -205,16 +205,36 @@ table.t td{padding:9px 8px;border:1px solid #ebeef5;text-align:center;line-heigh
 <script>
 /* ============ 数据 ============ */
 const ME='100039991';
+/* 商户：主商户 8001（子商户 8002/8003），普通商户 9001 */
+const MERCHANTS=[
+ {id:'8001',n:'金沙娱乐',parent:''},
+ {id:'8002',n:'金沙二站',parent:'8001'},
+ {id:'8003',n:'金沙三站',parent:'8001'},
+ {id:'9001',n:'皇冠体育',parent:''}
+];
+const mchOf=id=>MERCHANTS.find(m=>m.id===id);
+const mchName=id=>{const m=mchOf(id);return m?`${m.n}（${m.id}）`:id};
+const subsOf=id=>MERCHANTS.filter(m=>m.parent===id);
+const isMain=id=>{const m=mchOf(id);return m&&!m.parent&&subsOf(id).length>0};
+let LOGIN='8001';      // 当前登录商户
+let CFG_MCH='8001';    // 划转配置当前所选商户
 const MEMBERS={
- '100039991':{n:'无家可归aegp',lv:'充值500-2000',ch:'官方渠道'},
- '100012345':{n:'特朗普8848',lv:'充值0-500',ch:'官方渠道'},
- '100041118':{n:'风行者',lv:'充值500-1000',ch:'官方渠道'},
- '100040958':{n:'投资达人',lv:'充值500-1000',ch:'谷歌'},
- '100041105':{n:'小鱼儿',lv:'充值5000以上',ch:'FaceBook'},
- '100020001':{n:'阿龙',lv:'充值0-500',ch:'官方渠道'},
- '100020002':{n:'阿杰',lv:'充值0-500',ch:'抖音推广'},
- '100020003':{n:'白马',lv:'充值500-1000',ch:'官方渠道'},
- '100020004':{n:'成哥',lv:'充值2000以上',ch:'谷歌'}
+ '100039991':{n:'无家可归aegp',lv:'充值500-2000',ch:'官方渠道',mch:'8001'},
+ '100012345':{n:'特朗普8848',lv:'充值0-500',ch:'官方渠道',mch:'8001'},
+ '100041118':{n:'风行者',lv:'充值500-1000',ch:'官方渠道',mch:'8001'},
+ '100040958':{n:'投资达人',lv:'充值500-1000',ch:'谷歌',mch:'8001'},
+ '100041105':{n:'小鱼儿',lv:'充值5000以上',ch:'FaceBook',mch:'8001'},
+ '100020001':{n:'阿龙',lv:'充值0-500',ch:'官方渠道',mch:'8001'},
+ '100020002':{n:'阿杰',lv:'充值0-500',ch:'抖音推广',mch:'8001'},
+ '100020003':{n:'白马',lv:'充值500-1000',ch:'官方渠道',mch:'8001'},
+ '100020004':{n:'成哥',lv:'充值2000以上',ch:'谷歌',mch:'8001'},
+ '200010001':{n:'二站小李',lv:'充值0-500',ch:'官方渠道',mch:'8002'},
+ '200010002':{n:'二站阿明',lv:'充值500-1000',ch:'谷歌',mch:'8002'},
+ '200010003':{n:'二站老王',lv:'充值2000以上',ch:'官方渠道',mch:'8002'},
+ '300010001':{n:'三站娜娜',lv:'充值0-500',ch:'抖音推广',mch:'8003'},
+ '300010002':{n:'三站大熊',lv:'充值500-1000',ch:'官方渠道',mch:'8003'},
+ '900010001':{n:'皇冠阿宝',lv:'充值0-500',ch:'官方渠道',mch:'9001'},
+ '900010002':{n:'皇冠小七',lv:'充值500-1000',ch:'谷歌',mch:'9001'}
 };
 let FRIENDS=[['A',['100020001','100020002']],['B',['100020003']],['C',['100020004']],['T',['100012345']]];
 const PY={'100041118':'F','100040958':'T','100041105':'X'};
@@ -224,7 +244,11 @@ function sendApply(id){addFriend(id);go('c-transfer');toast('添加好友成功'
 let CONFIG=[
  {id:'100039991',on:true,min:100,max:5000,mul:1.5},
  {id:'100041118',on:true,min:100,max:50000,mul:1.5},
- {id:'100040958',on:false,min:0,max:10000,mul:2}
+ {id:'100040958',on:false,min:0,max:10000,mul:2},
+ {id:'200010001',on:true,min:50,max:3000,mul:1},
+ {id:'200010003',on:true,min:100,max:20000,mul:2},
+ {id:'300010001',on:false,min:100,max:5000,mul:1.5},
+ {id:'900010001',on:true,min:100,max:10000,mul:1}
 ];
 let RECORDS=[
  {no:'202608072254525910947',from:'100041118',to:'100012345',amt:800,t:'2026-08-07 22:54:52',rm:'-'},
@@ -278,7 +302,7 @@ function adm(active,crumb,body){
  return `<div class="adm"><div class="adm-side"><div class="logo">代理后台</div>`+
  MENU.map(([m,subs])=>{const open=subs.some(s=>s[1]===active);return `<div class="m ${open?'open':''}">${m}</div>`+subs.map(s=>`<div class="s ${s[1]===active?'on':''} ${s[1]?'':'dim'}" ${s[1]?`onclick="go('${s[1]}')"`:''}>${s[0]}</div>`).join('')}).join('')+
  `<div class="m">游戏管理</div><div class="m">代理系统</div><div class="m">活动管理</div></div>
- <div class="adm-main"><div class="adm-top"><span>首页 / ${crumb}</span><span>admin　余额：123456.78</span></div><div class="adm-body">${body}</div></div></div>`;
+ <div class="adm-main"><div class="adm-top"><span>首页 / ${crumb}</span><span>当前商户：${mchName(LOGIN)}${isMain(LOGIN)?'<span class="tag on" style="margin-left:6px">主商户</span>':''}　admin</span></div><div class="adm-body">${body}</div></div></div>`;
 }
 const q=tip=>`<i class="q" data-tip="${esc(tip)}">?</i>`;
 
@@ -287,7 +311,7 @@ const V={};
 
 V.log=()=>{
  const rows=[
-  ['代理后台','财务管理-划转配置','新增独立菜单。按会员添加/编辑/删除划转配置：划转功能开关、单次划转下限与上限、收款方打码量倍数；支持按会员ID查询。'],
+  ['代理后台','财务管理-划转配置','新增独立菜单。主商户可选择本商户或自己的子商户进行配置；按会员添加/编辑/删除划转配置：划转功能开关、单次划转下限与上限、收款方打码量倍数；支持按会员ID查询。'],
   ['代理后台','财务管理-划转记录','新增划转订单列表，展示转出方与转入方的用户ID、昵称、层级及金额、时间；支持按时间、订单号、转出/转入用户ID查询及导出。'],
   ['代理后台','报表查询-资金明细','增加划转收入、划转支出账变。'],
   ['代理后台','会员列表','金流统计划转金额；会员详情增加划转次数/金额及明细入口。'],
@@ -342,10 +366,13 @@ V['a-record']=()=>{
 };
 
 let cfgQuery='';
+function cfgMchOpts(){return isMain(LOGIN)?[mchOf(LOGIN),...subsOf(LOGIN)]:[mchOf(LOGIN)]}
 V['a-config']=()=>{
- const list=CONFIG.filter(c=>!cfgQuery||c.id.includes(cfgQuery));
+ if(!cfgMchOpts().some(m=>m.id===CFG_MCH))CFG_MCH=LOGIN;
+ const list=CONFIG.filter(c=>MEMBERS[c.id].mch===CFG_MCH&&(!cfgQuery||c.id.includes(cfgQuery)));
+ const mchSel=isMain(LOGIN)?`<span><label>商户${q('主商户可选择本商户或自己的子商户，\n查看并配置该商户会员的划转')}</label><select class="ipt" id="cmch" style="width:200px" onchange="CFG_MCH=this.value;cfgQuery='';render()">${cfgMchOpts().map(m=>`<option value="${m.id}" ${m.id===CFG_MCH?'selected':''}>${m.n}（${m.id}）${m.parent?'':' - 本商户'}</option>`).join('')}</select></span>`:'';
  return adm('a-config','财务管理 / 划转配置',`<div class="card"><div class="filters">
- <span><label>会员ID</label><input class="ipt" id="cq" value="${cfgQuery}"></span>
+ ${mchSel}<span><label>会员ID</label><input class="ipt" id="cq" value="${cfgQuery}"></span>
  <button class="btn p" onclick="cfgQuery=cq.value.trim();render()">查询</button><button class="btn" onclick="cfgQuery='';render()">重置</button>
  <button class="btn p" style="margin-left:auto" onclick="cfgDlg()">+ 新增配置</button></div></div>
  <div class="card"><table class="t"><tr><th>会员ID</th><th>会员昵称</th><th>划转功能状态</th><th>单次转账限额区间</th><th>转账收款稽核倍数${q('会员转出的金额，收款方到账后需完成\n「金额 × 倍数」的打码量才可提现')}</th><th>操作</th></tr>
@@ -362,6 +389,7 @@ function cfgDlg(id){
 function drawCfg(){
  const d=cfgDraft,e=d.err;
  modal(`<div class="dlg"><div class="hd">${d.edit?'编辑':'新增'}会员配置<span style="cursor:pointer" onclick="closeModal()">✕</span></div><div class="bd">
+ <div class="fr"><span class="lb">所属商户</span><div style="line-height:32px">${mchName(CFG_MCH)}</div></div>
  <div class="fr"><span class="lb">会员ID <span class="req">*</span></span><div style="display:flex;gap:8px"><input class="ipt ${e.id?'err':''}" style="flex:1" id="cid" value="${d.id}" ${d.edit?'disabled':''} placeholder="输入会员ID"><button class="btn" ${d.edit?'disabled':''} onclick="cfgSearch()">搜索</button></div>
  ${e.id?`<div class="errtxt">${e.id}</div>`:''}${d.found&&MEMBERS[d.id]?`<div style="margin-top:6px;color:#67c23a">会员昵称：${MEMBERS[d.id].n}</div>`:''}</div>
  <div class="fr"><span class="lb">划转功能开关</span><span class="sw ${d.on?'on':''}" onclick="cfgDraft.on=!cfgDraft.on;sync();drawCfg()"><i></i>${d.on?'开启':'关闭'}</span></div>
@@ -371,9 +399,9 @@ function drawCfg(){
 }
 function sync(){if(!window.cid)return;if(!cfgDraft.edit)cfgDraft.id=cid.value.trim();cfgDraft.min=cmin.value.trim();cfgDraft.max=cmax.value.trim();cfgDraft.mul=cmul.value.trim()}
 function cfgSearch(){sync();const d=cfgDraft;d.err={};d.found=false;
- if(!MEMBERS[d.id])d.err.id='会员ID不存在';else if(CONFIG.some(c=>c.id===d.id))d.err.id='该会员已存在配置，请直接编辑';else d.found=true;drawCfg()}
+ if(!MEMBERS[d.id]||MEMBERS[d.id].mch!==CFG_MCH)d.err.id='会员ID不存在';else if(CONFIG.some(c=>c.id===d.id))d.err.id='该会员已存在配置，请直接编辑';else d.found=true;drawCfg()}
 function cfgSave(){sync();const d=cfgDraft;d.err={};
- if(!d.edit){if(!d.id)d.err.id='请输入会员ID';else if(!MEMBERS[d.id])d.err.id='会员ID不存在';else if(CONFIG.some(c=>c.id===d.id))d.err.id='该会员已存在配置，请直接编辑';}
+ if(!d.edit){if(!d.id)d.err.id='请输入会员ID';else if(!MEMBERS[d.id]||MEMBERS[d.id].mch!==CFG_MCH)d.err.id='会员ID不存在';else if(CONFIG.some(c=>c.id===d.id))d.err.id='该会员已存在配置，请直接编辑';}
  const mn=Number(d.min),mx=Number(d.max),mu=Number(d.mul);
  if(d.min===''||d.max===''||isNaN(mn)||isNaN(mx)||mn<0||mx<=0)d.err.r='请输入正确的限额（下限≥0，上限>0）';else if(mn>mx)d.err.r='下限不能大于上限';
  if(d.mul===''||isNaN(mu)||mu<0)d.err.m='请输入≥0的倍数';
@@ -382,7 +410,7 @@ function cfgSave(){sync();const d=cfgDraft;d.err={};
  if(d.edit)CONFIG=CONFIG.map(c=>c.id===d.id?row:c);else CONFIG.unshift(row);
  closeModal();render();flash('保存成功');
 }
-function cfgDel(id){modal(`<div class="dlg" style="width:380px"><div class="hd">提示</div><div class="bd">确认删除会员 ${id}（${MEMBERS[id].n}）的划转配置？删除后该会员将无法使用划转功能。</div>
+function cfgDel(id){modal(`<div class="dlg" style="width:380px"><div class="hd">提示</div><div class="bd">确认删除商户 ${mchName(CFG_MCH)} 下会员 ${id}（${MEMBERS[id].n}）的划转配置？删除后该会员将无法使用划转功能。</div>
  <div class="ft"><button class="btn" onclick="closeModal()">取消</button><button class="btn p" onclick="CONFIG=CONFIG.filter(c=>c.id!=='${id}');closeModal();render();flash('删除成功')">确定</button></div></div>`)}
 
 let fundType='';
@@ -450,7 +478,7 @@ V['c-transfer']=()=>{
 };
 function btnState(){const b=document.getElementById('tbtn');if(b)b.disabled=!tfValid()}
 function lookup(v){v=v.trim();const t=S.tf;const old=t.payee+'|'+t.err.id;t.id=v;t.err.id='';t.payee=null;
- if(v){if(!MEMBERS[v])t.err.id='用户ID不存在';else if(v===ME)t.err.id='不能划转给自己';else t.payee=v;}
+ if(v){if(!MEMBERS[v]||MEMBERS[v].mch!==MEMBERS[ME].mch)t.err.id='用户ID不存在';else if(v===ME)t.err.id='不能划转给自己';else t.payee=v;}
  if(old!==t.payee+'|'+t.err.id)setTimeout(()=>{if(cur==='c-transfer')render()},0);}
 function submitTf(){
  const t=S.tf,c=myCfg(),a=Number(t.amt);t.err={};
@@ -517,10 +545,10 @@ log:`<h3>需求背景</h3>会员之间可互相划转余额。仅后台配置过
 'a-member':`<h3>会员列表</h3><ol><li>金流-充值：展示为「充值金额 + 划转金额(划转)」，划转金额为该会员收到的划转（转入）累计金额；小计行同样统计。</li><li>会员详情-概况：增加「划转」行，展示所选时间范围内收到划转的次数/金额。</li><li>点击划转行的「明细」跳转至划转记录，自动带入转入用户ID筛选该会员。</li></ol>`,
 'a-withdraw':`<h3>提现列表</h3><ol><li>金流列与会员列表一致：充值金额后追加「+划转金额(划转)」，统计该会员收到的划转累计金额，便于审核提现时识别资金来源。</li></ol>`,
 'a-record':`<h3>划转记录</h3><ol><li>菜单位置：财务管理-划转记录。</li><li>每笔划转生成一条记录，按转账时间倒序。</li><li>展示渠道商、订单号、转出用户ID、转出用户昵称、转出会员层级、转账金额、转入用户ID、转入会员昵称、转入会员层级、转账时间、备注。</li><li>渠道商：展示转出会员所属渠道。</li><li>昵称、层级展示会员当前信息。</li><li>查询条件：转账时间、订单号、转出用户ID、转入用户ID；支持导出。</li><li>备注：预留，无内容时展示「-」。</li></ol>`,
-'a-config':`<h3>划转配置</h3><ol><li>菜单位置：财务管理-划转配置，独立菜单。</li><li>划转功能按会员单独配置，未添加配置或开关关闭的会员不可发起划转，客户端不展示划转按钮；接收划转不受此限制。</li><li>新增：输入会员ID后搜索，会员不存在提示「会员ID不存在」，已配置过的会员提示直接编辑，同一会员只能有一条配置。</li><li>单次转账限额区间：下限≥0，上限>0，下限不能大于上限；客户端划转金额须在此区间内。</li><li>转账收款稽核倍数：≥0；收款方到账后增加「到账金额×倍数」的打码量，打码完成后才可提现。</li><li>编辑：会员ID不可修改，其余可改，保存后即时生效。</li><li>删除：二次确认，删除后该会员不可再发起划转。</li><li>列表支持按会员ID查询。</li></ol>`,
+'a-config':`<h3>划转配置</h3><ol><li>菜单位置：财务管理-划转配置，独立菜单。</li><li>商户选择：当前登录商户为主商户时，查询区展示「商户」下拉，选项为本商户及其全部子商户，默认选中本商户；切换后列表展示所选商户的会员配置，新增、编辑、删除均作用于所选商户。子商户或普通商户登录时不展示该下拉，只能配置本商户。</li><li>主商户为子商户保存的配置即为该子商户的配置，子商户登录后可看到并修改，以最后一次保存为准。</li><li>新增弹窗顶部展示「所属商户」（即当前所选商户，不可修改）；输入的会员ID须属于该商户，否则提示「会员ID不存在」。</li><li>划转功能按会员单独配置，未添加配置或开关关闭的会员不可发起划转，客户端不展示划转按钮；接收划转不受此限制。</li><li>新增：输入会员ID后搜索，会员不存在提示「会员ID不存在」，已配置过的会员提示直接编辑，同一会员只能有一条配置。</li><li>单次转账限额区间：下限≥0，上限>0，下限不能大于上限；客户端划转金额须在此区间内。</li><li>转账收款稽核倍数：≥0；收款方到账后增加「到账金额×倍数」的打码量，打码完成后才可提现。</li><li>编辑：会员ID不可修改，其余可改，保存后即时生效。</li><li>删除：二次确认，删除后该会员不可再发起划转。</li><li>列表支持按会员ID查询。</li></ol>`,
 'a-fund':`<h3>资金明细</h3><ol><li>账变类型增加「划转收入」「划转支出」，可按类型筛选。</li><li>一笔划转产生两条账变：转出方「划转支出」（减少），收款方「划转收入」（增加），两条订单号与划转记录一致。</li><li>备注展示对方用户ID。</li></ol>`,
 'c-mine':`<h3>我的</h3><ol><li>余额区在「充值」和「提现」之间增加「划转」按钮，点击进入划转页。</li><li>仅后台已配置且开启划转功能的会员展示划转按钮；不展示时，余额区保持充值、提现两个按钮。</li><li>页面其余内容为现有内容，不做改动。</li></ol>`,
-'c-transfer':`<h3>划转</h3><ol><li>右上角「划转记录」：点击进入划转记录页查看历史订单。</li><li>收款人：输入用户ID，输入框失去焦点后查询并展示对方头像、昵称、ID；用户不存在提示「用户ID不存在」，输入自己的ID提示「不能划转给自己」。</li><li>点击输入框右侧图标进入通讯录选择好友，确认后自动带入收款人。</li><li>添加好友：查询到的收款人还不是好友时，在收款人信息右侧展示「添加好友」按钮，已是好友则不展示。点击直接跳转添加好友页面并带入对方信息，完成添加后返回划转页，已填写的收款人、金额保留，「添加好友」按钮不再展示，对方同步出现在通讯录好友中。</li><li>划转金额：输入框提示展示该会员的单次限额区间；下方展示可用余额。超出区间提示「划转金额超限」，超过余额提示「可用余额不足」。</li><li>打码量：发起划转不受打码量限制；收款方到账后按转出方配置的稽核倍数增加打码量。</li><li>支付密码：输入错误提示「支付密码不正确」；「忘记密码？」进入现有重置支付密码页面。</li><li>收款人、金额、密码均填写后「确认划转」才可点击。</li><li>划转成功即时扣款到账，弹出成功提示，可查看详情或完成（清空表单停留本页）。</li></ol>`,
+'c-transfer':`<h3>划转</h3><ol><li>右上角「划转记录」：点击进入划转记录页查看历史订单。</li><li>收款人：输入用户ID，输入框失去焦点后查询并展示对方头像、昵称、ID；只能划转给同一商户的会员，用户不存在或不属于本商户均提示「用户ID不存在」，输入自己的ID提示「不能划转给自己」。</li><li>点击输入框右侧图标进入通讯录选择好友，确认后自动带入收款人。</li><li>添加好友：查询到的收款人还不是好友时，在收款人信息右侧展示「添加好友」按钮，已是好友则不展示。点击直接跳转添加好友页面并带入对方信息，完成添加后返回划转页，已填写的收款人、金额保留，「添加好友」按钮不再展示，对方同步出现在通讯录好友中。</li><li>划转金额：输入框提示展示该会员的单次限额区间；下方展示可用余额。超出区间提示「划转金额超限」，超过余额提示「可用余额不足」。</li><li>打码量：发起划转不受打码量限制；收款方到账后按转出方配置的稽核倍数增加打码量。</li><li>支付密码：输入错误提示「支付密码不正确」；「忘记密码？」进入现有重置支付密码页面。</li><li>收款人、金额、密码均填写后「确认划转」才可点击。</li><li>划转成功即时扣款到账，弹出成功提示，可查看详情或完成（清空表单停留本页）。</li></ol>`,
 'c-friend':`<h3>选择好友</h3><ol><li>展示当前会员的通讯录好友，按昵称首字母分组。</li><li>单选，选中后「确认选择」可点击，返回划转页并带入收款人。</li></ol>`,
 'c-history':`<h3>划转记录</h3><ol><li>入口：划转页右上角。</li><li>页签：全部 / 转出 / 转入；时间筛选：今天、昨天、近7天、近30天。</li><li>每条展示：转给/收到 + 对方昵称、对方ID、订单号、时间、状态、金额（转出为 -，转入为 +）。</li><li>划转即时完成，状态均为「成功」。</li><li>按时间倒序，点击进入划转详情。</li></ol>`,
 'c-detail':`<h3>划转详情</h3><ol><li>展示类型（划转支出/划转收入）、金额、状态、对方昵称、对方ID、订单号（可复制）、划转时间。</li><li>转入记录额外展示本笔需完成的打码量（到账金额 × 转出方配置的稽核倍数）；倍数为0时不展示。</li></ol>`,
@@ -530,6 +558,7 @@ log:`<h3>需求背景</h3>会员之间可互相划转余额。仅后台配置过
 };
 function demoCtl(){
  if(cur==='c-transfer')return `<div class="demo">演示控制：<br>支付密码为 123456；收款人：已是好友 100012345 / 100020003；非好友 100041118 / 100040958 / 100041105</div>`;
+ if(cur==='a-config')return `<div class="demo">演示控制：切换登录商户<br>${['8001','8002','9001'].map(id=>{const m=mchOf(id);return `<label style="display:block"><input type="radio" name="lg" ${LOGIN===id?'checked':''} onchange="LOGIN='${id}';CFG_MCH=LOGIN;cfgQuery='';render()"> ${m.n}（${id}）${m.parent?'子商户':isMain(id)?'主商户':'普通商户'}</label>`}).join('')}<br>可新增配置的会员示例：金沙娱乐 100012345；金沙二站 200010002；金沙三站 300010002；皇冠体育 900010002</div>`;
  if(cur==='c-mine')return `<div class="demo">演示控制：<br><label><input type="checkbox" ${myCfg()&&myCfg().on?'checked':''} onchange="const c=myCfg();if(c)c.on=this.checked;else CONFIG.push({id:ME,on:true,min:100,max:5000,mul:1.5});render()"> 当前会员已开启划转</label></div>`;
  return '';
 }
