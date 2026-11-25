@@ -481,7 +481,7 @@
                             <td>无家可归aegp<br><span class="text-gray">100039991</span><br><span class="text-gray">总充值500-2000可见</span></td>
                             <td>喜欢123<br><span class="text-gray">18707594013</span><br><span class="text-gray">绑: 2026-04-30 14:20</span></td>
                             <td>上级ID:0<br>团队:8<br>邀请码:4dq3o</td>
-                            <td>余额:1890<br><span class="text-gray">充值等级:0</span></td>
+                            <td>余额:1890<br><span class="text-gray">充值等级:<span class="member-recharge-level">0</span>（VIP等级）</span></td>
                             <!-- 替换开始：第一行金流 -->
                             <td>充值:1858+200(划转) | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td>
                             <!-- 替换结束 -->
@@ -507,7 +507,7 @@
                                         <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                         <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                         <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
+                                        <button class="btn-small" onclick="openUserModal(this)">更新用户</button>
                                         <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
                                         <button class="btn-small">解锁IM</button>
                                         <!-- 新增返佣后台按钮 (此处演示第一个用户传状态 0 为未开通，第二个用户传 1 为已开通) -->
@@ -527,7 +527,7 @@
                             <td>风行者<br><span class="text-gray">100039992</span><br><span class="text-gray">总充值2000-9999可见</span></td>
                             <td>未填<br><span class="text-gray">13800138000</span><br><span class="text-gray">绑: 2026-02-15 09:35</span></td>
                             <td>上级ID:102<br>团队:12<br>邀请码:8abc9</td>
-                            <td>余额:5200<br><span class="text-gray">充值等级:3</span></td>
+                            <td>余额:5200<br><span class="text-gray">充值等级:<span class="member-recharge-level">3</span>（VIP等级）</span></td>
                             <!-- 替换开始：第二行金流 -->
                             <td>充值:5000+500(划转) | 提现:200<br>客损:4800<br>总打赏:100 | 总消费:200</td>
                             <!-- 替换结束 -->
@@ -554,7 +554,7 @@
                                         <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                         <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                         <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
+                                        <button class="btn-small" onclick="openUserModal(this)">更新用户</button>
                                         <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
                                         <button class="btn-small">解锁IM</button>
                                         <!-- 修改点：传入用户ID、昵称，并将最后的状态参数改为 1 (代表已开通) -->
@@ -977,7 +977,7 @@
                 
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label class="form-label">充值等级：</label>
-                    <input type="number" class="modal-input" value="0" min="0" placeholder="请输入充值等级">
+                    <input type="number" class="modal-input" id="userRechargeLevel" value="0" min="0" step="1" placeholder="请输入充值等级">
                 </div>
 
                 <div class="form-group google-auth-group"><label class="form-label" style="color:red">* 谷歌验证码：</label><input type="text" class="modal-input" placeholder="输入6位验证码"></div>
@@ -985,7 +985,27 @@
             
             <div class="modal-footer">
                 <button class="btn-reset" onclick="closeTargetModal('userModal')" style="margin-right: 10px;">取消</button>
-                <button class="btn-submit" onclick="closeTargetModal('userModal')">确认更新</button>
+                <button class="btn-submit" onclick="submitUserUpdate()">确认更新</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="vipLevelConfirmModal">
+        <div class="modal-content modal-sm" style="width:480px !important;">
+            <div class="modal-header"><span>变更VIP等级确认</span><span style="cursor:pointer" onclick="closeTargetModal('vipLevelConfirmModal')">✕</span></div>
+            <div class="modal-body">
+                <div style="display:flex;align-items:flex-start;gap:12px;line-height:1.8;color:#606266;">
+                    <span style="color:#fa8c16;font-size:22px;">⚠</span>
+                    <span>后台变更用户等级后，用户无法领取当前等级及之前等级的晋升奖励。后续正常升级晋升奖励不受影响</span>
+                </div>
+                <div style="margin-top:14px;padding:10px 14px;background:#fafafa;border:1px solid #eee;border-radius:4px;font-size:13px;color:#666;">
+                    <div>当前充值等级（VIP等级）：<b id="vipLevelOld">0</b></div>
+                    <div style="margin-top:5px;">变更后充值等级（VIP等级）：<b id="vipLevelNew">0</b></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-reset" onclick="closeTargetModal('vipLevelConfirmModal')" style="margin-right:10px;">取消</button>
+                <button class="btn-submit" onclick="confirmUserUpdate()">确认变更</button>
             </div>
         </div>
     </div>
@@ -1052,6 +1072,44 @@
         // 通用关闭弹窗
         function closeTargetModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 更新用户：充值等级即VIP等级；等级发生变化时先展示风险确认
+        let currentUserRow = null;
+        let pendingVipLevel = null;
+        function openUserModal(btn) {
+            currentUserRow = btn.closest('tr');
+            const levelEl = currentUserRow ? currentUserRow.querySelector('.member-recharge-level') : null;
+            document.getElementById('userRechargeLevel').value = levelEl ? levelEl.textContent.trim() : '0';
+            openTargetModal('userModal');
+        }
+        function submitUserUpdate() {
+            const input = document.getElementById('userRechargeLevel');
+            const value = input.value.trim();
+            if (!/^\d+$/.test(value)) {
+                alert('充值等级（VIP等级）须为大于或等于0的整数');
+                input.focus();
+                return;
+            }
+            const levelEl = currentUserRow ? currentUserRow.querySelector('.member-recharge-level') : null;
+            const oldLevel = levelEl ? levelEl.textContent.trim() : input.value.trim();
+            if (value === oldLevel) {
+                closeTargetModal('userModal');
+                return;
+            }
+            pendingVipLevel = value;
+            document.getElementById('vipLevelOld').textContent = oldLevel;
+            document.getElementById('vipLevelNew').textContent = value;
+            openTargetModal('vipLevelConfirmModal');
+        }
+        function confirmUserUpdate() {
+            if (currentUserRow) {
+                const levelEl = currentUserRow.querySelector('.member-recharge-level');
+                if (levelEl) levelEl.textContent = pendingVipLevel;
+            }
+            closeTargetModal('vipLevelConfirmModal');
+            closeTargetModal('userModal');
+            pendingVipLevel = null;
         }
 
         // 点击遮罩层关闭（增强体验）
@@ -2647,7 +2705,7 @@
                         <tr><td>密码</td><td>改密码；只记录"已修改登录密码 / 已修改支付密码"，不展示任何密码内容。</td></tr>
                         <tr><td>账号状态</td><td>更新用户中修改账号状态（启用 / 停用 / 冻结 / 冻结余额）、列表【批量禁用】；批量操作在"原因 / 说明"中标注"批量禁用"，每位会员各生成一条记录。选择冻结余额时，系统自动生成的限制说明一并记在"原因 / 说明"中。</td></tr>
                         <tr><td>用户层级</td><td>更新用户中修改用户层级；记录修改前后的层级名称。</td></tr>
-                        <tr><td>充值等级</td><td>更新用户中修改充值等级。</td></tr>
+                        <tr><td>充值等级</td><td>更新用户中修改充值等级，即修改会员VIP等级；等级发生变化时，确认提交前弹窗提示：「后台变更用户等级后，用户无法领取当前等级及之前等级的晋升奖励。后续正常升级晋升奖励不受影响」。确认后保存，取消则不变更。</td></tr>
                         <tr><td>红包限额</td><td>更新用户中修改红包限额。</td></tr>
                         <tr><td>备注</td><td>编辑备注；记录修改前后的备注内容，原来为空时显示"空"。</td></tr>
                         <tr><td>IM账号 / 返佣后台</td><td>解锁IM（含列表【批量解锁IM账号】，标注"批量解锁"）；返佣后台开通账号（记录绑定的返佣后台账号）、重置返佣后台密码（只记录"已重置密码"）。</td></tr>
@@ -2657,6 +2715,7 @@
                         <tr><td>用户层级</td><td>会员达到层级条件后系统自动调整层级，"原因 / 说明"记为"满足层级条件自动调整"。</td></tr>
                     </table>
                     <ul>
+                        <li>会员列表「更新用户」中的「充值等级」即会员VIP等级；修改该字段即调整VIP等级。发生等级变化时，需先弹窗提示风险，确认后方可提交。</li>
                         <li>只记录后台（商户后台、平台、系统）发起的变更；会员在前台自己修改的资料不在本功能记录。</li>
                         <li>余额、充值、提现、划转、场馆转出等资金变动不在本功能记录，统一在资金明细中查看。</li>
                         <li>只有提交成功的操作才生成记录；谷歌验证未通过、提交失败的不记录。值没有变化的项不记录（如更新用户时只改了真实姓名，只生成真实姓名一条）。</li>
