@@ -1,0 +1,126 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>提现列表交互原型</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font:14px "Microsoft YaHei",sans-serif;color:#303944;background:white;display:flex;min-height:100vh}nav{flex:0 0 190px;background:#202d3d;color:#eef3f8}nav strong,nav div{display:block;padding:17px 22px}nav strong{background:#282d38;text-align:center}nav .sub{padding-left:39px}nav .active{background:#041b2e;color:#409eff;padding-left:53px}main{min-width:0;flex:1}header{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;box-shadow:0 1px 5px #0002}.tabs{border-bottom:1px solid #e7e9ed;padding:12px 20px}.tabs b{color:#409eff;margin-left:28px}.layout{display:flex;align-items:flex-start;gap:18px;padding:16px 20px}article{min-width:0;flex:1}aside{flex:0 0 245px;border:1px solid #dce7f4;background:#f6faff;padding:16px;line-height:1.65;border-radius:5px}aside h2{font-size:16px;margin:0 0 10px}aside h3{font-size:14px;margin:14px 0 4px}aside p{margin:0;color:#536273}[hidden]{display:none!important}.filters{display:grid;gap:12px}.line{display:flex;align-items:center;flex-wrap:wrap;gap:10px 22px}label{display:inline-flex;align-items:center;gap:9px;font-weight:600}input,select,button{font:inherit}input,select{max-width:100%;height:32px;border:1px solid #dcdfe6;background:white;border-radius:4px;padding:0 8px;color:#505963}input{width:145px}input[type=datetime-local]{width:188px}input[type=number]{width:95px}input::placeholder{color:#929ca8}button{cursor:pointer;border:1px solid #409eff;background:#409eff;color:white;border-radius:4px;padding:6px 12px}button:focus-visible{outline:2px solid #16548d;outline-offset:2px}button:disabled{cursor:default;opacity:.4}.secondary{color:#2675c0;background:#eef6ff;border-color:#c7e2ff}.push{margin-left:auto}.summary{margin:18px 0 12px;line-height:1.8}.scroll{overflow:auto;border:1px solid #e7eaf0}table{width:100%;min-width:1650px;border-spacing:0;font-size:13px}th,td{padding:9px 10px;border-right:1px solid #e8ebf1;border-bottom:1px solid #e8ebf1;text-align:center;white-space:nowrap}th{background:#f4f5f9;color:#566271}td{background:white}tbody tr:nth-child(even) td{background:#fafbfd}th:last-child,td:last-child{position:sticky;right:0;box-shadow:-3px 0 5px #15233617;min-width:63px}th button{display:block;margin:1px auto;border:0;background:transparent;color:inherit;padding:3px 5px;font-weight:600}th button:hover,th button.on{color:#1675d1}td span{display:block;line-height:1.65}.muted{color:#707d8c}.empty{text-align:center;padding:66px;color:#707d8c}.pager{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:14px;flex-wrap:wrap}.pill{color:#2376c3;background:#eff7ff;padding:4px 8px;border-radius:4px}@media(max-width:950px){nav{flex-basis:132px}.layout{flex-wrap:wrap}article{flex-basis:100%}aside{flex:1}}@media(max-width:600px){nav{display:none}.layout{padding:12px}}
+.filters{grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));gap:12px 18px}.filters .field{min-width:0;display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:8px}.field>input,.field>select,.pair input,.pair select{width:100%;min-width:0}.filters .pair{display:flex;align-items:center;gap:4px;min-width:0}.filters .dates,.filters .actions{grid-column:1/-1}.dates{display:grid;grid-template-columns:100px minmax(0,186px) auto minmax(0,186px);gap:8px;align-items:center}.dates input,.dates select{width:100%;min-width:0}.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.scroll{max-height:65vh}thead th{position:sticky;top:0;z-index:2}thead th:last-child{z-index:3}td:last-child,th:last-child{width:185px;min-width:185px}td:last-child{white-space:normal}.ops{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}.ops button,.noteBtn{padding:3px 7px;font-size:12px}.state{border-radius:4px;background:#ecf5ff;color:#236da5;padding:3px 6px}.positive{background:#edf7ed;color:#39723d}.negative{background:#fff0ed;color:#a64c3b}.flow{text-align:left;font-size:12px;line-height:1.6}.scroll td:nth-child(7){font-weight:600;font-variant-numeric:tabular-nums}dialog{width:min(540px,92vw);border:1px solid #dce2ea;border-radius:6px;padding:22px;color:#303944;box-shadow:0 12px 48px #182a432b}dialog::backdrop{background:#17284066}dialog h2{margin:0 0 18px;font-size:19px}dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}dialog dl{display:grid;grid-template-columns:1fr 2fr;line-height:1.8}dialog dt,dialog dd{padding:4px;margin:0;border-bottom:1px solid #edf0f4}dialog textarea{width:100%;min-height:85px} @media(max-width:620px){.dates{grid-template-columns:1fr}.dates span{display:none}.filters .actions .push{margin-left:0}td:last-child,th:last-child{min-width:123px;width:123px}}nav{position:sticky;top:0;height:100vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#70808d transparent;flex:0 0 210px;background:#545c64;color:#fff;font-size:14px}
+nav strong{position:sticky;top:0;z-index:2;height:50px;line-height:50px;padding:0;background:#2b2f3a}
+nav div,nav summary{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:0 20px;box-sizing:border-box}
+nav summary{cursor:pointer;list-style:none}nav summary::-webkit-details-marker{display:none}
+nav summary::after,nav .branch::after{content:'';width:6px;height:6px;border:solid #c4cbd0;border-width:0 1px 1px 0;transform:rotate(45deg)}
+nav details[open]>summary::after{transform:rotate(225deg)}
+nav section{background:#1f2d3d}nav section div,nav section summary{padding-left:40px;min-height:54px}
+nav section section div{padding-left:60px;min-height:50px}nav [aria-current=page]{background:#001528;color:#409eff}
+nav summary:hover{background:#293a4c}nav summary:focus-visible{outline:2px solid #409eff;outline-offset:-2px}
+@media(max-width:950px){nav{flex-basis:172px}}@media(max-width:600px){nav{display:none}}</style>
+<nav aria-label="后台菜单"><strong>test渠道</strong><div>首页</div><div class="branch">会员管理</div><details open><summary>财务管理</summary><section><div>人工存提</div><div class="branch">人工存提记录</div><div class="branch">支付管理</div><div>出入款模板</div><div class="branch">充值管理</div><details open><summary>提现管理</summary><section><div aria-current="page">提现列表</div><div>免提直充</div><div>托管代付订单</div><div>代付错误日志</div></section></details><div>即时稽核查询</div><div class="branch">内嵌钱包管理</div><div>用户划转配置</div></section></details><div class="branch">游戏管理</div><div class="branch">代理系统</div><div class="branch">报表查询</div><div class="branch">聊天群组</div><div class="branch">主播管理</div><div class="branch">聊天室管理</div><div class="branch">数据统计</div><div class="branch">导出管理</div><div class="branch">活动管理</div><div class="branch">视频管理</div><div class="branch">日志查询</div><div class="branch">验证码查询</div><div class="branch">短信模板管理</div><div class="branch">渠道管理</div><div class="branch">广告位管理</div><div class="branch">封控管理</div><div class="branch">系统管理</div></nav>
+<main><header><span>☰　财务管理 / 提现管理</span><span class="pill">交互原型 · 模拟数据</span></header><div class="tabs">首页 <b>提现列表</b></div>
+<div class="layout"><article><form id="filters" class="filters"></form><div class="summary" id="summary" aria-live="polite"></div>
+<div class="scroll" tabindex="0" aria-label="提现列表，可横向滚动"><table><thead id="head"></thead><tbody id="rows"></tbody></table><div id="empty" class="empty" hidden>暂无数据</div></div>
+<div class="pager"><span id="count"></span><select id="size" aria-label="每页条数"><option>50</option><option>10</option><option>20</option><option>100</option></select><button id="prev" class="secondary">上一页</button><button id="next" class="secondary">下一页</button></div></article>
+<aside id="notes"><h2>需求说明</h2><h3>审核耗时</h3><p>从发起提现到订单首次更新为「代付中」「失败」或「成功」的时间差。原型按首次命中计算。</p><h3>通道耗时</h3><p>从发起代付到收到代付回调的时间差。未发起代付或未收到回调时展示「—」。</p><h3>展示和排序</h3><p>两个耗时共用一列，分两行展示，分别点击对应表头排序。取款金额也支持排序。首次点击升序，再点降序，再点恢复默认顺序。按数值排序，缺失值始终置底。</p></aside></div></main>
+<script>
+const byId=id=>document.getElementById(id);
+const select=(id,options,placeholder)=>'<select id="'+id+'">'+(placeholder?'<option value="">'+placeholder+'</option>':'')+options.map(v=>'<option>'+v+'</option>').join('')+'</select>';
+const input=(id,h,type='text')=>'<input id="'+id+'" type="'+type+'" placeholder="'+h+'" '+(type==='number'?'min="0" step="0.01"':'')+'>';
+const label=(name,element)=>'<label>'+name+element+'</label>';
+const line=(...items)=>'<div class="line">'+items.join('')+'</div>';
+const states=['申请中','代付中','成功','代付成功','失败','代付失败'];
+const types=['人工审核','三方代付-银行卡','三方代付-钱包','三方代付-USDT','三方代付-支付宝'];
+byId('filters').innerHTML=
+line(label('商户',select('merchant',['示例商户 A','示例商户 B'],'请选择')),label('渠道商',select('vendor',['示例渠道 A','示例渠道 B'],'请选择')),label('用户ID',input('user','输入用户ID'))) +
+line(label('订单号',input('order','输入订单号')),label('操作人',input('operator','输入操作人'))) +
+line(label('状态',select('status',states,'请选择')),label('首提',select('first',['是','否'],'请选择')),label('出款类型',select('type',types,'出款类型'))) +
+line(label('金额',input('min','最低金额','number')), '<span>–</span><input id="max" type="number" min="0" step="0.01" placeholder="最高金额" aria-label="最高金额">') +
+line(label('收款方式',select('method',['银行卡','USDT','支付宝','VipPay','K豆','秒付','天天付','988钱包','万币钱包','Mpay钱包','Upay钱包','TGpay','AGpay','ABPay','红豆钱包','NO钱包','CB钱包','JD钱包','P234钱包','GOPAY','ViPay','Topay','波币','TestPay钱包','AnPay','OKpay','TestV2Pay钱包','iPhone钱包','迪迦','飞驰钱包（test）'],'收款方式')),label('收款账户',input('account','卡号或钱包地址'))) +
+line('<select id="timeField" aria-label="时间类型"><option>申请时间</option><option>结算时间</option></select><input id="start" type="datetime-local" step="1" aria-label="开始时间" value="2026-11-25T00:00:00"> – <input id="end" type="datetime-local" step="1" aria-label="结束时间" value="2026-11-25T23:59:59">') +
+line(label('数据更新',select('refresh',['不刷新','30s','40s','50s','60s'])), '<button>查询</button><button type="reset" class="push">重置</button><button id="reload" type="button" aria-label="刷新">⟳</button><button id="toggle" class="secondary" type="button" aria-controls="notes" aria-expanded="true">隐藏需求说明</button>');
+const base=Date.parse('2026-11-25T09:00:00Z');
+const data=Array.from({length:58},(_,i)=>{
+ const status=states[i%6], requested=base-i*84000;
+ const paid=[1,3,5].includes(i%6), audited=i%6!==0;
+ const auditEvent=audited?requested+(21+i*37%421)*1000:null;
+ const sent=paid?auditEvent+2000:null;
+ const callback=paid&&i%6!==1?sent+(15+i*53%510)*1000:null;
+ const settled=callback??([2,4].includes(i%6)?auditEvent:null);
+ const amount=[1200,80,5000,350,90,2100,680][i%7]+i*3.5;
+ const fee=i%3===0?2:0, arrived=[2,3].includes(i%6)?amount-fee:null;
+ return {merchant:'示例商户 '+(i%2?'B':'A'),vendor:'示例渠道 '+(i%3?'A':'B'),order:'WD-DEMO-'+String(1001+i),user:String(820010+i%17),first:i%3?'否':'是',amount,fee,arrived,status,requested,settled,audit:auditEvent===null?null:(auditEvent-requested)/1000,channel:callback===null?null:(callback-sent)/1000,operator:audited?(paid?'系统':'示例操作员'):'',method:paid?['银行卡','USDT','支付宝'][Math.floor(i/6)%3]:'银行卡',account:'DEMO-'+(3000+i),type:paid?types[[1,3,4][Math.floor(i/6)%3]]:types[0]};
+});
+const columns=['','商户','渠道商','订单号','用户ID','首提','取款金额','用户手续费','到账金额','币种到账金额','金流','状态','申请时间/结算时间','审核耗时/通道耗时','提现备注','操作人','操作'];
+const sortLabel={amount:'取款金额',audit:'审核耗时',channel:'通道耗时'};
+let sort='',direction=0,page=1,timer,criteria={};
+const filterKeys=['merchant','vendor','user','order','operator','status','first','type','min','max','method','account','timeField','start','end'];
+function capture(){criteria=Object.fromEntries(filterKeys.map(k=>[k,byId(k).value.trim()]));page=1;render()}
+function matches(row){
+ return ['merchant','vendor','status','first','type','method'].every(k=>!criteria[k]||row[k]===criteria[k]) &&
+ ['user','order','operator','account'].every(k=>!criteria[k]||row[k].toLowerCase().includes(criteria[k].toLowerCase())) &&
+ (!criteria.min||row.amount>=Number(criteria.min))&&(!criteria.max||row.amount<=Number(criteria.max))&&
+ ['start','end'].every(k=>{if(!criteria[k])return true;const time=criteria.timeField==='结算时间'?row.settled:row.requested;const bound=Date.parse(criteria[k]+'Z');return time!==null&&(k==='start'?time>=bound:time<=bound)});
+}
+const money=n=>n===null?'—':n.toFixed(2);
+const stamp=n=>n===null?'—':new Date(n).toISOString().slice(0,19).replace('T',' ');
+const duration=n=>n===null?'—':(n>=60?Math.floor(n/60)+'分 ':'')+n%60+'秒';
+const sortButton=k=>'<button type="button" data-sort="'+k+'" class="'+(sort===k?'on':'')+'" aria-label="'+sortLabel[k]+'，'+(sort===k?(direction===1?'升序，点击切换降序':'降序，点击恢复默认'):'点击升序')+'">'+sortLabel[k]+' '+(sort===k?(direction===1?'↑':'↓'):'↕')+'</button>';
+function render(){
+ let list=data.filter(matches);
+ if(sort) list.sort((a,b)=>a[sort]===null?(b[sort]===null?0:1):b[sort]===null?-1:direction*(a[sort]-b[sort]));
+ const size=Number(byId('size').value), pages=Math.max(1,Math.ceil(list.length/size));
+ page=Math.min(page,pages);
+ byId('head').innerHTML='<tr>'+columns.map((c,i)=>'<th scope="col" '+(i===6||i===13?'aria-sort="'+(sort&&(i===6?sort==='amount':sort!=='amount')?(direction===1?'ascending':'descending'):'none')+'"':'')+'>'+(i===6?sortButton('amount'):i===13?sortButton('audit')+sortButton('channel'):c)+'</th>').join('')+'</tr>';
+ byId('rows').innerHTML=list.slice((page-1)*size,page*size).map((r,i)=>{
+ const cells=[(page-1)*size+i+1,r.merchant,r.vendor,r.order,r.user,r.first,money(r.amount),money(r.fee),money(r.arrived),r.arrived===null?'—':money(r.arrived)+' CNY','<div class="flow">充值：'+r.deposit+'<br>提现：'+r.withdrawn+'<br>客损：'+(r.deposit-r.withdrawn)+'</div>','<b class="state '+(r.status.includes('成功')?'positive':r.status.includes('失败')?'negative':'')+'">'+r.status+'</b>','<span>'+stamp(r.requested)+'</span><span class="muted">'+stamp(r.settled)+'</span>','<span>审核 '+duration(r.audit)+'</span><span class="muted">通道 '+duration(r.channel)+'</span>','<span>'+escapeText(r.note)+'</span><button data-action="修改" class="noteBtn secondary">修改</button>',r.operator||'—',rowActions(r)];
+ return '<tr data-order="'+r.order+'">'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';
+ }).join('');
+ const total=(group,field)=>money(list.filter(r=>group.includes(r.status)).reduce((sum,r)=>sum+(r[field]??0),0));
+ byId('summary').textContent='成功金额:'+total(['成功','代付成功'],'amount')+'　到账金额:'+total(['成功','代付成功'],'arrived')+'　失败金额:'+total(['失败','代付失败'],'amount')+'　拒绝金额:0.00　待审核金额:'+total(['申请中'],'amount');
+ byId('empty').hidden=list.length>0;
+ byId('count').textContent='共 '+list.length+' 条　'+page+'/'+pages+' 页';
+ byId('prev').disabled=page===1;
+ byId('next').disabled=page===pages;
+}
+byId('head').addEventListener('click',e=>{
+ const k=e.target.dataset.sort;if(!k)return;
+ if(sort!==k){sort=k;direction=1}else if(direction===1){direction=-1}else{sort='';direction=0}
+ page=1;render();byId('head').querySelector('[data-sort="'+k+'"]').focus();
+});
+byId('filters').addEventListener('submit',e=>{e.preventDefault();capture()});
+byId('reload').onclick=()=>render();
+function updateTimer(){clearInterval(timer);const seconds=parseInt(byId('refresh').value,10);if(seconds)timer=setInterval(render,seconds*1000)}
+byId('refresh').onchange=updateTimer;
+byId('filters').addEventListener('reset',()=>setTimeout(()=>{sort='';direction=0;updateTimer();capture()},0));
+byId('toggle').onclick=()=>{const hidden=byId('notes').hidden=!byId('notes').hidden;byId('toggle').textContent=hidden?'显示需求说明':'隐藏需求说明';byId('toggle').setAttribute('aria-expanded',String(!hidden))};
+byId('prev').onclick=()=>{page--;render()};
+byId('next').onclick=()=>{page++;render()};
+byId('size').onchange=()=>{page=1;render()};
+for(const option of byId('size').options){option.value=option.textContent;option.textContent+='条/页'}
+
+const form=byId('filters'), groups=[...form.children];
+const fields=[...form.querySelectorAll('label')];
+fields.forEach(field=>field.classList.add('field'));
+const amountLabel=byId('min').parentElement;
+const range=document.createElement('span');range.className='pair';range.append(byId('min'),'–',byId('max'));amountLabel.append(range);
+const dates=groups[5];dates.className='dates';
+const actions=groups[6];actions.className='actions';
+form.replaceChildren(...fields,dates,actions);
+const dialog=document.createElement('dialog');document.body.append(dialog);
+const escapeText=v=>String(v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+data.forEach((r,i)=>{r.locked=r.status==='申请中'?i%12===0:['代付中','代付失败'].includes(r.status);r.note='';r.callbackAvailable=r.status==='代付失败'||(r.status==='代付中'&&i%12===1);r.deposit=12000+i*120;r.withdrawn=3200+i*25});
+function actionButton(name){return '<button type="button" data-action="'+name+'">'+name+'</button>'}
+function rowActions(r){let names=['详情','会员详情'];if(r.status==='申请中'||r.locked)names.push(r.locked?'管理员解锁单':'锁单');if(r.callbackAvailable)names.push('手动回调');return '<div class="ops">'+names.map(actionButton).join('')+'</div>'}
+byId('rows').onclick=e=>{
+ const button=e.target.closest('[data-action]');if(!button)return;
+ const action=button.dataset.action, r=data.find(item=>item.order===button.closest('tr').dataset.order);
+ let content='',save;
+ const detail=entries=>'<dl>'+entries.map(([k,v])=>'<dt>'+k+'</dt><dd>'+escapeText(v??'—')+'</dd>').join('')+'</dl>';
+ if(action==='详情')content=detail([['会员ID',r.user],['订单号',r.order],['会员层级','示例层级'],['申请日期',stamp(r.requested)],['收款地址',r.account],['提现钱包',r.method],['取款金额',money(r.amount)],['手续费',money(r.fee)],['到账金额',money(r.arrived)],['用户备注','—'],['提现备注',r.note||'—'],['审核备注','—'],['状态',r.status]]);
+ else if(action==='会员详情')content=detail([['会员ID',r.user],['商户',r.merchant],['渠道商',r.vendor],['首提',r.first]]);
+ else if(action==='修改'){content='<label>提现备注<textarea id="memo" maxlength="300"></textarea></label>';save=()=>{r.note=byId('memo').value.trim()}}
+ else if(action==='手动回调'){content=detail([['模拟订单',r.order],['状态',r.status],['取款金额',money(r.amount)]])+'<p>此入口仅预览订单信息。回调结果及处理规则待核实。</p>'}
+ else{content='<p>确认对模拟订单 '+r.order+' 执行「'+action+'」？</p>';save=()=>{r.locked=action==='锁单'}}
+ dialog.innerHTML='<h2>'+(action==='详情'?'出款详情':action)+'</h2>'+content+'<footer><button class="secondary" id="dismiss">'+(save?'取消':'关闭')+'</button>'+(save?'<button id="confirmLocal">确认</button>':'')+'</footer>';
+ if(action==='修改')byId('memo').value=r.note;
+ byId('dismiss').onclick=()=>dialog.close();
+ if(save)byId('confirmLocal').onclick=()=>{save();dialog.close();render()};
+ dialog.showModal();
+};
+capture();
+</script></html>
