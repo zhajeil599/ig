@@ -241,7 +241,7 @@
     #hedgeBody iframe { width: 100%; height: 100%; border: none; display: block; }
 
     /* --- 更新日志弹窗 --- */
-    #logModal .modal-content { width: 1160px; height: 92vh; max-height: 980px; }
+    #logModal .modal-content { width: 1280px; height: 92vh; max-height: 980px; }
     #logModal .modal-body { flex: 1; overflow-y: auto; padding: 16px 24px 24px; background: #fff; }
     .log-member-bar { display: flex; align-items: center; gap: 28px; padding: 12px 16px; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 4px; font-size: 13px; color: #666; margin-bottom: 14px; flex-wrap: wrap; }
     .log-member-bar b { color: #333; font-weight: 500; }
@@ -268,6 +268,11 @@
     .log-table tr.row-ban td { background: #fffafa; }
     #logModal .date-range-picker input { width: 136px; }
     #logModal .date-range-picker { gap: 4px; padding: 0 8px; }
+    .log-table td.msg-cell { color: #333; }
+    .msg-line { line-height: 1.8; word-break: break-all; }
+    .msg-line img { height: 40px; border: 1px solid #eee; border-radius: 2px; vertical-align: middle; cursor: zoom-in; margin-right: 4px; }
+    #imgPreview { z-index: 10001 !important; }
+    #imgPreview img { max-width: 420px; max-height: 80vh; background: #fff; border-radius: 4px; }
     .log-empty { text-align: center; color: #999; padding: 40px 0; font-size: 13px; }
 
     /* 字段提示 ? */
@@ -481,7 +486,7 @@
                             <td>无家可归aegp<br><span class="text-gray">100039991</span><br><span class="text-gray">总充值500-2000可见</span></td>
                             <td>喜欢123<br><span class="text-gray">18707594013</span><br><span class="text-gray">绑: 2026-04-30 14:20</span></td>
                             <td>上级ID:0<br>团队:8<br>邀请码:4dq3o</td>
-                            <td>余额:1890<br><span class="text-gray">充值等级:<span class="member-recharge-level">0</span>（VIP等级）</span></td>
+                            <td>余额:1890<br><span class="text-gray">充值等级:0</span></td>
                             <!-- 替换开始：第一行金流 -->
                             <td>充值:1858+200(划转) | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td>
                             <!-- 替换结束 -->
@@ -507,7 +512,7 @@
                                         <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                         <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                         <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                        <button class="btn-small" onclick="openUserModal(this)">更新用户</button>
+                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
                                         <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
                                         <button class="btn-small">解锁IM</button>
                                         <!-- 新增返佣后台按钮 (此处演示第一个用户传状态 0 为未开通，第二个用户传 1 为已开通) -->
@@ -527,7 +532,7 @@
                             <td>风行者<br><span class="text-gray">100039992</span><br><span class="text-gray">总充值2000-9999可见</span></td>
                             <td>未填<br><span class="text-gray">13800138000</span><br><span class="text-gray">绑: 2026-02-15 09:35</span></td>
                             <td>上级ID:102<br>团队:12<br>邀请码:8abc9</td>
-                            <td>余额:5200<br><span class="text-gray">充值等级:<span class="member-recharge-level">3</span>（VIP等级）</span></td>
+                            <td>余额:5200<br><span class="text-gray">充值等级:3</span></td>
                             <!-- 替换开始：第二行金流 -->
                             <td>充值:5000+500(划转) | 提现:200<br>客损:4800<br>总打赏:100 | 总消费:200</td>
                             <!-- 替换结束 -->
@@ -554,7 +559,7 @@
                                         <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
                                         <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
                                         <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                        <button class="btn-small" onclick="openUserModal(this)">更新用户</button>
+                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
                                         <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
                                         <button class="btn-small">解锁IM</button>
                                         <!-- 修改点：传入用户ID、昵称，并将最后的状态参数改为 1 (代表已开通) -->
@@ -977,7 +982,7 @@
                 
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label class="form-label">充值等级：</label>
-                    <input type="number" class="modal-input" id="userRechargeLevel" value="0" min="0" step="1" placeholder="请输入充值等级">
+                    <input type="number" class="modal-input" value="0" min="0" placeholder="请输入充值等级">
                 </div>
 
                 <div class="form-group google-auth-group"><label class="form-label" style="color:red">* 谷歌验证码：</label><input type="text" class="modal-input" placeholder="输入6位验证码"></div>
@@ -985,27 +990,7 @@
             
             <div class="modal-footer">
                 <button class="btn-reset" onclick="closeTargetModal('userModal')" style="margin-right: 10px;">取消</button>
-                <button class="btn-submit" onclick="submitUserUpdate()">确认更新</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="vipLevelConfirmModal">
-        <div class="modal-content modal-sm" style="width:480px !important;">
-            <div class="modal-header"><span>变更VIP等级确认</span><span style="cursor:pointer" onclick="closeTargetModal('vipLevelConfirmModal')">✕</span></div>
-            <div class="modal-body">
-                <div style="display:flex;align-items:flex-start;gap:12px;line-height:1.8;color:#606266;">
-                    <span style="color:#fa8c16;font-size:22px;">⚠</span>
-                    <span>后台变更用户等级后，用户无法领取当前等级及之前等级的晋升奖励。后续正常升级晋升奖励不受影响</span>
-                </div>
-                <div style="margin-top:14px;padding:10px 14px;background:#fafafa;border:1px solid #eee;border-radius:4px;font-size:13px;color:#666;">
-                    <div>当前充值等级（VIP等级）：<b id="vipLevelOld">0</b></div>
-                    <div style="margin-top:5px;">变更后充值等级（VIP等级）：<b id="vipLevelNew">0</b></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-reset" onclick="closeTargetModal('vipLevelConfirmModal')" style="margin-right:10px;">取消</button>
-                <button class="btn-submit" onclick="confirmUserUpdate()">确认变更</button>
+                <button class="btn-submit" onclick="closeTargetModal('userModal')">确认更新</button>
             </div>
         </div>
     </div>
@@ -1072,44 +1057,6 @@
         // 通用关闭弹窗
         function closeTargetModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
-        }
-
-        // 更新用户：充值等级即VIP等级；等级发生变化时先展示风险确认
-        let currentUserRow = null;
-        let pendingVipLevel = null;
-        function openUserModal(btn) {
-            currentUserRow = btn.closest('tr');
-            const levelEl = currentUserRow ? currentUserRow.querySelector('.member-recharge-level') : null;
-            document.getElementById('userRechargeLevel').value = levelEl ? levelEl.textContent.trim() : '0';
-            openTargetModal('userModal');
-        }
-        function submitUserUpdate() {
-            const input = document.getElementById('userRechargeLevel');
-            const value = input.value.trim();
-            if (!/^\d+$/.test(value)) {
-                alert('充值等级（VIP等级）须为大于或等于0的整数');
-                input.focus();
-                return;
-            }
-            const levelEl = currentUserRow ? currentUserRow.querySelector('.member-recharge-level') : null;
-            const oldLevel = levelEl ? levelEl.textContent.trim() : input.value.trim();
-            if (value === oldLevel) {
-                closeTargetModal('userModal');
-                return;
-            }
-            pendingVipLevel = value;
-            document.getElementById('vipLevelOld').textContent = oldLevel;
-            document.getElementById('vipLevelNew').textContent = value;
-            openTargetModal('vipLevelConfirmModal');
-        }
-        function confirmUserUpdate() {
-            if (currentUserRow) {
-                const levelEl = currentUserRow.querySelector('.member-recharge-level');
-                if (levelEl) levelEl.textContent = pendingVipLevel;
-            }
-            closeTargetModal('vipLevelConfirmModal');
-            closeTargetModal('userModal');
-            pendingVipLevel = null;
         }
 
         // 点击遮罩层关闭（增强体验）
@@ -2664,7 +2611,8 @@
                             <th style="width: 150px;">操作时间</th>
                             <th style="width: 100px;">变更类型</th>
                             <th>变更内容<i class="q-tip">?<span class="q-text">展示"变更前 → 变更后"。手机号中间4位隐藏；密码类操作只记录"已修改"，不展示密码内容。</span></i></th>
-                            <th style="width: 230px;">原因 / 说明</th>
+                            <th style="width: 200px;">原因 / 说明</th>
+                            <th style="width: 180px;">最后发言内容<i class="q-tip">?<span class="q-text">封号、禁言时会员最近的发言内容，最多 5 条，最新的在最上面。</span></i></th>
                             <th style="width: 90px;">操作来源</th>
                             <th style="width: 130px;">操作人</th>
                         </tr>
@@ -2705,17 +2653,16 @@
                         <tr><td>密码</td><td>改密码；只记录"已修改登录密码 / 已修改支付密码"，不展示任何密码内容。</td></tr>
                         <tr><td>账号状态</td><td>更新用户中修改账号状态（启用 / 停用 / 冻结 / 冻结余额）、列表【批量禁用】；批量操作在"原因 / 说明"中标注"批量禁用"，每位会员各生成一条记录。选择冻结余额时，系统自动生成的限制说明一并记在"原因 / 说明"中。</td></tr>
                         <tr><td>用户层级</td><td>更新用户中修改用户层级；记录修改前后的层级名称。</td></tr>
-                        <tr><td>充值等级</td><td>更新用户中修改充值等级，即修改会员VIP等级；等级发生变化时，确认提交前弹窗提示：「后台变更用户等级后，用户无法领取当前等级及之前等级的晋升奖励。后续正常升级晋升奖励不受影响」。确认后保存，取消则不变更。</td></tr>
+                        <tr><td>充值等级</td><td>更新用户中修改充值等级。</td></tr>
                         <tr><td>红包限额</td><td>更新用户中修改红包限额。</td></tr>
                         <tr><td>备注</td><td>编辑备注；记录修改前后的备注内容，原来为空时显示"空"。</td></tr>
                         <tr><td>IM账号 / 返佣后台</td><td>解锁IM（含列表【批量解锁IM账号】，标注"批量解锁"）；返佣后台开通账号（记录绑定的返佣后台账号）、重置返佣后台密码（只记录"已重置密码"）。</td></tr>
-                        <tr><td rowspan="2">平台</td><td>封号</td><td>平台封号、提前解封。记录封号时长（到期时间或永久）、封号原因；解封记录解封原因。</td></tr>
-                        <tr><td>禁言</td><td>平台禁言、提前解除禁言。记录禁言范围（聊天室 / 直播间 / 全部）、禁言时长（到期时间或永久）、禁言原因；解除记录解除原因。</td></tr>
+                        <tr><td rowspan="2">平台</td><td>封号</td><td>平台封号、提前解封。记录封号时长（到期时间或永久）、封号原因及最后发言内容；解封记录解封原因。</td></tr>
+                        <tr><td>禁言</td><td>平台禁言、提前解除禁言。记录禁言范围（聊天室 / 直播间 / 全部）、禁言时长（到期时间或永久）、禁言原因及最后发言内容；解除记录解除原因。</td></tr>
                         <tr><td rowspan="2">系统</td><td>封号 / 禁言</td><td>封号、禁言到期后系统自动解除，生成一条"到期自动解除"记录。</td></tr>
                         <tr><td>用户层级</td><td>会员达到层级条件后系统自动调整层级，"原因 / 说明"记为"满足层级条件自动调整"。</td></tr>
                     </table>
                     <ul>
-                        <li>会员列表「更新用户」中的「充值等级」即会员VIP等级；修改该字段即调整VIP等级。发生等级变化时，需先弹窗提示风险，确认后方可提交。</li>
                         <li>只记录后台（商户后台、平台、系统）发起的变更；会员在前台自己修改的资料不在本功能记录。</li>
                         <li>余额、充值、提现、划转、场馆转出等资金变动不在本功能记录，统一在资金明细中查看。</li>
                         <li>只有提交成功的操作才生成记录；谷歌验证未通过、提交失败的不记录。值没有变化的项不记录（如更新用户时只改了真实姓名，只生成真实姓名一条）。</li>
@@ -2724,13 +2671,17 @@
 
                     <h5>三、列表展示规则</h5>
                     <ul>
-                        <li>列表内容：操作时间、变更类型、变更内容、原因 / 说明、操作来源、操作人。按操作时间倒序，默认 20 条/页，可切换 50 / 100 条/页。</li>
+                        <li>列表内容：操作时间、变更类型、变更内容、原因 / 说明、最后发言内容、操作来源、操作人。按操作时间倒序，默认 20 条/页，可切换 50 / 100 条/页。</li>
                         <li>变更内容：按"变更项：变更前 → 变更后"展示，变更前用灰色删除线，变更后加粗；原来没有值时显示"空"。</li>
                         <li>操作人：
                             <br>- 商户后台：显示后台账号，下方灰色显示操作IP。
                             <br>- 平台：统一显示"平台"，不展示平台人员账号。
                             <br>- 系统：显示"系统"。</li>
                         <li>封号 / 禁言类记录整行浅红色底，变更类型用红色 / 橙色标签，方便在全部记录中快速识别。</li>
+                        <li>最后发言内容：列表新增"最后发言内容"列，参照现有禁言 / 封号列表的"最后发言内容"展示。
+                            <br>- 封号、禁言记录展示该会员被处理时最近的发言，最多 5 条，每条一行，最新的在最上面；内容支持文字、表情、图片，图片显示缩略图，点击查看大图。
+                            <br>- 发言内容取封号 / 禁言当时的记录，之后会员发言被删除或撤回，此处仍保留。
+                            <br>- 解封、解除禁言、到期自动解除的记录，以及其他类型的记录，该列显示"—"；处理前没有发言的也显示"—"。</li>
                         <li>原因 / 说明：封号、禁言、解除时展示原因及时长；批量操作展示批量操作名称；其余操作无说明时显示"—"。</li>
                     </ul>
 
@@ -2761,6 +2712,8 @@
         // ---------- 更新日志：模拟数据 ----------
         const LOG_TYPES = ['基本信息', '手机号', '密码', '账号状态', '用户层级', '充值等级', '红包限额', '备注', 'IM账号', '返佣后台', '封号', '禁言'];
         const BAN_TYPES = ['封号', '禁言'];
+        const IMG_QR = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 70'><rect width='60' height='70' fill='%23fff5f5'/><text x='30' y='9' font-size='6' text-anchor='middle' fill='%23e8590c'>扫码进群</text><rect x='8' y='13' width='44' height='44' fill='%23fff' stroke='%23339af0'/><rect x='10' y='15' width='3' height='3' fill='%23339af0'/><rect x='22' y='15' width='3' height='3' fill='%23339af0'/><rect x='34' y='15' width='3' height='3' fill='%23339af0'/><rect x='46' y='15' width='3' height='3' fill='%23339af0'/><rect x='18' y='19' width='3' height='3' fill='%23339af0'/><rect x='30' y='19' width='3' height='3' fill='%23339af0'/><rect x='42' y='19' width='3' height='3' fill='%23339af0'/><rect x='14' y='23' width='3' height='3' fill='%23339af0'/><rect x='26' y='23' width='3' height='3' fill='%23339af0'/><rect x='38' y='23' width='3' height='3' fill='%23339af0'/><rect x='10' y='27' width='3' height='3' fill='%23339af0'/><rect x='22' y='27' width='3' height='3' fill='%23339af0'/><rect x='34' y='27' width='3' height='3' fill='%23339af0'/><rect x='46' y='27' width='3' height='3' fill='%23339af0'/><rect x='18' y='31' width='3' height='3' fill='%23339af0'/><rect x='30' y='31' width='3' height='3' fill='%23339af0'/><rect x='42' y='31' width='3' height='3' fill='%23339af0'/><rect x='14' y='35' width='3' height='3' fill='%23339af0'/><rect x='26' y='35' width='3' height='3' fill='%23339af0'/><rect x='38' y='35' width='3' height='3' fill='%23339af0'/><rect x='10' y='39' width='3' height='3' fill='%23339af0'/><rect x='22' y='39' width='3' height='3' fill='%23339af0'/><rect x='34' y='39' width='3' height='3' fill='%23339af0'/><rect x='46' y='39' width='3' height='3' fill='%23339af0'/><rect x='18' y='43' width='3' height='3' fill='%23339af0'/><rect x='30' y='43' width='3' height='3' fill='%23339af0'/><rect x='42' y='43' width='3' height='3' fill='%23339af0'/><rect x='14' y='47' width='3' height='3' fill='%23339af0'/><rect x='26' y='47' width='3' height='3' fill='%23339af0'/><rect x='38' y='47' width='3' height='3' fill='%23339af0'/><rect x='10' y='51' width='3' height='3' fill='%23339af0'/><rect x='22' y='51' width='3' height='3' fill='%23339af0'/><rect x='34' y='51' width='3' height='3' fill='%23339af0'/><rect x='46' y='51' width='3' height='3' fill='%23339af0'/><text x='30' y='65' font-size='5' text-anchor='middle' fill='%23e03131'>福利群 · 加群领彩金</text></svg>";
+        const img = () => `<img src="${IMG_QR}" onclick="previewImg(this.src)" alt="图片">`;
 
         // changes: [[变更项, 变更前, 变更后]] 或 [[文本]]（无前后对比的操作）
         const LOG_MEMBERS = {
@@ -2770,20 +2723,36 @@
                 mute: { on: true, scope: '全部聊天室、直播间', until: '2026-11-23 21:45:08' },
                 logs: [
                     { t: '2026-11-21 10:32:15', type: '备注', changes: [['备注', 'VIP客户', '这是一个大客户，请多关注。']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
-                    { t: '2026-11-20 21:45:08', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：全部聊天室、直播间<br>时长：3天（至 2026-11-23 21:45:08）<br>原因：聊天室发布引流广告', src: '平台' },
+                    { t: '2026-11-20 21:45:08', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：全部聊天室、直播间<br>时长：3天（至 2026-11-23 21:45:08）<br>原因：聊天室发布引流广告', src: '平台',
+                      msgs: [
+                        { t: '2026-11-20 21:44:52', at: '一分快三聊天室', c: () => img() + '😍😍😍😍😍😍' },
+                        { t: '2026-11-20 21:44:30', at: '一分快三聊天室', c: () => '加群领彩金，名额有限先到先得' },
+                        { t: '2026-11-20 21:40:12', at: '主播小鹿直播间', c: () => img() },
+                        { t: '2026-11-20 21:38:05', at: '主播小鹿直播间', c: () => '私聊我有内部计划，稳赚不赔' },
+                        { t: '2026-11-20 21:20:47', at: '一分快三聊天室', c: () => '这期跟大' }
+                      ] },
                     { t: '2026-11-18 16:02:44', type: '用户层级', changes: [['用户层级', '默认层级 0-500可见', '总充值500-2000可见']], reason: '满足层级条件自动调整', src: '系统' },
                     { t: '2026-11-18 15:20:11', type: '基本信息', changes: [['真实姓名', '', '喜欢123']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-18 15:20:11', type: '红包限额', changes: [['红包限额', '500', '1000']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-15 09:12:30', type: '手机号', changes: [['手机号', '+86 187****1234', '+86 187****4013']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
                     { t: '2026-11-12 14:00:03', type: '密码', changes: [['已修改登录密码']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-11 10:05:20', type: '封号', changes: [['封号', '封号中', '正常']], reason: '提前解封<br>原因：会员申诉核实通过', src: '平台' },
-                    { t: '2026-11-10 20:30:41', type: '封号', changes: [['封号', '正常', '封号中']], reason: '时长：永久<br>原因：疑似多账号套利', src: '平台' },
+                    { t: '2026-11-10 20:30:41', type: '封号', changes: [['封号', '正常', '封号中']], reason: '时长：永久<br>原因：疑似多账号套利', src: '平台',
+                      msgs: [
+                        { t: '2026-11-10 20:28:16', at: '极速百家乐聊天室', c: () => '小号都准备好了，今晚一起冲' },
+                        { t: '2026-11-10 20:25:03', at: '极速百家乐聊天室', c: () => '庄闲对着下，流水刷满就提' },
+                        { t: '2026-11-10 19:58:41', at: '一分赛车聊天室', c: () => '🙏🙏' }
+                      ] },
                     { t: '2026-11-09 11:40:02', type: '账号状态', changes: [['账号状态', '停用', '启用']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-08 11:11:11', type: '账号状态', changes: [['账号状态', '启用', '停用']], reason: '批量禁用', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-05 18:22:37', type: 'IM账号', changes: [['解锁IM账号']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
                     { t: '2026-11-03 21:00:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '到期自动解除', src: '系统' },
                     { t: '2026-11-03 15:16:09', type: '返佣后台', changes: [['开通返佣后台账号：admin_100039991']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
-                    { t: '2026-11-02 21:00:00', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：聊天室<br>时长：1天（至 2026-11-03 21:00:00）<br>原因：聊天室辱骂他人', src: '平台' },
+                    { t: '2026-11-02 21:00:00', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：聊天室<br>时长：1天（至 2026-11-03 21:00:00）<br>原因：聊天室辱骂他人', src: '平台',
+                      msgs: [
+                        { t: '2026-11-02 20:59:31', at: '一分时时彩聊天室', c: () => '***（已过滤）你懂个屁' },
+                        { t: '2026-11-02 20:58:10', at: '一分时时彩聊天室', c: () => '跟你的单连黑十把' }
+                      ] },
                     { t: '2026-10-30 13:48:55', type: '充值等级', changes: [['充值等级', '1', '0']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
                     { t: '2026-10-28 10:02:19', type: '基本信息', changes: [['用户昵称', '无家可归', '无家可归aegp']], reason: '重置昵称', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-10-26 17:30:00', type: '备注', changes: [['备注', '', 'VIP客户']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
@@ -2795,7 +2764,14 @@
                 logs: [
                     { t: '2026-11-19 20:15:33', type: '返佣后台', changes: [['重置返佣后台密码']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-16 09:30:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '提前解除禁言<br>原因：误判', src: '平台' },
-                    { t: '2026-11-15 22:41:10', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：直播间<br>时长：7天（至 2026-11-22 22:41:10）<br>原因：直播间刷屏', src: '平台' },
+                    { t: '2026-11-15 22:41:10', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：直播间<br>时长：7天（至 2026-11-22 22:41:10）<br>原因：直播间刷屏', src: '平台',
+                      msgs: [
+                        { t: '2026-11-15 22:41:02', at: '主播阿紫直播间', c: () => '666666666666' },
+                        { t: '2026-11-15 22:40:58', at: '主播阿紫直播间', c: () => '666666666666' },
+                        { t: '2026-11-15 22:40:55', at: '主播阿紫直播间', c: () => '666666666666' },
+                        { t: '2026-11-15 22:40:51', at: '主播阿紫直播间', c: () => '😂😂😂' },
+                        { t: '2026-11-15 22:40:47', at: '主播阿紫直播间', c: () => '666666666666' }
+                      ] },
                     { t: '2026-11-10 14:22:05', type: '账号状态', changes: [['账号状态', '启用', '冻结余额']], reason: '余额锁定中，限制游戏、下单、打赏、发言。', src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-11 10:00:00', type: '账号状态', changes: [['账号状态', '冻结余额', '启用']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-01 08:59:41', type: '用户层级', changes: [['用户层级', '总充值500-2000可见', '总充值2000-9999可见']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
@@ -2868,6 +2844,12 @@
         const TYPE_BADGE = { '封号': 'lb-danger', '禁言': 'lb-warn', '账号状态': 'lb-purple', '密码': 'lb-gray', '返佣后台': 'lb-gray', 'IM账号': 'lb-gray' };
         const valHtml = v => v === '' ? '<span class="empty-val">空</span>' : v;
 
+        let chgExtra = '';
+        function previewImg(src) {
+            document.getElementById('imgPreviewSrc').src = src;
+            openTargetModal('imgPreview');
+        }
+
         function renderLog() {
             const size = parseInt(document.getElementById('lgPageSize').value, 10);
             const total = lgState.list.length;
@@ -2883,15 +2865,20 @@
                     ? `${l.op}<br><span class="text-gray">${l.ip}</span>`
                     : l.src;
                 const srcBadge = l.src === '商户后台' ? 'lb-blue' : (l.src === '平台' ? 'lb-danger' : 'lb-gray');
+                if (BAN_TYPES.includes(l.type) && l.changes[0][2] !== '正常') {
+                    const ms = l.msgs || [];
+                    chgExtra = ms.length ? ms.map(m => `<div class="msg-line">${m.c()}</div>`).join('') : '<span class="text-gray">—</span>';
+                } else chgExtra = '<span class="text-gray">—</span>';
                 return `<tr class="${BAN_TYPES.includes(l.type) ? 'row-ban' : ''}">
                     <td class="t-time">${l.t}</td>
                     <td><span class="log-badge ${TYPE_BADGE[l.type] || 'lb-blue'}">${l.type}</span></td>
                     <td>${chg}</td>
                     <td>${l.reason || '<span class="text-gray">—</span>'}</td>
+                    <td class="msg-cell">${chgExtra}</td>
                     <td><span class="log-badge ${srcBadge}">${l.src}</span></td>
                     <td>${op}</td>
                 </tr>`;
-            }).join('') : '<tr><td colspan="6" class="log-empty">当前条件下暂无更新记录</td></tr>';
+            }).join('') : '<tr><td colspan="7" class="log-empty">当前条件下暂无更新记录</td></tr>';
 
             document.getElementById('lgTotal').textContent = `共 ${total} 条`;
             document.getElementById('lgPageNo').textContent = `${lgState.page} / ${pages}`;
@@ -2919,6 +2906,7 @@
             }
         };
     </script>
+    <div class="modal-overlay" id="imgPreview" onclick="closeTargetModal('imgPreview')"><img id="imgPreviewSrc" alt="图片预览"></div>
 <!-- 👆 更新日志弹窗结束 👆 -->
 
 </body>
