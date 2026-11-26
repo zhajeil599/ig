@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>纯净版综合盘 · 前端交互原型</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#1f2d3d;font-size:14px}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input{font-family:inherit}
+.topbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e4e7ed;display:flex;align-items:center;padding:0 20px;height:52px;gap:24px}
+.topbar h1{font-size:16px;font-weight:600;margin-right:12px}
+.ttab{height:52px;padding:0 4px;font-size:14px;color:#606266;border-bottom:2px solid transparent}
+.ttab.on{color:#409EFF;border-bottom-color:#409EFF;font-weight:600}
+.view{display:none}.view.on{display:block}
+.doc{max-width:1080px;margin:20px auto;background:#fff;border-radius:8px;padding:28px 36px;line-height:1.8}
+.doc h2{font-size:20px;margin:6px 0 14px}
+.doc h3{font-size:16px;margin:26px 0 10px;padding-left:10px;border-left:4px solid #409EFF}
+.doc h4{font-size:14px;margin:16px 0 6px;color:#1f2d3d}
+.doc p,.doc li{color:#303133}
+.doc ul,.doc ol{padding-left:22px}
+.doc table{width:100%;border-collapse:collapse;margin:8px 0 6px;font-size:13px}
+.doc th,.doc td{border:1px solid #ebeef5;padding:8px 10px;text-align:left;vertical-align:top}
+.doc th{background:#f5f7fa;font-weight:600}
+.doc td.new{background:#ecf5ff}
+.doc code{background:#f4f4f5;padding:0 5px;border-radius:3px;font-size:12px;color:#c0392b}
+.dnav{position:sticky;top:52px;background:#fff;z-index:5;padding:8px 0;margin-bottom:4px;display:flex;gap:14px;flex-wrap:wrap;font-size:13px;border-bottom:1px solid #ebeef5}
+.dnav a{color:#409EFF;text-decoration:none}
+.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:3px;line-height:18px;margin-left:4px}
+.tag.add{background:#e1f3d8;color:#67c23a}.tag.del{background:#fde2e2;color:#f56c6c}.tag.keep{background:#ecf5ff;color:#409EFF}
+.proto{display:flex;gap:24px;justify-content:center;padding:20px;align-items:flex-start}
+.pindex{width:190px;background:#fff;border-radius:8px;padding:12px 0;position:sticky;top:72px}
+.pindex .g{font-size:12px;color:#909399;padding:8px 16px 4px}
+.pindex a{display:block;padding:7px 16px;font-size:13px;color:#303133;cursor:pointer}
+.pindex a:hover{background:#f5f7fa}.pindex a.on{color:#409EFF;background:#ecf5ff}
+.pindex .st{border-top:1px solid #ebeef5;margin-top:8px;padding:10px 16px 0;font-size:12px;color:#606266}
+.pindex .st label{display:flex;align-items:center;gap:6px;margin:4px 0;cursor:pointer}
+.phone{width:375px;height:812px;background:#eaf1fb;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);flex-shrink:0}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+.body{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.notes{width:340px;position:sticky;top:72px}
+.ncard{background:#fff;border-radius:8px;overflow:hidden}
+.ncard .hd{background:#fdf6ec;color:#b88230;font-weight:600;padding:10px 14px;border-bottom:1px solid #faecd8}
+.ncard .bd{padding:12px 16px;font-size:13px;line-height:1.75;color:#303133;max-height:calc(100vh - 140px);overflow:auto}
+.ncard .bd ol{padding-left:18px}.ncard .bd li{margin-bottom:6px}
+.ncard .bd b{color:#1677ff}
+:root{--b:#1677ff;--txt:#1f2d3d;--sub:#7a8aa3;--card:rgba(255,255,255,.82)}
+.nav{height:46px;display:flex;align-items:center;justify-content:center;position:relative;font-size:17px;font-weight:600;flex-shrink:0;background:linear-gradient(#dfeafb,#eaf1fb)}
+.nav .bk{position:absolute;left:10px;top:0;height:46px;width:36px;font-size:22px;color:#556;display:flex;align-items:center}
+.nav .rt{position:absolute;right:12px;font-size:13px;color:var(--b);font-weight:400;cursor:pointer}
+.tabbar{height:58px;display:flex;background:#fff;border-top:1px solid #e3eaf5;flex-shrink:0;position:relative;z-index:15}
+.tabbar .mid .ic{position:relative;z-index:16}
+.cpk-mask{position:absolute;left:0;right:0;top:46px;bottom:0;background:rgba(0,0,0,.4);z-index:12}
+.cpk{position:absolute;left:0;right:0;top:46px;z-index:13;background:#fff;border-radius:0 0 14px 14px;padding:14px 12px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.cpk span{height:64px;border-radius:12px;background:#f2f6fc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;cursor:pointer;color:#3b4a66}
+.cpk span i{font-style:normal;font-size:22px}
+.cpk span.on{background:#e6f0ff;color:#1677ff;font-weight:600;outline:1.5px solid #1677ff}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:#98a3b6;gap:3px}
+.tabbar button .ic{font-size:20px;filter:grayscale(1);opacity:.6}
+.tabbar button.on{color:var(--b)}.tabbar button.on .ic{filter:none;opacity:1}
+.tabbar .mid .ic{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#36a3ff,#1677ff);display:flex;align-items:center;justify-content:center;color:#fff;margin-top:-20px;box-shadow:0 4px 10px rgba(22,119,255,.4);filter:none;opacity:1;font-size:20px}
+.card{background:var(--card);border-radius:14px;border:1px solid #fff;box-shadow:0 2px 10px rgba(80,120,190,.08)}
+.hd-home{display:flex;align-items:center;padding:10px 14px 6px}
+.logo{font-size:24px;font-weight:800;color:var(--b);letter-spacing:-.5px}
+.hd-home .ics{margin-left:auto;display:flex;gap:14px;font-size:18px;color:#3b4a66}
+.hd-home .ics span{position:relative;cursor:pointer}
+.dot{position:absolute;top:-6px;right:-8px;background:#f5222d;color:#fff;font-size:9px;border-radius:8px;padding:0 4px;line-height:14px;font-style:normal}
+.banner{margin:4px 12px;height:110px;border-radius:14px;position:relative;overflow:hidden}
+.banner .sl{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 18px;transition:opacity .5s;opacity:0}
+.banner .sl.on{opacity:1}
+.banner .sl b{font-size:20px}.banner .sl i{font-style:normal;font-size:12px;margin-top:4px;opacity:.85}
+.banner .dots{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
+.banner .dots i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.6)}.banner .dots i.on{width:14px;background:#fff}
+.marq{margin:6px 12px;height:28px;display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6b88;overflow:hidden;padding:0 10px}
+.marq .t{flex:1;overflow:hidden;white-space:nowrap}
+.marq .t span{display:inline-block;animation:mq 16s linear infinite;padding-left:100%}
+@keyframes mq{to{transform:translateX(-100%)}}
+.ucard{margin:8px 12px;padding:12px 14px;display:flex;align-items:center}
+.ucard .l{flex:1;min-width:0}
+.ucard .l .n{font-size:16px;font-weight:600}
+.ucard .l .s{font-size:11px;color:var(--sub);margin-top:2px}
+.ucard .bal{font-size:17px;font-weight:700;color:var(--b);display:flex;align-items:center;gap:5px;margin-top:2px}
+.ucard .bal small{font-size:12px;color:var(--sub);font-weight:400;cursor:pointer}
+.ut{width:18px;height:18px;border-radius:50%;background:#26a17b;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.qbtn{display:flex;flex-direction:column;align-items:center;font-size:11px;color:#3b4a66;gap:4px;margin-left:10px;cursor:pointer}
+.qbtn .c{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#5ab0ff,#1677ff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 8px rgba(22,119,255,.3)}
+.bento{margin:8px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bk1{height:132px;padding:10px 12px;position:relative;cursor:pointer;overflow:hidden}
+.bk1 .tt{font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px}
+.bk1 .tt i{font-style:normal;width:22px;height:22px;border-radius:6px;background:var(--b);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.bk1 .sub{font-size:11px;color:var(--sub);margin-top:4px}
+.bk1 .art{position:absolute;right:8px;bottom:6px;font-size:54px;opacity:.9}
+.bk1 .hot{position:absolute;right:8px;top:8px;font-size:10px;color:#13a35a}
+.cat4{margin:0 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat4 .c{height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-weight:600}
+.cat4 .c .e{font-size:30px}
+.cat4 .c:after{content:"";width:18px;height:3px;border-radius:2px;background:var(--b)}
+.sec{margin:14px 12px 6px;display:flex;align-items:center;font-weight:600;font-size:15px}
+.sec a{margin-left:auto;font-size:12px;color:var(--sub);font-weight:400;cursor:pointer}
+.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 12px 12px}
+.gi{cursor:pointer}
+.gi .pic{aspect-ratio:1/1;border-radius:12px;position:relative;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;text-align:center;padding:6px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.gi .pv{position:absolute;left:4px;top:4px;font-size:9px;background:rgba(0,0,0,.35);padding:0 4px;border-radius:4px;font-weight:400}
+.gi .fv{position:absolute;right:4px;top:3px;font-size:14px;text-shadow:none}
+.gi .nm{font-size:12px;text-align:center;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptabs{display:flex;gap:8px;padding:6px 12px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.ptabs::-webkit-scrollbar{display:none}
+.ptabs button{flex-shrink:0;padding:5px 14px;border-radius:16px;background:#fff;font-size:13px;color:#3b4a66;font-weight:600}
+.ptabs button.on{background:var(--b);color:#fff}
+.stabs{display:flex;align-items:center;padding:4px 12px 8px;gap:16px;font-size:13px;color:var(--sub);flex-shrink:0}
+.stabs span{cursor:pointer;padding-bottom:3px;border-bottom:2px solid transparent}
+.stabs span.on{color:var(--b);border-color:var(--b);font-weight:600}
+.stabs .sr{margin-left:auto;cursor:pointer}
+.srch{margin:0 12px 8px;display:flex;background:#fff;border-radius:18px;padding:0 12px;height:34px;align-items:center;gap:6px}
+.srch input{flex:1;border:none;outline:none;font-size:13px;background:none}
+.plat{margin:0 12px 10px;padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.plat .lg{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px}
+.plat .in{flex:1}.plat .in b{font-size:15px}.plat .in div{font-size:11px;color:var(--sub);margin-top:2px}
+.plat .go{background:var(--b);color:#fff;border-radius:14px;padding:5px 14px;font-size:12px}
+.empty{text-align:center;color:var(--sub);padding:50px 0;font-size:13px}
+.form{margin:12px}
+.fi{background:#fff;border-radius:12px;height:46px;display:flex;align-items:center;padding:0 14px;margin-bottom:10px;gap:8px}
+.fi input{flex:1;border:none;outline:none;font-size:14px;background:none;min-width:0}
+.fi .lb{width:64px;color:#3b4a66;font-size:13px}
+.fi .sm{color:var(--b);font-size:13px;cursor:pointer;white-space:nowrap}
+.pbtn{display:block;width:100%;height:44px;border-radius:22px;background:linear-gradient(90deg,#3ea6ff,#1677ff);color:#fff;font-size:16px;font-weight:600;box-shadow:0 4px 10px rgba(22,119,255,.3)}
+.pbtn.gh{background:#fff;color:var(--b);box-shadow:none;border:1px solid var(--b)}
+.pbtn:disabled{background:#b8c7de;color:#fff;box-shadow:none;cursor:not-allowed}
+.lgtab{display:flex;margin:10px 12px 14px;background:#dbe7f8;border-radius:12px;padding:3px}
+.lgtab span{flex:1;text-align:center;height:36px;line-height:36px;border-radius:10px;cursor:pointer;color:#3b4a66}
+.lgtab span.on{background:#fff;color:var(--b);font-weight:600}
+.hint{font-size:12px;color:var(--sub);line-height:1.7}
+.balcard{margin:10px 12px;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,#3ea6ff,#1660e8);color:#fff;display:flex;align-items:center}
+.balcard .v{font-size:24px;font-weight:700;margin-top:2px}
+.balcard .v small{font-size:13px;font-weight:600;margin-left:4px}
+.balcard .lk{margin-left:auto;display:flex;flex-direction:column;gap:6px}
+.balcard .lk span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.85);color:#fff;font-weight:600;border-radius:14px;padding:4px 12px;font-size:12px;cursor:pointer;text-align:center}
+.balcard .lk .pri{background:#fff;color:#1677ff;border-color:#fff}
+.mtabs{display:flex;gap:18px;padding:0 14px;height:40px;align-items:center;background:#eaf1fb;border-bottom:1px solid #dbe5f3;flex-shrink:0}
+.mtabs span{position:relative;cursor:pointer;color:#3b4a66;padding:9px 0}.mtabs span.on{color:#1677ff;font-weight:600;border-bottom:2px solid #1677ff}
+.mtabs i{position:absolute;top:-1px;right:-14px;background:#f5222d;color:#fff;font-size:10px;font-style:normal;border-radius:8px;padding:0 5px;line-height:15px}
+.mfil{display:flex;gap:8px;padding:10px 12px 4px;align-items:center;flex-shrink:0}
+.mfil select,.mfil input{height:30px;border:1px solid #c9d6ea;border-radius:15px;background:#fff;padding:0 10px;font-size:12px;color:#3b4a66;outline:none}
+.mfil input{flex:1;min-width:0}
+.mitem{margin:8px 12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.mitem .ic{position:relative;font-size:18px}.mitem .ic i{position:absolute;right:-3px;top:-2px;width:7px;height:7px;border-radius:50%;background:#f5222d}
+.mitem .m{flex:1;min-width:0}.mitem .m b{display:block;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem .m div{font-size:11px;color:#98a3b6;margin-top:2px}
+.mitem .st{font-size:12px;color:#3b4a66}.mitem .st.rd{color:#98a3b6}
+.kfc{margin:10px 12px;padding:14px}
+.kfc h5{font-size:15px}.kfc p{font-size:12px;color:#7a8aa3;margin:2px 0 8px}
+.kfi{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #eef2f8}
+.kfi .av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0}
+.kfi .m{flex:1}.kfi .m b{font-size:14px}.kfi .m div{font-size:11px;color:#7a8aa3;margin-top:2px}
+.kfi button{background:linear-gradient(90deg,#3ea6ff,#1677ff);color:#fff;border-radius:14px;padding:6px 12px;font-size:12px;font-weight:600}
+.setl .it{display:flex;align-items:center;padding:14px;border-bottom:1px solid #eef2f8;cursor:pointer;background:#fff}.setl .it:after{content:"›";margin-left:auto;color:#98a3b6}
+.blk{margin:10px 12px;padding:12px 14px}
+.blk .t{font-weight:600;margin-bottom:10px;display:flex;align-items:center}
+.blk .t:before{content:"";width:3px;height:14px;background:var(--b);border-radius:2px;margin-right:6px}
+.blk .t a{margin-left:auto;font-size:12px;color:var(--sub);font-weight:400;cursor:pointer}
+.chs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ch{border:1.5px solid #e1e8f3;border-radius:10px;padding:10px;cursor:pointer;position:relative;background:#fff}
+.ch.on{border-color:var(--b);background:#f0f7ff}
+.ch b{font-size:14px}.ch div{font-size:11px;color:var(--sub);margin-top:2px}
+.ch .bd{position:absolute;right:-1px;top:-1px;background:#ff7a45;color:#fff;font-size:10px;border-radius:0 9px 0 8px;padding:0 5px}
+.amts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.amts span{background:#fff;border:1.5px solid #e1e8f3;border-radius:8px;text-align:center;height:36px;line-height:33px;cursor:pointer;font-weight:600}
+.amts span.on{border-color:var(--b);color:var(--b);background:#f0f7ff}
+.ainp{display:flex;align-items:center;border:1.5px solid #e1e8f3;border-radius:10px;height:44px;padding:0 12px;background:#fff}
+.ainp input{flex:1;border:none;outline:none;font-size:18px;font-weight:600;min-width:0}
+.ainp .u{color:var(--sub);font-size:13px}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:#3b4a66}
+.kv b{color:var(--txt)}.kv .hl{color:#f5222d;font-weight:700}
+.warn{background:#fff7e6;border:1px solid #ffe7ba;color:#ad6800;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.7}
+.qr{width:150px;height:150px;margin:6px auto 10px;background:repeating-linear-gradient(90deg,#111 0 6px,#fff 6px 12px),repeating-linear-gradient(#111 0 6px,#fff 6px 12px);background-blend-mode:difference;border:8px solid #fff;outline:1px solid #e1e8f3;position:relative}
+.qr:after{content:"U";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:#26a17b;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;border:3px solid #fff}
+.addr{background:#f4f7fc;border-radius:8px;padding:8px 10px;font-family:monospace;font-size:12px;word-break:break-all;display:flex;gap:8px;align-items:center}
+.addr span{flex:1}.addr a{color:var(--b);font-family:inherit;cursor:pointer;white-space:nowrap}
+.cd{text-align:center;font-size:12px;color:var(--sub)}.cd b{color:#f5222d;font-size:16px}
+.list .it{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid #eef2f8;cursor:pointer;background:#fff}
+.list .it:last-child{border:none}
+.list .it .ic{width:34px;height:34px;border-radius:10px;background:#e8f1ff;display:flex;align-items:center;justify-content:center;margin-right:10px;flex-shrink:0}
+.list .it .m{flex:1;min-width:0}.list .it .m div{font-size:11px;color:var(--sub);margin-top:2px}
+.list .it .r{text-align:right;font-size:13px}.list .it .r div{font-size:11px;margin-top:2px}
+.st-ok{color:#13a35a}.st-ing{color:#fa8c16}.st-no{color:#98a3b6}
+.mhead{padding:14px 16px 6px;display:flex;align-items:center;gap:12px}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#8ec5ff,#1677ff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:700;border:3px solid #fff}
+.mhead .n{font-size:18px;font-weight:700;display:flex;align-items:center;gap:6px}
+.vip{font-size:10px;background:linear-gradient(90deg,#ffd666,#fa8c16);color:#fff;border-radius:8px;padding:0 6px;font-weight:600}
+.mhead .id{font-size:12px;color:var(--sub);margin-top:2px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);row-gap:14px}
+.grid4 .g{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:#3b4a66;text-align:center}
+.grid4 .g .c{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#5ab0ff,#1677ff);display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff;box-shadow:0 3px 8px rgba(22,119,255,.25)}
+.tgcard{margin:10px 12px;padding:14px;border-radius:14px;background:linear-gradient(135deg,#2aabee,#1677ff);color:#fff;display:flex;align-items:center;gap:12px;cursor:pointer}
+.tgcard .lg{width:44px;height:44px;border-radius:50%;background:#fff;color:#2aabee;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.tgcard .m{flex:1}.tgcard .m b{font-size:15px}.tgcard .m div{font-size:11px;opacity:.85;margin-top:2px}
+.tgcard .go{background:#fff;color:#1677ff;border-radius:14px;padding:5px 12px;font-size:12px;font-weight:600;white-space:nowrap}
+.steps{counter-reset:s}
+.steps .s{display:flex;gap:10px;margin-bottom:12px;font-size:13px;line-height:1.6}
+.steps .s:before{counter-increment:s;content:counter(s);flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--b);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.steps .s div{color:var(--sub);font-size:12px}
+.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;background:#e8f1ff;color:var(--b);margin:0 4px 4px 0}
+.promo-wrap{display:flex;flex:1;min-height:0}
+.pside{width:76px;overflow-y:auto;background:#dfe9f8;flex-shrink:0;scrollbar-width:none}
+.pside span{display:block;padding:12px 4px;text-align:center;font-size:12px;color:#3b4a66;cursor:pointer}
+.pside span.on{background:#eaf1fb;color:var(--b);font-weight:600}
+.pmain{flex:1;overflow-y:auto;padding:8px 10px;scrollbar-width:none}
+.pc{margin-bottom:10px;overflow:hidden;cursor:pointer}
+.pc .im{height:84px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:17px}
+.pc .in{padding:8px 10px;font-size:13px;display:flex;justify-content:space-between}
+.pc .in span{font-size:11px;color:var(--sub)}
+.ph{display:flex;align-items:center;justify-content:center;flex:1;color:var(--sub);font-size:16px;border:2px dashed #c7d4ea;margin:16px;border-radius:14px}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:center;justify-content:center}
+.dlg{background:#fff;width:290px;border-radius:14px;padding:18px 16px 14px;text-align:center}
+.dlg h4{font-size:16px;margin-bottom:8px}.dlg p{font-size:13px;color:#3b4a66;line-height:1.7;margin-bottom:14px;text-align:left}
+.dlg .bs{display:flex;gap:10px}.dlg .bs button{flex:1;height:38px;border-radius:19px;font-size:14px}
+.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:30;max-width:260px;text-align:center;pointer-events:none}
+.seg{display:flex;gap:8px;margin-bottom:10px}
+.seg span{padding:4px 12px;border-radius:14px;background:#fff;font-size:12px;cursor:pointer;color:#3b4a66}
+.seg span.on{background:var(--b);color:#fff}
+.more-g{margin:10px 12px;padding:12px 6px}
+.more-g .tt{font-size:13px;color:#3b4a66;padding:0 8px 10px;font-weight:600}
+/* ===== Telegram ===== */
+.tg{background:#fff}
+.tg-hd{height:52px;background:#fff;display:flex;align-items:center;padding:0 8px;gap:10px;border-bottom:1px solid #e7e7e7;flex-shrink:0}
+.tg-hd .bk{font-size:24px;color:#3390ec;width:26px;cursor:pointer}
+.tg-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ffb347,#ff6a3d);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tg-av.g{background:linear-gradient(135deg,#6fd6ff,#3390ec)}
+.tg-hd .nm{flex:1;min-width:0}.tg-hd .nm b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tg-hd .nm span{font-size:12px;color:#8a8a8a}
+.tg-hd .mr{font-size:18px;color:#8a8a8a;padding:0 6px}
+.tg-pin{background:#fff;border-bottom:1px solid #eee;padding:5px 12px;font-size:12px;display:flex;gap:8px;align-items:center;flex-shrink:0}
+.tg-pin i{width:2px;height:28px;background:#3390ec;border-radius:1px}
+.tg-pin div{flex:1;min-width:0}.tg-pin b{color:#3390ec;font-size:12px}.tg-pin span{display:block;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg-chat{flex:1;overflow-y:auto;padding:8px 8px 4px;background:#b3cd9e;background-image:radial-gradient(rgba(255,255,255,.18) 2px,transparent 2px),radial-gradient(rgba(0,0,0,.04) 2px,transparent 2px);background-size:26px 26px,26px 26px;background-position:0 0,13px 13px;scrollbar-width:none}
+.tg-chat::-webkit-scrollbar{display:none}
+.tg-day{text-align:center;margin:4px 0 8px}.tg-day span{background:rgba(0,0,0,.22);color:#fff;font-size:12px;padding:2px 10px;border-radius:10px}
+.tg-m{display:flex;margin-bottom:6px}
+.tg-m.me{justify-content:flex-end}
+.tg-m .wrap{max-width:84%;min-width:0}
+.tg-m.bot .wrap{width:84%}
+.tg-b{background:#fff;border-radius:12px 12px 12px 4px;padding:6px 10px 4px;font-size:14px;line-height:1.5;box-shadow:0 1px 1px rgba(0,0,0,.12);word-break:break-word;position:relative}
+.tg-m.me .tg-b{background:#effdde;border-radius:12px 12px 4px 12px}
+.tg-b .who{font-size:13px;font-weight:600;margin-bottom:1px}
+.tg-b .tm{float:right;font-size:11px;color:#8aa;margin:6px 0 0 10px}
+.tg-m.me .tg-b .tm{color:#5fb35a}
+.tg-b .q{border-left:2px solid #3390ec;background:#eef6fd;border-radius:3px;padding:1px 6px;font-size:12px;margin-bottom:3px;color:#555}
+.tg-b .q b{color:#3390ec;display:block;font-size:12px}
+.tg-b code{background:#f1f1f1;border-radius:3px;padding:0 3px;font-size:13px;color:#c0392b}
+.tg-b .sp{color:#3390ec;font-weight:600}
+.tg-ik{display:grid;gap:3px;margin-top:3px}
+.tg-ik .row{display:flex;gap:3px}
+.tg-ik button{flex:1;min-width:0;background:rgba(56,85,40,.35);color:#fff;border-radius:7px;font-size:13px;padding:8px 2px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;backdrop-filter:blur(2px)}
+.tg-ik button:hover{background:rgba(56,85,40,.5)}
+.tg-ik button.sel{background:rgba(51,144,236,.85)}
+.tg-ik button.cf{background:#3390ec}
+.tg-ik button.mini{position:relative}.tg-ik button.mini:after{content:"";position:absolute;right:5px;top:5px;width:7px;height:6px;border:1.5px solid #fff;border-top-width:3px;border-radius:1px}
+.lk{color:#3390ec;cursor:pointer}
+.tg-ban{margin:-6px -10px 8px;height:150px;border-radius:12px 12px 0 0;background:radial-gradient(circle at 75% 40%,#8fd3ff,#1f6fe0 60%,#0b3fa0);color:#fff;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 14px;gap:4px}
+.tg-ban b{font-size:30px;font-weight:900;letter-spacing:-1px}.tg-ban span{font-size:13px;opacity:.9}
+.tg-ban .bg4{display:flex;gap:5px;margin-top:6px}.tg-ban .bg4 i{font-style:normal;font-size:10px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);border-radius:6px;padding:3px 5px}
+.mini-hd{height:46px;background:#fff;display:flex;align-items:center;gap:16px;padding:0 14px;border-bottom:1px solid #e7e7e7;flex-shrink:0;font-size:15px}.mini-hd b{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-hd span{font-size:16px;color:#666}
+.mini-in{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.mini-ft{height:30px;line-height:30px;text-align:center;font-size:12px;color:#888;background:#fff;border-top:1px solid #eee;flex-shrink:0}
+.tg-bar{background:#fff;display:flex;align-items:center;gap:6px;padding:6px 8px;border-top:1px solid #e7e7e7;flex-shrink:0;position:relative}
+.tg-bar .menu{background:#3390ec;color:#fff;border-radius:14px;padding:5px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.tg-bar input{flex:1;border:none;outline:none;font-size:15px;min-width:0;padding:6px 2px}
+.tg-bar .kb{font-size:20px;color:#8a8a8a;padding:0 2px}
+.tg-bar .snd{width:32px;height:32px;border-radius:50%;background:#3390ec;color:#fff;font-size:15px}
+.tg-start{background:#fff;border-top:1px solid #e7e7e7;padding:10px;flex-shrink:0}
+.tg-start button{width:100%;height:42px;color:#3390ec;font-weight:700;font-size:15px;letter-spacing:1px}
+.tg-rk{background:#e9ecef;padding:5px;display:grid;grid-template-columns:repeat(2,1fr);gap:5px;flex-shrink:0}
+.tg-rk button{background:#fff;border-radius:6px;height:40px;font-size:13px;box-shadow:0 1px 0 rgba(0,0,0,.15);color:#222}
+.tg-cmds{position:absolute;left:6px;bottom:48px;width:260px;background:#fff;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.2);padding:4px 0;z-index:5}
+.tg-cmds div{display:flex;gap:10px;padding:7px 12px;font-size:13px;cursor:pointer}
+.tg-cmds div:hover{background:#f2f2f2}
+.tg-cmds b{color:#3390ec;width:84px;font-weight:600}
+.tg-cmds span{color:#666}
+.tg-sys{text-align:center;margin:6px 0}.tg-sys span{background:rgba(0,0,0,.25);color:#fff;font-size:12px;padding:3px 10px;border-radius:10px;display:inline-block;line-height:1.5}
+.tg-dice{display:inline-flex;gap:3px;vertical-align:middle}
+.tg-dice i{font-style:normal;width:20px;height:20px;border-radius:4px;background:#fff;border:1px solid #ccc;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;color:#d4380d}
+.ball{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#3390ec;color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:2px;font-style:normal}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>纯净版综合盘 · H5</h1>
+  <button class="ttab" data-v="doc">需求说明</button>
+  <button class="ttab on" data-v="proto">前端原型</button>
+</div>
+
+<!-- ============ 需求说明 ============ -->
+<div class="view" id="v-doc"><div class="doc">
+<h2>纯净版综合盘（只有游戏）需求说明</h2>
+<div class="dnav"><a href="#d2">一、调整总览</a><a href="#d3">二、网站端</a><a href="#d4">三、飞投（Telegram 机器人 + 小程序）</a></div>
+<p>在现有【播放器】基础上，去掉视频、短视频、聊天相关内容，换一套新的游戏首页和游戏列表布局，生成一个只有游戏的综合盘产品。账户币种改为 <b>USDT</b>，充值只保留 USDT，新增 <b>飞投（Telegram 机器人 + 小程序）</b>。后台、游戏、活动等功能沿用现有系统。</p>
+
+<h3 id="d2">一、调整总览</h3>
+<table>
+<tr><th style="width:110px">模块</th><th>现在【播放器】</th><th>纯净版调整为</th><th style="width:70px">类型</th></tr>
+<tr><td>视频 / 抖阴 / 聊天室</td><td>底部导航有视频、抖阴、聊天三个 Tab，默认落地页为聊天室</td><td>整块去掉，包括入口、推荐位和消息中心里的聊天会话；打开即进入游戏首页</td><td><span class="tag del">去掉</span></td></tr>
+<tr><td>底部导航</td><td>视频 / 抖阴 / 聊天 / 活动 / 游戏 / 我的</td><td>首页 / 优惠 / 飞投 / 客服 / 我的，飞投居中突出</td><td><span class="tag add">调整</span></td></tr>
+<tr><td>首页</td><td>游戏页：Banner + 公告 + 余额栏 + 搜索 + 左侧分类竖栏 + 右侧游戏宫格</td><td>卡片式首页：Banner、跑马灯、账户卡片、分类大卡片、热门游戏</td><td><span class="tag add">新布局</span></td></tr>
+<tr><td>游戏列表</td><td>左分类 + 右宫格，所有平台混排</td><td>分类浮层切换 + 平台页签 + 热门 / 全部品牌 / 最近 / 收藏 + 搜索；收藏、最近、热门页签、搜索为新功能</td><td><span class="tag add">新布局</span></td></tr>
+<tr><td>客服 / 消息中心</td><td>右上角客服弹窗；我的页铃铛进入消息中心（系统公告 / 站内信）</td><td>底部「客服」进入消息中心，页签：客服 / 系统公告 / 站内信；客服页签放原客服弹窗里的联系方式</td><td><span class="tag add">调整</span></td></tr>
+<tr><td>币种</td><td>人民币</td><td>账户余额、投注、派奖、充提、报表全部以 USDT 计</td><td><span class="tag add">调整</span></td></tr>
+<tr><td>充值</td><td>30+ 支付栏目</td><td>只展示 USDT 渠道，沿用现有虚拟币充值流程</td><td><span class="tag keep">沿用</span></td></tr>
+<tr><td>提现 / 收款方式</td><td>多种收款方式</td><td>只支持 USDT 地址</td><td><span class="tag add">调整</span></td></tr>
+<tr><td>飞投</td><td>无</td><td>Telegram 官方机器人 + 小程序，见第三部分</td><td><span class="tag add">新增</span></td></tr>
+<tr><td>我的</td><td>永久VIP卡（视频会员）、观看历史、收藏记录、主播中心、商务洽谈 + 游戏相关功能</td><td>去掉视频相关功能，只保留游戏相关功能，新增飞投卡片</td><td><span class="tag add">调整</span></td></tr>
+<tr><td>登录注册、优惠活动、记录、报表、任务、VIP彩金、推广、安全中心</td><td>—</td><td>沿用现有功能，换新皮肤</td><td><span class="tag keep">沿用</span></td></tr>
+<tr><td>视觉</td><td>暗色 + 粉红</td><td>浅蓝风格新皮肤</td><td><span class="tag add">调整</span></td></tr>
+</table>
+
+<h3 id="d3">二、网站端产品逻辑</h3>
+<h4>1. 首页 <span class="tag add">新布局</span></h4>
+<p>页面从上到下：</p>
+<table>
+<tr><th style="width:110px">区块</th><th>说明</th></tr>
+<tr><td>顶部栏</td><td>左侧站点 Logo；右侧三个图标：搜索（进入全站游戏搜索）、消息（进入消息中心公告页，右上角红点显示公告 + 站内信未读总数）、更多（进入更多菜单）</td></tr>
+<tr><td>Banner</td><td>轮播图，沿用后台 Banner 配置，自动轮播，点击按配置跳转</td></tr>
+<tr><td>跑马灯</td><td>沿用后台跑马灯公告配置</td></tr>
+<tr><td>账户卡片</td><td>未登录：「注册 / 登录」+「登录后解锁更多功能」，右侧飞投、更多。<br>已登录：账号、VIP 等级、USDT 余额（刷新、取回），右侧充值、提现、飞投</td></tr>
+<tr><td>分类入口</td><td>真人、彩票两张大卡片，电子、体育、捕鱼、棋牌四张小卡片；点击进入该分类的游戏列表。分类卡片的图片、副标题可在后台配置，分类下没有开启的游戏时卡片不显示</td></tr>
+<tr><td>热门游戏</td><td>取后台「热门」栏目里的游戏，按栏目排序，最多显示 9 个；「全部 ›」进入游戏列表。未登录点游戏先去登录</td></tr>
+</table>
+
+<h4>2. 游戏列表 <span class="tag add">新布局</span></h4>
+<table>
+<tr><th style="width:110px">区块</th><th>说明</th></tr>
+<tr><td>标题</td><td>当前分类名 + 下拉箭头。点击后从标题下方弹出分类浮层（6 个分类，带图标，当前分类高亮），下方页面加半透明遮罩、内容不移动；点分类即切换并关闭浮层，点遮罩或再次点标题关闭</td></tr>
+<tr><td>平台页签</td><td>「全部」+ 该分类下已开启的平台，按后台平台排序；切换后下方只显示该平台的游戏</td></tr>
+<tr><td>功能页签</td><td>热门 / 全部品牌 / 最近 / 收藏 + 右侧搜索图标，规则见下表</td></tr>
+<tr><td>游戏卡片</td><td>游戏图、左上角平台名、右上角收藏星标、下方游戏名；三列排列。点击进入游戏，沿用现有免转</td></tr>
+<tr><td>真人 / 体育</td><td>这两类按平台大厅进入，不显示功能页签，直接列平台卡片（平台名、简介、进入按钮）</td></tr>
+</table>
+<table>
+<tr><th style="width:110px">功能 <span class="tag add">新增</span></th><th>规则</th></tr>
+<tr><td>热门</td><td>默认页签。显示后台「热门」栏目中属于当前分类（和当前平台）的游戏，按栏目排序；列表底部提示「此处仅展示热门游戏，查看更多请切换全部品牌」。没有热门游戏时显示「全部品牌」的内容</td></tr>
+<tr><td>全部品牌</td><td>当前分类（和当前平台）下所有已开启的游戏，按后台游戏排序</td></tr>
+<tr><td>最近</td><td>当前账号最近进入过的游戏，只显示当前分类的，按最近进入时间倒序，最多 20 个；记录跟着账号走，换设备也能看到。未登录显示「登录后查看」；没有记录显示「还没有玩过这个分类的游戏」</td></tr>
+<tr><td>收藏</td><td>点游戏右上角星标收藏，再点取消；任何页签里都能点。收藏页签按收藏时间倒序显示当前分类的收藏游戏，最多收藏 100 个；记录跟着账号走。未登录点星标提示登录；没有收藏显示「还没有收藏，点游戏右上角 ☆ 收藏」</td></tr>
+<tr><td>搜索</td><td>点搜索图标展开输入框，在当前分类内按游戏名称模糊匹配，输入即出结果；没有结果显示「没有找到相关游戏」。首页的搜索为全站搜索，跨所有分类</td></tr>
+</table>
+
+<h4>3. 消息中心（底部「客服」）<span class="tag add">改造</span></h4>
+<ol>
+<li>底部「客服」进入消息中心，页签：<b>客服 / 系统公告 / 站内信</b>。从首页消息图标进入时默认打开「系统公告」。</li>
+<li><b>客服</b>：标题「7×24 在线客服」+ 说明，下方列出后台配置的客服联系方式（即现在客服弹窗里的内容：头像、名称、「7x24小时在线客服为您服务」、立即咨询），点立即咨询按配置跳转（在线客服页、Telegram 客服账号等）。</li>
+<li><b>系统公告、站内信</b>：沿用现在的消息中心，内容、可见层级都按后台配置；未读显示红点，页签上显示未读数。点进详情后变为已读。</li>
+<li>系统公告、站内信列表上方新增筛选：时间（今日 / 昨日 / 本周 / 上周 / 本月 / 上月 / 全部）、状态（全部 / 已读 / 未读）、标题搜索；右上角「全部已读」。</li>
+</ol>
+
+<h4>4. 其他子页面</h4>
+<p>个人报表、每日任务、VIP彩金、推广赚钱、安全中心、个人资料、APP下载、活动详情：沿用现有页面，换新皮肤。设置页：个人资料、安全中心、退出登录。</p>
+<h4>5. 充值（USDT）</h4>
+<ol>
+<li>充值中心只展示 USDT 渠道（按协议 TRC20 / ERC20），沿用【播放器】虚拟币类「先选渠道，再输金额，下单后付款」的流程。</li>
+<li>金额以 USDT 输入；上下限、快捷金额、用户手续费、角标优惠取所选渠道 / 栏目配置；显示支付数量、手续费、到账数量。</li>
+<li>下单后进入付款页：二维码、收款地址、协议、转账数量、订单号、倒计时；「我已完成转账」回到交易记录，链上确认后自动到账；可取消订单。</li>
+</ol>
+<h4>6. 提现与收款方式</h4>
+<ol>
+<li>只提现到 USDT 地址；未绑定时先引导添加。添加需选择协议、填地址和备注、短信验证码，按协议校验地址格式，最多 3 个。</li>
+<li>金额以 USDT 输入，显示手续费、到账数量、剩余打码量；打码量未完成不可提交。</li>
+</ol>
+<h4>7. 我的 / 更多</h4>
+<ol>
+<li>保留交易记录、投注记录（可按网站 / 飞投筛选）、个人报表、每日任务、VIP彩金、推广赚钱、收款方式、安全中心、客服中心、APP下载、设置。</li>
+<li>新增「飞投」卡片，显示 Telegram 绑定状态。</li>
+</ol>
+
+<h3 id="d4">三、飞投（Telegram 机器人 + 小程序）</h3>
+<h4>1. 是什么</h4>
+<p>「飞机」即 Telegram。飞投由一个 Telegram 官方机器人和一个 Telegram 小程序组成。机器人负责注册 / 绑定、账号信息、充值、提现入口、客服和 APP 下载；点「进入游戏」就在 Telegram 里打开整个网站（小程序），免登录，游戏都在小程序里玩。玩家不用记网址、不用下载 APP，在 Telegram 里就能完成注册、充值、游戏、提现。</p>
+<p>配套官方频道、客服 Telegram 账号、代理招商 Telegram 账号，链接都在后台配置。</p>
+
+<h4>2. 入口</h4>
+<ol>
+<li>网站：首页账户卡片「飞投」、底部导航「飞投」、我的页飞投卡片 → 网站飞投页 → 打开机器人。</li>
+<li>Telegram：搜索机器人、官方频道里的链接、推广链接。</li>
+</ol>
+
+<h4>3. 首次进入（未注册 / 未绑定）</h4>
+<ol>
+<li>机器人主页显示「开始」按钮；点击后机器人依次发送：
+ <ul><li>欢迎卡片：宣传图 + 机器人介绍（平台卖点「U存U提·匿名无忧」、游戏分类、代理合作联系方式、官方网址 / 频道 / 飞投 / 客服）。</li>
+ <li>一句口号。</li>
+ <li>「请选择绑定或注册账号」，按钮「👤 注册账号」「🔗 绑定账号」。</li></ul></li>
+<li>从网站飞投页点「绑定 Telegram」进来的，点「开始」后直接绑定当前网站账号，不再出现注册 / 绑定选择。</li>
+</ol>
+
+<h4>4. 注册账号</h4>
+<ol>
+<li>点「注册账号」即用当前 Telegram 身份一键注册，无需填写任何信息；注册来源记为「Telegram」。</li>
+<li>系统自动生成会员账号和登录密码。机器人回复「🏆 欢迎使用 XX 投注小程序」和账号卡片：会员ID、会员账号、会员密码、USDT 余额、VIP 等级。会员密码只在注册成功这条消息里显示，玩家可用它在网站 / APP 登录。</li>
+<li>网站和 APP 需要支持「账号 + 密码」登录（Telegram 注册的账号没有手机号）；玩家可在安全中心补绑手机号。</li>
+<li>已注册的 Telegram 再点「开始」，回复「您已经注册，无需再次注册。」</li>
+</ol>
+
+<h4>5. 绑定账号</h4>
+<ol>
+<li>点「绑定账号」，机器人回复「请在小程序中登录要绑定的网站账号」+「🔐 登录绑定」按钮；点击在小程序打开登录页，登录成功即绑定，机器人回复绑定成功和账号卡片。</li>
+<li>一个网站账号只能绑一个 Telegram，一个 Telegram 只能绑一个网站账号；已被占用时提示「该 Telegram 已绑定其他账号」。</li>
+<li>解绑在网站飞投页操作，需短信验证码。</li>
+</ol>
+
+<h4>6. 底部快捷菜单</h4>
+<p>注册 / 绑定后，输入框下方常驻 6 个按键，两列排列：🏠 账号信息、🎮 进入游戏、💰 充值、💳 提现、👧 官方客服、📲 下载APP。点击等于发送这句话。</p>
+
+<h4>7. 各功能回复</h4>
+<table>
+<tr><th style="width:100px">功能</th><th>机器人回复</th><th style="width:250px">消息下方按钮</th></tr>
+<tr><td>账号信息</td><td>「🏆 欢迎使用 XX 投注小程序」+「您的账号信息」：会员ID、会员账号、USDT 余额、VIP 等级（不显示密码）</td><td>🎮 进入游戏（小程序）；💳 提现（小程序）、👧 官方客服；📲 下载APP、💰 充值</td></tr>
+<tr><td>进入游戏</td><td>不发消息，直接打开小程序首页</td><td>—</td></tr>
+<tr><td>充值</td><td>「✅ 用户充值 / 💰 充值 / 💵 余额：x USDT」</td><td>各 USDT 渠道（如 💵 TRC20、💵 ERC20，按后台开启的渠道）、📃 充值记录；👧 官方客服、📲 下载APP；↩️ 返回</td></tr>
+<tr><td>· 选渠道</td><td>「请回复您要充值的金额（下限-上限）」，范围取该渠道单笔上下限</td><td>🚫 取消订单</td></tr>
+<tr><td>· 回复金额</td><td>超出范围：「金额需在 x-x 之间，请重新回复」。通过：生成充值订单，回复订单信息：订单号、充值金额、手续费、到账金额、协议、收款地址、收款二维码、30 分钟有效提示</td><td>📋 复制地址；🚫 取消订单</td></tr>
+<tr><td>· 结果推送</td><td>链上到账：「✅ 充值成功」+ 到账金额 + 余额；超时：「充值超时，订单失效」；取消：「订单已取消」</td><td>到账后附 🎮 进入游戏</td></tr>
+<tr><td>· 充值记录</td><td>最近 5 笔充值：时间、金额、状态</td><td>↩️ 返回</td></tr>
+<tr><td>提现</td><td>「✅ 用户提现」</td><td>💳 提现（小程序打开提现页）；👧 官方客服、📲 下载APP</td></tr>
+<tr><td>官方客服</td><td>两行：「点击联系客服　官方客服 - TG客服」「点击联系客服　官方客服 - 在线客服」。TG客服跳到客服的 Telegram 账号私聊；在线客服在小程序打开在线客服页</td><td>—</td></tr>
+<tr><td>下载APP</td><td>「Android Download ● 原生APP」「IOS Download ● 原生APP ● iOS描述签」，均为下载链接</td><td>—</td></tr>
+<tr><td>其他文字</td><td>「请使用下方菜单操作 👇」</td><td>—</td></tr>
+<tr><td>未注册时点功能</td><td>「请先注册或绑定账号」</td><td>👤 注册账号；🔗 绑定账号</td></tr>
+</table>
+<p class="hint" style="color:#909399">消息下方按钮里，带小程序图标的会在 Telegram 内打开小程序；普通按钮在聊天里继续回复。</p>
+
+<h4>8. 小程序</h4>
+<ol>
+<li>小程序就是本网站页面在 Telegram 内打开：顶部显示机器人名称，右上角 ✕ 关闭回到聊天，底部显示机器人账号。</li>
+<li>已绑定 Telegram 自动登录，页面、游戏、充值、提现、活动与网站完全一致。</li>
+<li>在小程序里下的注单，来源标记「飞投」，在投注记录里可按网站 / 飞投筛选；同样计入打码量、返水、VIP 成长和报表。</li>
+</ol>
+
+<h4>9. 与网站的数据关系</h4>
+<ol>
+<li>同一账户、同一 USDT 余额；机器人里充值生成的订单与网站充值订单相同，在交易记录中可见。</li>
+<li>网站发起的充值到账、提现结果，已绑定 Telegram 的玩家也会收到机器人推送。</li>
+</ol>
+
+<h4>10. 后台需要能配置</h4>
+<ol>
+<li>机器人、官方频道、客服 Telegram 账号、在线客服、APP 下载（安卓 / iOS / iOS描述签）链接；没配置的按钮和文字不显示。</li>
+<li>欢迎卡片的宣传图和介绍文案、口号。</li>
+<li>充值渠道沿用 USDT 支付渠道配置。</li>
+</ol>
+</div></div>
+
+<!-- ============ 原型 ============ -->
+<div class="view on" id="v-proto">
+<div class="proto">
+  <div class="pindex" id="pindex"></div>
+  <div class="phone"><div class="screen" id="screen"></div></div>
+  <div class="notes"><div class="ncard"><div class="hd">需求说明</div><div class="bd" id="notes"></div></div></div>
+</div>
+</div>
+
+<script>
+{
+// ================= data =================
+const S={login:true,user:'ben123',id:'100039429',bal:1238.56,vip:3,tg:false,tgName:'@ben_888',
+  addrs:[{chain:'TRC20',addr:'TQ7xYk2m9PqR4sVw8bN3cLhF6dJzA1eU9F',memo:'常用地址'}],
+  orders:[{t:'USDT充值',chain:'TRC20',amt:100,fee:1,st:'成功',no:'R2026112514220018',time:'11-25 14:22'},
+          {t:'提现',chain:'TRC20',amt:-50,fee:1,st:'审核中',no:'W2026112410051133',time:'11-24 10:05'}],
+  bets:[{g:'一分快三',c:'大',src:'飞投',amt:100,win:198,st:'中奖',time:'11-26 16:20'},{g:'PG麻将胡了',c:'PG电子',src:'飞投',amt:5,win:0,st:'未中',time:'11-26 16:05'},{g:'麻将胡了2',c:'PG电子',src:'网站',amt:20,win:0,st:'未中',time:'11-26 15:02'},{g:'一分六合彩',c:'特大',src:'网站',amt:10,win:19.8,st:'中奖',time:'11-26 13:10'}],
+  fav:new Set(['麻将胡了2','一分快三']),recent:['麻将胡了','一分六合彩'],
+  notices:[{id:1,title:'关于真人视讯游戏场馆规范的公告',time:'2026/11/26 10:00',read:false,body:'为保障玩家权益，即日起真人视讯场馆统一执行新的投注规范，详细规则请查看各场馆说明。如有疑问请联系客服。'},
+           {id:2,title:'飞投上线：Telegram 一键注册',time:'2026/11/25 18:00',read:false,body:'官方飞投机器人已上线，Telegram 一键注册，U存U提，在 Telegram 里直接玩。'},
+           {id:3,title:'系统维护通知',time:'2026/11/20 02:00',read:true,body:'11 月 21 日 02:00–04:00 系统维护，期间暂停充值和提现。'}],
+  letters:[{id:11,title:'充值到账通知',time:'2026/11/25 14:25',read:false,body:'您的 USDT 充值 100.00 已到账，到账金额 99.00 USDT。'},
+           {id:12,title:'VIP3 晋级彩金已发放',time:'2026/11/22 09:00',read:true,body:'恭喜晋级 VIP3，晋级彩金 18 USDT 已发放至您的账户。'}]};
+S.unreadN=()=>S.notices.filter(x=>!x.read).length+S.letters.filter(x=>!x.read).length;
+const KF=[['在线客服','#1677ff','客','在线客服页'],['TG 在线客服','#2aabee','✈','客服 Telegram 账号'],['TG 代理招商','#13a35a','✈','代理 Telegram 账号'],['USDT 充值专员','#26a17b','₮','在线客服页']];
+window.S=S;
+const CATS=['真人','彩票','电子','体育','捕鱼','棋牌'];
+const COL=['#ff7a45','#36cfc9','#9254de','#f759ab','#40a9ff','#73d13d','#ffc53d','#597ef7','#ff4d4f','#13c2c2'];
+const G={
+ '电子':{plats:['PG','PP电子','JDB','MG','CQ9','FC电子'],games:[['麻将胡了2','PG'],['麻将胡了','PG'],['寻宝黄金城','PG'],['赏金女王','PG'],['糖果连连爆','PP电子'],['PP大魔法师','PP电子'],['赢财神','JDB'],['小鸡跑酷','JDB'],['MG妖精出击','MG'],['神奇法老','MG'],['皇家游轮','CQ9'],['埃及秘宝','FC电子'],['幸运熊猫','FC电子'],['银河宝藏','CQ9'],['汉堡大升级','PP电子']]},
+ '彩票':{plats:['自营彩票'],games:[['一分快三','自营彩票'],['一分六合彩','自营彩票'],['一分赛车','自营彩票'],['一分时时彩','自营彩票'],['一分11选5','自营彩票'],['一分快乐十分','自营彩票'],['PC28','自营彩票'],['香港六合彩','自营彩票'],['澳门六合彩','自营彩票'],['秒开快三','自营彩票'],['鱼虾蟹','自营彩票'],['一分动物彩','自营彩票']]},
+ '真人':{lobby:true,plats:[['AG','AG真人','百家乐 / 龙虎 / 牛牛'],['BG','BG视讯','传统百家乐 / 骰宝'],['MG','MG视讯','免佣百家乐'],['BBIN','BBIN真人','百家乐 / 轮盘']]},
+ '体育':{lobby:true,plats:[['沙巴','沙巴体育','足球 / 篮球 / 电竞'],['熊猫','熊猫体育','全球赛事'],['开元','开元体育','足球 / 篮球']]},
+ '捕鱼':{plats:['JDB','MG','瓦力','开元'],games:[['财神捕鱼','JDB'],['金刚捕鱼','MG'],['WALI捕鱼','瓦力'],['捕鱼传说','开元'],['极速钓虾','瓦力']]},
+ '棋牌':{plats:['开元棋牌','美天棋牌','欢乐棋牌','瓦力'],games:[['百人牛牛','开元棋牌'],['斗地主','开元棋牌'],['二八杠','开元棋牌'],['王牌炸金花','美天棋牌'],['21点','欢乐棋牌'],['HL炸金花','欢乐棋牌'],['百变牛牛','欢乐棋牌'],['大话骰','欢乐棋牌'],['瓦力鱼虾蟹','瓦力']]}
+};
+const HOT=[['麻将胡了2','PG'],['一分快三','自营彩票'],['一分六合彩','自营彩票'],['百人牛牛','开元棋牌'],['寻宝黄金城','PG'],['PC28','自营彩票']];
+const CHAINS=[{k:'TRC20',min:10,max:50000,fee:'1%',feeR:.01,bonus:'送1%',addr:'TXk9cR2vH7mQpL4aW8sN6eY3uB5tZ1jD0f'},
+              {k:'ERC20',min:50,max:50000,fee:'2 USDT/笔',feeF:2,addr:'0x8f3A9cD21bE47f5a6C0e9B8d7F2a1c3E5b6D4a90'}];
+const PROMO={'全部':[['首存赠送100%','长期活动','#ff7a45'],['每日返奖 实时领取','长期活动','#40a9ff'],['电子返水1.5%','至 2027-10-31','#9254de'],['彩票盈亏活动','长期活动','#f759ab'],['飞投首注返 5 USDT','长期活动','#2aabee']],
+ '首存':[['首存赠送100%','长期活动','#ff7a45']],'返水':[['电子返水1.5%','至 2027-10-31','#9254de'],['每日返奖 实时领取','长期活动','#40a9ff']],
+ '彩票':[['彩票盈亏活动','长期活动','#f759ab']],'飞投':[['飞投首注返 5 USDT','长期活动','#2aabee']],'VIP':[['VIP晋级彩金','长期活动','#ffc53d']]};
+
+// ================= helpers =================
+let stack=[{p:'home'}],tmp={};
+const $=s=>document.querySelector(s);
+const cur=()=>stack[stack.length-1];
+const TABS=['home','promo','feitou','service','mine'];
+const NEED=['recharge','withdraw','feitou','mine','records','addrs','addAddr','bets','order'];
+function needLogin(p){return !S.login&&NEED.includes(p);}
+function go(p,a={}){if(needLogin(p))return go('login',{next:p,na:a});stack.push({p,...a});tmp={};render();}
+function tab(p){if(MINI){stack=stack.slice(0,TG.ret).concat([{p}]);tmp={};render();return;}if(needLogin(p))return go('login',{next:p});stack=[{p}];tmp={};render();}
+function back(){if(MINI&&stack.length<=TG.ret+1)return closeMini();if(stack.length>1)stack.pop();tmp={};render();}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;$('#screen').appendChild(d);setTimeout(()=>d.remove(),1700);}
+function fmt(n){return Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function nav(t,rt=''){return `<div class="nav"><button class="bk" onclick="back()">‹</button>${t}${rt}</div>`;}
+function tabbar(on){const it=[['home','首页','🏠'],['promo','优惠','🎁'],['feitou','飞投','✈'],['service','客服','💬'],['mine','我的','👤']];
+ return `<div class="tabbar">${it.map(([k,n,i])=>`<button class="${on===k?'on':''} ${k==='feitou'?'mid':''}" onclick="tab('${k}')"><span class="ic">${i}</span>${n}</button>`).join('')}</div>`;}
+function gcol(n){let h=0;for(const c of n)h+=c.charCodeAt(0);return COL[h%COL.length];}
+function gtile([n,p]){return `<div class="gi" onclick="enterGame('${n}')"><div class="pic" style="background:linear-gradient(135deg,${gcol(n)},${gcol(n+'x')})"><span class="pv">${p}</span><span class="fv" onclick="event.stopPropagation();fav('${n}')">${S.fav.has(n)?'⭐':'☆'}</span>${n}</div><div class="nm">${n}</div></div>`;}
+function enterGame(n){if(!S.login)return go('login');S.recent=[n,...S.recent.filter(x=>x!==n)].slice(0,12);toast(`进入「${n}」，余额自动转入游戏`);}
+function fav(n){if(!S.login){toast('请先登录');return;}S.fav.has(n)?S.fav.delete(n):S.fav.add(n);render();}
+function U(n,c=''){return `<span class="ut">₮</span>${fmt(n)}${c}`;}
+function confirmDlg(t,m,ok,okt='确定'){const d=document.createElement('div');d.className='mask';d.innerHTML=`<div class="dlg"><h4>${t}</h4><p>${m}</p><div class="bs"><button style="background:#f0f3f8;color:#3b4a66">取消</button><button style="background:#1677ff;color:#fff">${okt}</button></div></div>`;
+ const [c,o]=d.querySelectorAll('button');c.onclick=()=>d.remove();o.onclick=()=>{d.remove();ok();};$('#screen').appendChild(d);}
+Object.assign(window,{go,tab,back,toast,fav,enterGame,confirmDlg,cur});
+
+// ================= website pages =================
+const P={};
+P.home=()=>{
+ const slides=[['六合彩封顶赔率 49 倍','一分六合 · 香港六合 · 澳门六合','#4f9dff,#1660e8'],['USDT 充值 笔笔送 1%','TRC20 链上确认自动到账','#26a17b,#1b8a68'],['飞投上线 · Telegram 一键注册','不用记网址，在 Telegram 里直接玩','#2aabee,#1677ff']];
+ return `<div class="body">
+ <div class="hd-home"><div class="logo">LOGO</div><div class="ics"><span onclick="go('search')">🔍</span><span onclick="go('msg')">✉️${S.login&&S.unreadN()?`<i class="dot">${S.unreadN()}</i>`:''}</span><span onclick="go('more')">☰</span></div></div>
+ <div class="banner" id="bn">${slides.map((s,i)=>`<div class="sl ${i?'':'on'}" style="background:linear-gradient(120deg,${s[2]});color:#fff"><b>${s[0]}</b><i>${s[1]}</i></div>`).join('')}<div class="dots">${slides.map((s,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div></div>
+ <div class="marq card"><span>📢</span><div class="t"><span>欢迎来到本站！USDT 充值笔笔加赠 1%，飞投已上线，Telegram 一键注册、U存U提，在 Telegram 里直接玩，祝各位老板天天满载而归！</span></div></div>
+ ${S.login?`<div class="ucard card"><div class="l"><div class="s">${S.user} · VIP3</div><div class="bal">${U(S.bal)} <small onclick="toast('余额已刷新')">⟳</small><small onclick="toast('已从游戏取回全部余额')">取回</small></div></div>
+   <div class="qbtn" onclick="go('recharge')"><span class="c">＋</span>充值</div><div class="qbtn" onclick="go('withdraw')"><span class="c">↑</span>提现</div><div class="qbtn" onclick="tab('feitou')"><span class="c">✈</span>飞投</div></div>`
+ :`<div class="ucard card"><div class="l" onclick="go('login')" style="cursor:pointer"><div class="n">注册 / 登录</div><div class="s">登录后解锁更多功能</div></div><div class="qbtn" onclick="tab('feitou')"><span class="c">✈</span>飞投</div><div class="qbtn" onclick="go('more')"><span class="c">⋯</span>更多</div></div>`}
+ <div class="bento">
+   <div class="bk1 card" onclick="go('games',{cat:'真人'})"><div class="tt"><i>真</i>真人</div><div class="sub">AG · BG · MG · BBIN</div><div class="art">🃏</div></div>
+   <div class="bk1 card" onclick="go('games',{cat:'彩票'})"><div class="tt"><i>彩</i>彩票</div><div class="sub">一分快三 · 六合彩 · PC28</div><div class="art">🎱</div></div>
+ </div>
+ <div class="cat4">${[['电子','🎰'],['体育','⚽'],['捕鱼','🐟'],['棋牌','♠️']].map(([n,e])=>`<div class="c card" onclick="go('games',{cat:'${n}'})"><span class="e">${e}</span>${n}</div>`).join('')}</div>
+ <div class="sec">🔥 热门游戏<a onclick="go('games',{cat:'电子'})">全部 ›</a></div>
+ <div class="ggrid">${HOT.map(gtile).join('')}</div>
+ </div>${tabbar('home')}`;};
+P.games=(a)=>{
+ const cat=a.cat||'电子',d=G[cat];tmp.plat=tmp.plat||'全部';tmp.sub=tmp.sub||'热门';if(a.search&&tmp.q===undefined){tmp.q='';tmp.sr=1;}
+ const head=`<div class="nav"><button class="bk" onclick="back()">‹</button><span style="cursor:pointer" onclick="tmp.pick=!tmp.pick;render()">${cat} ${tmp.pick?'▴':'▾'}</span></div>`;
+ const CI={'真人':'🃏','彩票':'🎱','电子':'🎰','体育':'⚽','捕鱼':'🐟','棋牌':'♠️'};const picker=tmp.pick?`<div class="cpk-mask" onclick="tmp.pick=false;render()"></div><div class="cpk">${CATS.map(c=>`<span class="${c===cat?'on':''}" onclick="cur().cat='${c}';setTmp({});render()"><i>${CI[c]}</i>${c}</span>`).join('')}</div>`:'';
+ if(d.lobby)return head+`<div class="body" style="padding-top:6px">${d.plats.map(([s,n,t],i)=>`<div class="plat card" onclick="enterGame('${n}')"><div class="lg" style="background:${COL[i*2]}">${s}</div><div class="in"><b>${n}</b><div>${t}</div></div><span class="go">进入</span></div>`).join('')}</div>`+picker;
+ let list=d.games.filter(g=>tmp.plat==='全部'||g[1]===tmp.plat);
+ if(tmp.sub==='热门')list=list.slice(0,9);
+ if(tmp.sub==='最近')list=S.recent.map(n=>d.games.find(g=>g[0]===n)).filter(Boolean);
+ if(tmp.sub==='收藏')list=d.games.filter(g=>S.fav.has(g[0]));
+ if(tmp.q)list=d.games.filter(g=>g[0].includes(tmp.q));
+ const emp=tmp.sub==='收藏'&&!S.login?'登录后查看收藏':tmp.sub==='收藏'?'还没有收藏，点游戏右上角 ☆ 收藏':tmp.sub==='最近'?'还没有玩过这个分类的游戏':'没有找到相关游戏';
+ return head+`<div class="ptabs">${['全部',...d.plats].map(p=>`<button class="${p===tmp.plat?'on':''}" onclick="tmp.plat='${p}';render()">${p}</button>`).join('')}</div>
+ <div class="stabs">${['热门','全部品牌','最近','收藏'].map(s=>`<span class="${s===tmp.sub?'on':''}" onclick="tmp.sub='${s}';tmp.q='';render()">${s}</span>`).join('')}<span class="sr" onclick="tmp.sr=!tmp.sr;render()">🔍</span></div>
+ ${tmp.sr?`<div class="srch">🔍<input id="q" placeholder="搜索游戏名称" value="${tmp.q||''}" oninput="tmp.q=this.value;render();setTimeout(()=>{const i=document.querySelector('#q');i.focus();i.setSelectionRange(99,99)})"></div>`:''}
+ <div class="body"><div class="ggrid" style="padding-top:4px">${list.map(gtile).join('')}</div>${list.length?(tmp.sub==='热门'&&!tmp.q?'<div class="hint" style="text-align:center;padding:4px 0 16px">此处仅展示热门游戏，查看更多请切换「全部品牌」</div>':''):`<div class="empty">${emp}</div>`}</div>`+picker;};
+P.login=()=>{tmp.m=tmp.m||'login';
+ return nav('')+`<div class="body"><div style="text-align:center;margin:10px 0 4px" class="logo">LOGO</div>
+ <div class="lgtab"><span class="${tmp.m==='login'?'on':''}" onclick="tmp.m='login';render()">登录</span><span class="${tmp.m==='reg'?'on':''}" onclick="tmp.m='reg';render()">注册</span></div>
+ <div class="form"><div class="fi"><span>📱</span><span style="color:#3b4a66">+86</span><input placeholder="请输入手机号" value="13845151551"></div>
+ <div class="fi"><span>🔑</span><input placeholder="请输入验证码"><span class="sm" onclick="toast('验证码已发送')">获取验证码</span></div>
+ ${tmp.m==='reg'?`<div class="fi"><span>🎫</span><input placeholder="邀请码（选填）"></div><div class="hint" style="margin:-2px 2px 10px">✅ 我已满 18 岁，并已阅读同意《用户协议》</div>`:''}
+ <button class="pbtn" onclick="doLogin()">${tmp.m==='reg'?'注册':'登录'}</button>
+ <div style="display:flex;justify-content:space-between;margin-top:12px" class="hint"><a onclick="tab('service')" style="cursor:pointer;color:#1677ff">联系客服</a><span>未注册手机号验证后自动注册</span></div></div></div>`;};
+window.doLogin=()=>{if(MINI&&TG.binding){TG.binding=false;S.login=true;S.tg=true;S.user='ben123';S.id='100039429';S.vip=3;bot('✅ 绑定成功');acct(false);closeMini();return;}const reg=tmp.m==='reg';S.login=true;const n=cur().next,na=cur().na||{};stack=[{p:'home'}];if(n&&n!=='home'){TABS.includes(n)?stack=[{p:n}]:stack.push({p:n,...na});}tmp={};render();toast(reg?'注册成功':'登录成功');};
+window.setTmp=v=>{tmp=v;};
+P.recharge=()=>{tmp.ch=tmp.ch||'TRC20';const c=CHAINS.find(x=>x.k===tmp.ch);const v=parseFloat(tmp.v||0)||0;
+ const fee=v?(c.feeR?+(v*c.feeR).toFixed(2):c.feeF):0;const arr=Math.max(0,v-fee);const bonus=c.bonus?v*.01:0;
+ const err=v&&(v<c.min||v>c.max)?`单笔 ${c.min} – ${c.max} USDT`:'';
+ return nav('充值中心',`<span class="rt" onclick="go('records')">充值记录</span>`)+`<div class="body">
+ <div class="balcard"><div><div style="font-size:12px;opacity:.85">我的余额</div><div class="v">${fmt(S.bal)}<small>USDT</small></div></div><div class="lk"><span class="pri" onclick="go('withdraw')">提现</span><span onclick="go('records')">交易记录</span></div></div>
+ <div class="blk card"><div class="t">支付渠道</div><div class="chs">${CHAINS.map(x=>`<div class="ch ${x.k===tmp.ch?'on':''}" onclick="tmp.ch='${x.k}';tmp.v='';render()">${x.bonus?`<span class="bd">${x.bonus}</span>`:''}<b>USDT-${x.k}</b><div>手续费 ${x.fee}</div><div>单笔 ${x.min}–${x.max}</div></div>`).join('')}</div></div>
+ <div class="blk card"><div class="t">充值金额</div>
+ <div class="amts">${[10,50,100,500,1000,2000,5000,10000].filter(n=>n>=c.min).slice(0,8).map(n=>`<span class="${v===n?'on':''}" onclick="tmp.v=${n};render()">${n}</span>`).join('')}</div>
+ <div class="ainp"><input id="amt" type="number" placeholder="请输入充值金额" value="${tmp.v||''}" oninput="tmp.v=this.value;render();setTimeout(()=>document.querySelector('#amt').focus())"><span class="u">USDT</span></div>
+ ${err?`<div style="color:#f5222d;font-size:12px;margin-top:6px">${err}</div>`:''}
+ <div style="margin-top:10px;border-top:1px dashed #e1e8f3;padding-top:8px">
+ <div class="kv"><span>支付金额</span><b>${v.toFixed(2)} USDT</b></div>
+ <div class="kv"><span>手续费（${c.fee}）</span><b>−${fee.toFixed(2)} USDT</b></div>
+ <div class="kv"><span>到账金额</span><span class="hl">${fmt(arr)} USDT</span></div>
+ ${bonus?`<div class="kv"><span>活动赠送（1%）</span><b style="color:#13a35a">+${fmt(bonus)} USDT</b></div>`:''}</div></div>
+ <div style="margin:14px 12px"><button class="pbtn" ${!v||err?'disabled':''} onclick="newOrder()">立即充值</button></div>
+ <div class="blk card"><div class="t">充值说明</div><div class="hint">1. 请使用支持 ${c.k} 协议的钱包转账，转错链无法找回。<br>2. 转账金额须与订单一致，链上确认后自动到账。<br>3. 订单 30 分钟内有效，超时请重新下单。</div></div>
+ </div>`;};
+window.newOrder=()=>{const c=CHAINS.find(x=>x.k===tmp.ch);const v=parseFloat(tmp.v);const fee=c.feeR?+(v*c.feeR).toFixed(2):c.feeF;
+ const o={t:'USDT充值',chain:c.k,amt:v,fee,st:'申请中',no:'R'+Date.now(),time:'刚刚',addr:c.addr,end:Date.now()+30*60e3};
+ S.orders.unshift(o);go('order',{no:o.no});};
+P.order=(a)=>{const o=S.orders.find(x=>x.no===a.no);const left=Math.max(0,o.end-Date.now());const mm=String(Math.floor(left/60e3)).padStart(2,'0'),ss=String(Math.floor(left%60e3/1e3)).padStart(2,'0');
+ return nav('USDT 付款')+`<div class="body">
+ <div class="blk card" style="text-align:center"><div class="cd">请在 <b id="cd">${mm}:${ss}</b> 内完成转账</div>
+ <div style="font-size:12px;color:#7a8aa3;margin-top:10px">需转账金额</div><div style="font-size:28px;font-weight:800;color:#1677ff">${o.amt.toFixed(2)} <span style="font-size:14px">USDT</span></div>
+ <span class="pill" style="margin-top:4px">${o.chain} 协议</span>
+ <div class="qr"></div>
+ <div class="addr"><span>${o.addr}</span><a onclick="toast('地址已复制')">复制</a></div>
+ <div class="kv" style="margin-top:10px"><span>订单号</span><b>${o.no} <a style="color:#1677ff;font-weight:400;cursor:pointer" onclick="toast('已复制')">复制</a></b></div>
+ <div class="kv"><span>到账金额</span><span class="hl">${fmt(o.amt-o.fee)} USDT</span></div></div>
+ <div style="margin:0 12px"><div class="warn">⚠️ 只能向此地址转入 USDT-${o.chain}，转入其他币种或其他链将无法找回；转账金额须与上方一致，否则无法自动到账。</div></div>
+ <div style="margin:14px 12px;display:flex;flex-direction:column;gap:10px"><button class="pbtn" onclick="paid('${o.no}')">我已完成转账</button><button class="pbtn gh" onclick="cancelOrder('${o.no}')">取消订单</button></div></div>`;};
+window.paid=no=>{stack=[{p:'mine'},{p:'records'}];tmp={};render();toast('已提交，链上确认后自动到账');
+ setTimeout(()=>{const o=S.orders.find(x=>x.no===no);if(o&&o.st==='申请中'){o.st='成功';S.bal+=o.amt-o.fee;if(S.tg)TGpush(`💳 <b>充值到账</b><br>金额：${fmt(o.amt-o.fee)} USDT<br>余额：<b>${fmt(S.bal)} USDT</b>`,[[{t:'🎮 进入游戏',a:'app:home',m:1}]]);render();}},4000);};
+window.cancelOrder=no=>confirmDlg('取消订单','取消后该地址不再接收本订单的转账，确定取消吗？',()=>{S.orders.find(x=>x.no===no).st='已取消';back();toast('订单已取消');});
+P.withdraw=()=>{if(!S.addrs.length)return nav('提现')+`<div class="body"><div class="empty">还没有绑定 USDT 收款地址<br><br><button class="pbtn" style="width:200px;margin:0 auto" onclick="go('addAddr')">去添加地址</button></div></div>`;
+ tmp.ai=tmp.ai||0;const ad=S.addrs[tmp.ai];const v=parseFloat(tmp.v||0)||0;const need=tmp.dama?128:0;const fee=v?1:0;
+ return nav('提现',`<span class="rt" onclick="go('records')">提现记录</span>`)+`<div class="body">
+ <div class="balcard"><div><div style="font-size:12px;opacity:.85">可提现余额</div><div class="v">${fmt(S.bal)}<small>USDT</small></div></div><div class="lk"><span class="pri" onclick="toast('已从游戏取回全部余额')">一键取回</span></div></div>
+ <div class="blk card"><div class="t">收款地址<a onclick="go('addrs')">管理 ›</a></div>${S.addrs.map((x,i)=>`<div class="ch ${i===tmp.ai?'on':''}" style="margin-bottom:8px" onclick="tmp.ai=${i};render()"><b>USDT-${x.chain}</b> <span style="font-size:12px;color:#7a8aa3">${x.memo}</span><div style="font-family:monospace">${x.addr.slice(0,8)}…${x.addr.slice(-6)}</div></div>`).join('')}</div>
+ <div class="blk card"><div class="t">提现金额</div><div class="ainp"><input id="wamt" type="number" placeholder="最低 20 USDT" value="${tmp.v||''}" oninput="tmp.v=this.value;render();setTimeout(()=>document.querySelector('#wamt').focus())"><span class="u" style="cursor:pointer;color:#1677ff" onclick="tmp.v=${Math.floor(S.bal)};render()">全部</span></div>
+ <div class="kv" style="margin-top:8px"><span>手续费</span><b>${fee.toFixed(2)} USDT</b></div>
+ <div class="kv"><span>到账金额</span><span class="hl">${fmt(Math.max(0,v-fee))} USDT</span></div>
+ <div class="kv"><span>剩余打码量</span><b>${need?fmt(need)+' USDT':'0.00（可提现）'}</b></div>
+ <div class="hint" style="margin-top:4px;cursor:pointer" onclick="tmp.dama=!tmp.dama;render()">（演示：点此切换打码量未完成）</div></div>
+ <div style="margin:14px 12px"><button class="pbtn" ${!v||v<20||v>S.bal||need?'disabled':''} onclick="doWd(${v},'${ad.chain}')">${need?'打码量未完成':'立即提现'}</button></div></div>`;};
+window.doWd=(v,ch)=>{S.bal-=v;S.orders.unshift({t:'提现',chain:ch,amt:-v,fee:1,st:'审核中',no:'W'+Date.now(),time:'刚刚'});stack=[{p:'mine'},{p:'records'}];tmp={};render();toast('提现申请已提交');};
+P.addrs=()=>nav('收款方式')+`<div class="body"><div class="blk card"><div class="t">USDT 地址（${S.addrs.length}/3）</div>${S.addrs.map(x=>`<div class="ch" style="margin-bottom:8px"><b>USDT-${x.chain}</b> <span style="font-size:12px;color:#7a8aa3">${x.memo}</span><div style="font-family:monospace;word-break:break-all">${x.addr}</div></div>`).join('')||'<div class="empty" style="padding:20px">暂无地址</div>'}
+ ${S.addrs.length<3?`<button class="pbtn gh" style="margin-top:6px" onclick="go('addAddr')">＋ 添加 USDT 地址</button>`:''}</div></div>`;
+P.addAddr=()=>{tmp.ch=tmp.ch||'TRC20';return nav('添加 USDT 地址')+`<div class="body"><div class="form">
+ <div class="seg">${['TRC20','ERC20'].map(c=>`<span class="${tmp.ch===c?'on':''}" onclick="tmp.ch='${c}';render()">USDT-${c}</span>`).join('')}</div>
+ <div class="fi"><span class="lb">地址</span><input id="ad" placeholder="${tmp.ch==='TRC20'?'T 开头 34 位地址':'0x 开头 42 位地址'}"></div>
+ <div class="fi"><span class="lb">备注</span><input id="mm" placeholder="选填，如：常用地址"></div>
+ <div class="fi"><span class="lb">验证码</span><input placeholder="短信验证码"><span class="sm" onclick="toast('验证码已发送至 138****1551')">获取</span></div>
+ <div class="warn" style="margin-bottom:14px">请仔细核对地址和协议，地址错误导致的损失由用户自行承担。</div>
+ <button class="pbtn" onclick="addAddr()">确认添加</button></div></div>`;};
+window.addAddr=()=>{const a=$('#ad').value.trim(),c=tmp.ch;const ok=c==='TRC20'?/^T\w{33}$/.test(a):/^0x[0-9a-fA-F]{40}$/.test(a);
+ if(!ok){toast(c==='TRC20'?'地址格式错误：需 T 开头 34 位':'地址格式错误：需 0x 开头 42 位');return;}
+ S.addrs.push({chain:c,addr:a,memo:$('#mm').value||'USDT地址'});back();toast('添加成功');};
+P.feitou=()=>{const b=S.tg;
+ return `<div class="nav">飞投 · Telegram</div><div class="body">
+ <div class="tgcard" style="cursor:default"><div class="lg">✈</div><div class="m"><b>${b?'已绑定 '+S.tgName:'未绑定 Telegram'}</b><div>${b?'在 Telegram 里打开机器人即可直接玩，余额共用':'绑定后可在 Telegram 里充值、提现、直接玩游戏'}</div></div>${b?`<span class="go" style="cursor:pointer" onclick="unbind()">解绑</span>`:''}</div>
+ ${b?`<div class="blk card"><div class="t">去 Telegram</div><div style="display:flex;flex-direction:column;gap:10px">
+   <button class="pbtn" onclick="openTG('tgbot','官方飞投机器人')">打开飞投机器人</button><button class="pbtn gh" onclick="openTG('','官方频道')">官方频道</button></div></div>`
+ :`<div class="blk card"><div class="t">三步开始飞投</div><div class="steps">
+   <div class="s"><span><b>绑定 Telegram</b><div>点击下方按钮打开官方飞投机器人，在 Telegram 里点「开始」即自动绑定当前账号</div></span></div>
+   <div class="s"><span><b>点「进入游戏」</b><div>在 Telegram 里直接打开本站，免登录，所有游戏都能玩</div></span></div>
+   <div class="s"><span><b>机器人里充值提现</b><div>充值、提现、客服、APP 下载都能在机器人里完成，到账自动通知</div></span></div></div>
+   <button class="pbtn" onclick="bindTG()">绑定 Telegram</button></div>`}
+ <div class="blk card"><div class="t">说明</div><div class="hint">没有账号也可以直接在 Telegram 搜索官方飞投机器人，一键注册。<br>在 Telegram 内下的注单，在「投注记录」中标记为「飞投」。</div></div>
+ </div>${tabbar('feitou')}`;};
+window.unbind=()=>confirmDlg('解绑 Telegram','解绑后该 Telegram 账号无法再使用飞投机器人和小程序，需短信验证码确认。确定解绑吗？',()=>{S.tg=false;TG.msgs=[];render();toast('已解绑');});
+window.openTG=(p,n)=>confirmDlg('打开 Telegram',`即将打开 Telegram「${n}」。`,()=>{if(p)go(p);else toast('已打开官方频道（演示）');},'打开');
+window.bindTG=()=>confirmDlg('打开 Telegram','即将打开 Telegram 官方飞投机器人，请在机器人里点「开始」完成绑定。',()=>{TG.msgs=[];TG.pendingBind=true;go('tgbot');},'打开');
+P.promo=()=>{tmp.pc=tmp.pc||'全部';return `<div class="nav">优惠活动</div><div class="promo-wrap"><div class="pside">${Object.keys(PROMO).map(k=>`<span class="${k===tmp.pc?'on':''}" onclick="tmp.pc='${k}';render()">${k}</span>`).join('')}</div>
+ <div class="pmain">${PROMO[tmp.pc].map(([n,t,c])=>`<div class="pc card" onclick="go('stub',{t:'活动详情'})"><div class="im" style="background:linear-gradient(120deg,${c},#1677ff)">${n}</div><div class="in">${n}<span>${t}</span></div></div>`).join('')}</div></div>${tabbar('promo')}`;};
+function msgCenter(def,isTab){tmp.mt=tmp.mt||def;const t=tmp.mt;const un=k=>S[k].filter(x=>!x.read).length;
+ const tabs=[['客服',0],['系统公告',un('notices')],['站内信',un('letters')]];
+ let body='';
+ if(t==='客服'){body=`<div class="kfc card"><h5>7×24 在线客服</h5><p>专业客服在线对话，为您解决遇到的问题。</p>${KF.map(([n,c,i,to])=>`<div class="kfi"><span class="av" style="background:${c}">${i}</span><div class="m"><b>${n}</b><div>7x24小时在线客服为您服务</div></div><button onclick="toast('跳转：${to}（按后台配置）')">立即咨询</button></div>`).join('')}</div><div class="hint" style="padding:0 16px">客服列表取后台客服配置（即原客服弹窗内容）。</div>`;}
+ else{const k=t==='系统公告'?'notices':'letters';tmp.rs=tmp.rs||'全部';tmp.tm=tmp.tm||'全部';
+  let l=S[k].filter(x=>(tmp.rs==='全部'||(tmp.rs==='已读')===x.read)&&(!tmp.kw||x.title.includes(tmp.kw)));
+  body=`<div class="mfil"><select onchange="tmp.tm=this.value;render()">${['全部','今日','昨日','本周','上周','本月','上月'].map(v=>`<option ${tmp.tm===v?'selected':''}>${v}</option>`).join('')}</select><select onchange="tmp.rs=this.value;render()">${['全部','已读','未读'].map(v=>`<option ${tmp.rs===v?'selected':''}>${v}</option>`).join('')}</select><input id="mkw" placeholder="搜索标题" value="${tmp.kw||''}" oninput="tmp.kw=this.value;render();setTimeout(()=>document.querySelector('#mkw').focus())"></div>
+  ${l.map(x=>`<div class="mitem card" onclick="go('msgd',{k:'${k}',id:${x.id}})"><span class="ic">✉️${x.read?'':'<i></i>'}</span><div class="m"><b>${x.title}</b><div>${x.time}</div></div><span class="st ${x.read?'rd':''}">${x.read?'已读':'未读'} ›</span></div>`).join('')||'<div class="empty">暂无消息</div>'}`;}
+ return (isTab?`<div class="nav">消息中心${t!=='客服'?`<span class="rt" onclick="readAll()">全部已读</span>`:''}</div>`:nav('消息中心',t!=='客服'?`<span class="rt" onclick="readAll()">全部已读</span>`:''))+
+ `<div class="mtabs">${tabs.map(([n,c])=>`<span class="${n===t?'on':''}" onclick="tmp.mt='${n}';tmp.kw='';render()">${n}${c?`<i>${c}</i>`:''}</span>`).join('')}</div><div class="body">${body}</div>${isTab?tabbar('service'):''}`;}
+window.readAll=()=>{const k=tmp.mt==='系统公告'?'notices':'letters';S[k].forEach(x=>x.read=true);render();toast('已全部标为已读');};
+P.service=()=>msgCenter('客服',true);
+P.msg=()=>msgCenter('系统公告',false);
+P.msgd=(a)=>{const x=S[a.k].find(y=>y.id===a.id);x.read=true;return nav(a.k==='notices'?'公告详情':'站内信详情')+`<div class="body"><div class="blk card"><div style="font-size:16px;font-weight:600">${x.title}</div><div class="hint" style="margin:4px 0 10px">${x.time}</div><div style="line-height:1.8;font-size:14px">${x.body}</div></div></div>`;};
+P.stub=(a)=>nav(a.t)+`<div class="ph">${a.t}</div>`;
+P.setting=()=>nav('设置')+`<div class="body"><div class="card setl" style="margin:12px;overflow:hidden"><div class="it" onclick="go('stub',{t:'个人资料'})">个人资料</div><div class="it" onclick="go('stub',{t:'安全中心'})">安全中心</div><div class="it" onclick="go('addrs')">收款方式</div></div>
+ <div style="margin:20px 12px"><button class="pbtn gh" onclick="confirmDlg('退出登录','确定退出当前账号吗？',logout)">退出登录</button></div></div>`;
+P.search=()=>{const all=[];for(const c of CATS){const d=G[c];if(d.lobby)d.plats.forEach(p=>all.push([p[1],p[0]]));else all.push(...d.games);}
+ const q=tmp.q||'';const l=q?all.filter(g=>g[0].includes(q)):[];
+ return nav('搜索游戏')+`<div class="srch" style="margin-top:8px">🔍<input id="sq" placeholder="搜索全站游戏" value="${q}" oninput="tmp.q=this.value;render();setTimeout(()=>{const i=document.querySelector('#sq');i.focus();i.setSelectionRange(99,99)})"></div>
+ <div class="body">${q?(l.length?`<div class="ggrid">${l.map(gtile).join('')}</div>`:'<div class="empty">没有找到相关游戏</div>'):`<div class="blk card"><div class="t">热门搜索</div>${['麻将胡了','一分快三','百人牛牛','PC28','AG真人'].map(x=>`<span class="pill" style="cursor:pointer" onclick="tmp.q='${x}';render()">${x}</span>`).join('')}</div>`}</div>`;};
+P.bets=()=>{tmp.src=tmp.src||'全部';const rows=S.bets.filter(r=>tmp.src==='全部'||r.src===tmp.src);
+ return nav('投注记录')+`<div class="body"><div style="margin:10px 12px 0" class="seg">${['全部','网站','飞投'].map(s=>`<span class="${s===tmp.src?'on':''}" onclick="tmp.src='${s}';render()">${s}</span>`).join('')}</div>
+ <div class="card list" style="margin:0 12px;overflow:hidden">${rows.map(r=>`<div class="it"><span class="ic">${r.src==='飞投'?'✈':'🎮'}</span><div class="m">${r.g} <span class="pill">${r.src}</span><div>${r.c} · ${fmt(r.amt)} USDT · ${r.time}</div></div><div class="r"><b class="${r.st==='中奖'?'st-ok':r.st==='待开奖'?'st-ing':''}">${r.st==='待开奖'?'待开奖':(r.win-r.amt>0?'+':'')+fmt(r.win-r.amt)}</b><div class="st-no">${r.st}</div></div></div>`).join('')||'<div class="empty">暂无注单</div>'}</div></div>`;};
+P.records=()=>{tmp.ty=tmp.ty||'全部';const rows=S.orders.filter(o=>tmp.ty==='全部'||(tmp.ty==='充值'?o.amt>0:o.amt<0));
+ return nav('交易记录')+`<div class="body"><div style="margin:10px 12px 0" class="seg">${['全部','充值','提现'].map(s=>`<span class="${s===tmp.ty?'on':''}" onclick="tmp.ty='${s}';render()">${s}</span>`).join('')}</div>
+ <div class="card list" style="margin:0 12px;overflow:hidden">${rows.map(o=>{const cls=o.st==='成功'?'st-ok':o.st==='已取消'?'st-no':'st-ing';const net=o.amt>0?o.amt-o.fee:o.amt;
+ return `<div class="it" ${o.st==='申请中'?`onclick="go('order',{no:'${o.no}'})"`:''}><span class="ic">${o.amt>0?'＋':'↑'}</span><div class="m">${o.t} · ${o.chain}<div>${o.no} · ${o.time}</div></div><div class="r"><b>${net>0?'+':''}${fmt(net)} USDT</b><div>${o.amt>0?'充值 '+fmt(o.amt):'提现'} · 手续费 ${fmt(o.fee)}</div><div class="${cls}">${o.st}${o.st==='申请中'?' ›':''}</div></div></div>`}).join('')}</div></div>`;};
+P.mine=()=>`<div class="body">
+ <div class="mhead"><div class="avatar">B</div><div><div class="n">${S.user}<span class="vip">VIP3</span></div><div class="id">ID: ${S.id} <a style="color:#1677ff;cursor:pointer" onclick="toast('已复制')">复制</a></div></div><span style="margin-left:auto;font-size:18px;cursor:pointer" onclick="go('msg')">✉️${S.unreadN()?`<i class="dot" style="position:relative;top:-10px;right:4px">${S.unreadN()}</i>`:''}</span></div>
+ <div class="balcard"><div><div style="font-size:12px;opacity:.85">我的余额 <span style="cursor:pointer" onclick="toast('已从游戏取回全部余额')">· 一键取回</span></div><div class="v">${fmt(S.bal)}<small>USDT</small></div></div><div class="lk" style="flex-direction:row"><span class="pri" style="padding:6px 16px;font-size:13px" onclick="go('recharge')">充值</span><span style="padding:6px 16px;font-size:13px" onclick="go('withdraw')">提现</span></div></div>
+ <div class="tgcard" onclick="tab('feitou')"><div class="lg">✈</div><div class="m"><b>飞投 · Telegram 投注</b><div>${S.tg?'已绑定 '+S.tgName:'绑定后在 Telegram 直接下注'}</div></div><span class="go">${S.tg?'去投注':'去绑定'}</span></div>
+ <div class="blk card"><div class="t">常用功能</div><div class="grid4">
+ ${[['交易记录','🧾',"go('records')"],['投注记录','📋',"go('bets')"],['个人报表','📊',"go('stub',{t:'个人报表'})"],['每日任务','✅',"go('stub',{t:'每日任务'})"],['VIP彩金','👑',"go('stub',{t:'VIP彩金'})"],['推广赚钱','💰',"go('stub',{t:'推广赚钱'})"],['收款方式','💳',"go('addrs')"],['安全中心','🛡',"go('stub',{t:'安全中心'})"],['客服中心','🎧',"tab('service')"],['APP下载','📲',"go('stub',{t:'APP下载'})"],['设置','⚙️',"go('setting')"]].map(([n,i,f])=>`<div class="g" onclick="${f}"><span class="c">${i}</span>${n}</div>`).join('')}
+ </div></div></div>${tabbar('mine')}`;
+window.logout=()=>{S.login=false;stack=[{p:'home'}];tmp={};render();toast('已退出登录（演示）');};
+P.more=()=>{const g=[['资金管理',[['充值','＋',"go('recharge')"],['提现','↑',"go('withdraw')"],['交易记录','🧾',"go('records')"],['投注记录','📋',"go('bets')"],['个人报表','📊',"go('stub',{t:'个人报表'})"]]],
+ ['福利中心',[['优惠活动','🎁',"tab('promo')"],['每日任务','✅',"go('stub',{t:'每日任务'})"],['VIP彩金','👑',"go('stub',{t:'VIP彩金'})"],['推广赚钱','💰',"go('stub',{t:'推广赚钱'})"]]],
+ ['账户安全',[['收款方式','💳',"go('addrs')"],['安全中心','🛡',"go('stub',{t:'安全中心'})"]]],
+ ['支持中心',[['客服中心','🎧',"tab('service')"],['APP下载','📲',"go('stub',{t:'APP下载'})"]]],
+ ['飞投频道',[['飞投','✈',"tab('feitou')"],['飞投机器人','🤖',"go('tgbot')"],['官方频道','📣',"toast('已打开官方频道（演示）')"]]]];
+ return nav('更多')+`<div class="body">${g.map(([t,it])=>`<div class="more-g card"><div class="tt">${t}</div><div class="grid4">${it.map(([n,i,f])=>`<div class="g" onclick="${f}"><span class="c">${i}</span>${n}</div>`).join('')}</div></div>`).join('')}<div class="hint" style="text-align:center;padding:8px 0 16px">已经到底啦~</div></div>`;};
+
+// ================= Telegram simulator =================
+const BOT={name:'XX.COM-官方飞投@XXbot',h:'@XXbot'};
+const TG={msgs:[],rk:true,await:null,input:'',uid:0,pendingBind:false,binding:false,pwd:'',ret:0};
+window.TG=TG;
+let MINI=false;
+const now=()=>{const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function bot(html,kb){TG.msgs.push({id:++TG.uid,from:'bot',html,kb,tm:now()});}
+function me(t){TG.msgs.push({id:++TG.uid,from:'me',html:esc(t),tm:now()});}
+function TGpush(html,kb){if(!S.tg)return;bot(html,kb);if(cur().p==='tgbot')render();}
+window.TGpush=TGpush;
+const RK=[['🏠 账号信息','🎮 进入游戏'],['💰 充值','💳 提现'],['👧 官方客服','📲 下载APP']];
+const MAINKB=()=>[[{t:'🎮 进入游戏',a:'app:home',m:1}],[{t:'💳 提现',a:'app:withdraw',m:1},{t:'👧 官方客服',a:'kf'}],[{t:'📲 下载APP',a:'dl'},{t:'💰 充值',a:'dep'}]];
+const REGKB=[[{t:'👤 注册账号',a:'reg'}],[{t:'🔗 绑定账号',a:'bind'}]];
+function intro(){
+ bot(`<div class="tg-ban"><b>XX.com</b><span>纯净游戏 · U存U提</span><div class="bg4">${['匿名无忧','极速提现','安全可靠','24小时客服'].map(x=>`<i>${x}</i>`).join('')}</div></div>
+ <b>机器人介绍：</b><br><div style="text-align:center">💎💎💎 <span class="lk">XX.com</span> 💎💎💎<br>全网高端玩家的聚集地！<br>—官方飞投·U存U提·匿名无忧—</div><br>
+ 🃏百家乐 ｜ 🎰电子 ｜ 🀄棋牌 ｜ 🎲PC28<br>🎱六合彩 ｜ 🐟捕鱼 ｜ ⚽体育 ｜ 🎫彩票<br><br>
+ 🥇诚招代理合作：<span class="lk">@XXdaili</span><br>├ 1. 打码返佣，限指定平台；<br>├ 2. 返水差模式，轻松赚取差额返水；<br><br>
+ 官方网址：<span class="lk">XX.com</span><br>官方频道：<span class="lk">@XXpindao</span><br>官方飞投：<span class="lk">${BOT.h}</span><br>官方客服：<span class="lk">@XXkefu</span>`);
+ bot('🔥 全网高端玩家聚集地‼️');
+ bot('请选择绑定或注册账号',REGKB);}
+function acct(first){bot(`🏆 欢迎使用 <span class="lk">XX.com</span> 投注小程序`);
+ bot(`${first?'':'您的账号信息<br>'}👤 会员ID：<span class="lk">${S.id}</span><br>👤 会员账号：${S.user}${first&&TG.pwd?`<br>👤 会员密码：${TG.pwd}`:''}<br>💵 USDT：${fmt(S.bal)}<br>👑 VIP等级：${S.vip}`,MAINKB());}
+function depMenu(){bot(`✅ 用户充值<br>💰 充值<br>💵 余额：${fmt(S.bal)} USDT`,[CHAINS.map(c=>({t:'💵 '+c.k,a:'ch:'+c.k})).concat([{t:'📃 充值记录',a:'deprec'}]),[{t:'👧 官方客服',a:'kf'},{t:'📲 下载APP',a:'dl'}],[{t:'↩️ 返回',a:'acct'}]]);}
+function kf(){bot(`<b>点击联系客服</b>　<span class="lk" onclick="go('tgkf')">官方客服 - TG客服</span><br><b>点击联系客服</b>　<span class="lk" onclick="openApp('service')">官方客服 - 在线客服</span>`);}
+function dl(){bot(`Android Download<br>● <span class="lk" onclick="toast('下载安卓 APP（演示）')">原生APP</span><br><br>IOS Download<br>● <span class="lk" onclick="toast('下载 iOS APP（演示）')">原生APP</span><br>● <span class="lk" onclick="toast('打开 iOS 描述签（演示）')">iOS描述签</span>`);}
+function newDep(chk,v){const c=CHAINS.find(x=>x.k===chk);const fee=c.feeR?+(v*c.feeR).toFixed(2):c.feeF;
+ const o={t:'USDT充值',chain:c.k,amt:v,fee,st:'申请中',no:'R'+Date.now(),time:now(),addr:c.addr,end:Date.now()+30*60e3,src:'飞投'};S.orders.unshift(o);
+ bot(`✅ 订单已创建<br>订单号：${o.no}<br>充值金额：${fmt(v)} USDT<br>手续费：${fmt(fee)} USDT<br>到账金额：<b>${fmt(v-fee)} USDT</b><br>协议：${c.k}<br>收款地址：<code>${c.addr}</code><div class="qr" style="width:120px;height:120px;margin:8px auto"></div>⚠️ 请在 30 分钟内向上方地址转账 <b>${fmt(v)} USDT</b>，仅支持 ${c.k}，转错链无法找回。`,[[{t:'📋 复制地址',a:'copy'}],[{t:'🚫 取消订单',a:'cancel:'+o.no}]]);
+ setTimeout(()=>{if(o.st!=='申请中')return;o.st='成功';S.bal+=v-fee;bot(`✅ 充值成功<br>订单号：${o.no}<br>到账：<b>+${fmt(v-fee)} USDT</b><br>💵 余额：${fmt(S.bal)} USDT`,[[{t:'🎮 进入游戏',a:'app:home',m:1}]]);if(['tgbot','records'].includes(cur().p))render();},8000);}
+function handleText(t){t=t.trim();if(!t)return;
+ if(t.startsWith('/start')){
+  if(TG.pendingBind){TG.pendingBind=false;S.tg=true;bot('✅ 绑定成功');acct(false);return;}
+  if(S.tg){bot('您已经注册，无需再次注册。');return;}
+  intro();return;}
+ if(!S.tg){bot('请先注册或绑定账号',REGKB);return;}
+ if(TG.await){const c=CHAINS.find(x=>x.k===TG.await);const v=parseFloat(t);
+  if(!(v>=c.min&&v<=c.max)){bot(`金额需在 ${c.min.toFixed(2)}-${c.max.toFixed(2)} 之间，请重新回复`,[[{t:'🚫 取消订单',a:'cancelq'}]]);return;}
+  TG.await=null;newDep(c.k,v);return;}
+ switch(t){
+  case '🏠 账号信息':return acct(false);
+  case '🎮 进入游戏':return openApp('home');
+  case '💰 充值':return depMenu();
+  case '💳 提现':return bot('✅ 用户提现',[[{t:'💳 提现',a:'app:withdraw',m:1}],[{t:'👧 官方客服',a:'kf'},{t:'📲 下载APP',a:'dl'}]]);
+  case '👧 官方客服':return kf();
+  case '📲 下载APP':return dl();
+ }
+ bot('请使用下方菜单操作 👇');}
+window.tgAct=(a)=>{
+ if(a==='reg'){if(S.tg){bot('您已经注册，无需再次注册。');}else{S.user='tg'+Math.random().toString(36).slice(2,8);S.id=String(410600000+Math.floor(Math.random()*99999));S.bal=0;S.vip=0;S.login=true;S.tg=true;S.orders=[];S.bets=[];TG.pwd=Math.random().toString(36).slice(2,6)+'Xt'+Math.floor(Math.random()*90+10);acct(true);}}
+ else if(a==='bind'){if(S.tg){bot('您已经注册，无需再次注册。');}else{TG.binding=true;bot('请点击下方按钮，在小程序中登录要绑定的网站账号',[[{t:'🔐 登录绑定',a:'app:login',m:1}]]);}}
+ else if(a.startsWith('app:')){openApp(a.slice(4));return;}
+ else if(a==='acct')acct(false);
+ else if(a==='dep')depMenu();
+ else if(a==='kf')kf();
+ else if(a==='dl')dl();
+ else if(a.startsWith('ch:')){const c=CHAINS.find(x=>x.k===a.slice(3));TG.await=c.k;bot(`请回复您要充值的金额（${c.min.toFixed(2)}-${c.max.toFixed(2)}）`,[[{t:'🚫 取消订单',a:'cancelq'}]]);}
+ else if(a==='cancelq'){TG.await=null;bot('订单已取消');}
+ else if(a.startsWith('cancel:')){const o=S.orders.find(x=>x.no===a.slice(7));if(o&&o.st==='申请中'){o.st='已取消';bot('订单已取消');}else bot('该订单已处理，无法取消');}
+ else if(a==='copy'){toast('地址已复制');return;}
+ else if(a==='deprec'){const l=S.orders.filter(o=>o.amt>0).slice(0,5);bot(`📃 <b>充值记录</b>（最近 5 笔）<br>${l.map(o=>`${o.time}　${fmt(o.amt)} USDT　${o.st}`).join('<br>')||'暂无记录'}`,[[{t:'↩️ 返回',a:'dep'}]]);}
+ render();};
+window.tgSend=(t)=>{const v=t!==undefined?t:TG.input;if(!v.trim())return;TG.input='';me(v);handleText(v);render();};
+function openApp(p){if(!S.tg&&p!=='login'){bot('请先注册或绑定账号',REGKB);render();return;}
+ if(p!=='login')S.login=true;MINI=true;TG.ret=stack.length;stack.push({p});tmp={};render();}
+window.openApp=openApp;
+window.closeMini=()=>{MINI=false;stack=stack.slice(0,TG.ret);tmp={};render();};
+window.isMini=()=>MINI;
+function kbHTML(kb,fn){return kb?`<div class="tg-ik">${kb.map(r=>`<div class="row">${r.map(b=>`<button class="${b.m?'mini':''}" onclick="${fn}('${b.a}')">${b.t}</button>`).join('')}</div>`).join('')}</div>`:'';}
+P.tgbot=()=>{
+ const started=TG.msgs.length>0;
+ const msgs=TG.msgs.map(m=>m.from==='me'?`<div class="tg-m me"><div class="wrap"><div class="tg-b">${m.html}<span class="tm">${m.tm} ✓✓</span></div></div></div>`
+  :`<div class="tg-m bot"><div class="wrap"><div class="tg-b">${m.html}<span class="tm">${m.tm}</span></div>${kbHTML(m.kb,'tgAct')}</div></div>`).join('');
+ return `<div class="tg-hd"><span class="bk" onclick="back()">‹</span><div class="tg-av">XX</div><div class="nm"><b>${BOT.name}</b><span>17,809 月活数</span></div><span class="mr">⋮</span></div>
+ <div class="tg-chat" id="chat">${started?'<div class="tg-day"><span>今天</span></div>':`<div class="tg-sys" style="margin-top:110px"><span style="padding:12px 16px;border-radius:14px;max-width:260px">🤖 <b>这个机器人能做什么？</b><br>XX.com 官方飞投：Telegram 一键注册、U存U提，点「进入游戏」直接在 Telegram 里玩。</span></div>`}${msgs}</div>
+ ${!started?`<div class="tg-start"><button onclick="tgSend('/start')">开始</button></div>`:
+ `<div class="tg-bar"><button class="menu" onclick="tgSend('/start')">START</button><input id="tgin" placeholder="${TG.await?'请输入充值金额…':'输入消息…'}" value="${esc(TG.input)}" oninput="TG.input=this.value" onkeydown="if(event.key==='Enter')tgSend()">
+  ${S.tg?`<button class="kb" onclick="TG.rk=!TG.rk;render()">${TG.rk?'⌄':'⊞'}</button>`:''}<button class="snd" onclick="tgSend()">➤</button></div>
+  ${S.tg&&TG.rk?`<div class="tg-rk">${RK.map(r=>r.map(k=>`<button onclick="tgSend('${k}')">${k}</button>`).join('')).join('')}</div>`:''}`}`;};
+P.tgkf=()=>`<div class="tg-hd"><span class="bk" onclick="back()">‹</span><div class="tg-av g">客</div><div class="nm"><b>XX.com 在线客服</b><span>10 分钟前上线</span></div><span class="mr">⋮</span></div><div class="tg-chat" style="display:flex;align-items:center;justify-content:center"><div class="tg-sys"><span style="padding:14px 18px;border-radius:14px">官方客服 Telegram 账号（人工私聊）</span></div></div>`;
+// ================= ticker =================
+setInterval(()=>{const cd=document.getElementById('cd');if(cd&&cur().p==='order'){const o=S.orders.find(x=>x.no===cur().no);if(o){const l=Math.max(0,o.end-Date.now());cd.textContent=String(Math.floor(l/60e3)).padStart(2,'0')+':'+String(Math.floor(l%60e3/1e3)).padStart(2,'0');}}},1000);
+
+// ================= notes =================
+const N={
+home:`<ol><li><b>新布局</b>，纯游戏首页，<b>不出现视频、抖阴、聊天室</b>入口。</li><li>账户卡片：已登录显示 <b>USDT 余额</b>（刷新、取回）+ 充值 / 提现 / 飞投；未登录显示注册 / 登录 + 飞投 + 更多。</li><li>真人、彩票大卡片；电子、体育、捕鱼、棋牌四宫格；热门游戏取后台热门栏目。</li></ol>`,
+games:`<ol><li><b>新布局</b>：点标题弹出<b>分类浮层</b>（带遮罩，不推动下方内容），选中即切换。</li><li>平台页签 + <b>热门 / 全部品牌 / 最近 / 收藏</b> + 搜索，<b>收藏、最近、热门页签、分类内搜索都是新功能</b>，规则见需求说明。</li><li>点游戏右上角星标收藏 / 取消；未登录点星标提示登录。</li><li>真人、体育直接展示平台卡片，点击进平台大厅。</li></ol>`,
+login:`<ol><li>沿用<b>手机号 + 验证码</b>，未注册手机号验证后自动注册；注册可填邀请码。</li><li>从需登录的入口过来，登录后回到原目标页。</li></ol>`,
+recharge:`<ol><li>账户币种为 <b>USDT</b>。</li><li>只展示 USDT 渠道，<b>沿用【播放器】虚拟币充值流程</b>：先选渠道，再输金额。</li><li>上下限、快捷金额、用户手续费、角标优惠取渠道 / 栏目配置；显示支付金额、手续费、到账金额。</li></ol>`,
+order:`<ol><li>订单「申请中」，展示二维码、地址、协议、金额、订单号、30 分钟倒计时。</li><li>「我已完成转账」→ 交易记录，链上确认后自动到账（演示 4 秒后到账；已绑定 Telegram 时机器人推送到账消息）。</li><li>可取消订单。</li></ol>`,
+withdraw:`<ol><li>只提现到 <b>USDT 地址</b>；没有地址先引导添加。</li><li>金额以 USDT 输入，显示手续费、到账金额、剩余打码量；打码量未完成不可提交。</li></ol>`,
+addrs:`<ol><li>只管理 USDT 地址，最多 3 个。</li></ol>`,
+addAddr:`<ol><li>选协议 → 地址 → 备注 → 短信验证码。</li><li>TRC20 为 T 开头 34 位；ERC20 为 0x 开头 42 位。</li></ol>`,
+feitou:`<ol><li>网站端飞投页：<b>绑定入口 + 跳转 Telegram</b>。</li><li>未绑定：点「绑定 Telegram」→ 打开机器人 → 点「开始」直接绑定当前账号。</li><li>已绑定：打开飞投机器人 / 官方频道；解绑需短信验证码。</li><li>后台没配置的链接不显示对应按钮。</li></ol>`,
+tgbot:`<ol><li><b>Telegram 官方飞投机器人</b>，可以点着走一遍。</li><li>首次进入：点「开始」→ 欢迎卡片 + 口号 +「注册账号 / 绑定账号」。</li><li><b>注册账号</b>：Telegram 一键注册，回复会员ID、账号、密码、USDT、VIP。</li><li><b>绑定账号</b>：在小程序里登录已有账号完成绑定。</li><li>底部 6 个快捷按键：账号信息 / 进入游戏 / 充值 / 提现 / 官方客服 / 下载APP。</li><li><b>充值</b>：选 TRC20 → 回复金额 → 生成订单（地址、二维码）→ 到账推送（演示 8 秒后到账）。</li><li>带 ⧉ 的按钮在 Telegram 内打开<b>小程序</b>（进入游戏、提现、登录绑定）。</li><li>可在左下勾掉「已绑定 Telegram」重新体验首次进入。</li></ol>`,
+tgapp:`<ol><li><b>小程序</b>：本网站在 Telegram 内打开，顶部为机器人名称，✕ 关闭回到聊天，底部显示机器人账号。</li><li>已绑定自动登录，页面与网站完全一致，可正常点击浏览。</li><li>在小程序里下的注单来源标记「飞投」。</li></ol>`,
+tgkf:`<ol><li>「官方客服 - TG客服」跳转到客服的 Telegram 账号私聊（人工）。</li></ol>`,
+promo:`<ol><li>沿用现有活动中心；视频类活动不展示。</li></ol>`,
+service:`<ol><li>底部「客服」改为<b>消息中心</b>：客服 / 系统公告 / 站内信。</li><li><b>客服</b>页签：原客服弹窗里后台配置的联系方式（头像、名称、立即咨询）。</li><li>系统公告、站内信沿用现有消息中心内容，新增时间、已读状态筛选和标题搜索，右上角全部已读。</li></ol>`,
+msg:`<ol><li>首页 ✉ 进入消息中心，默认「系统公告」页签；红点为公告 + 站内信未读总数。</li><li>沿用现有消息中心，新增筛选：时间 / 状态 / 搜索；全部已读。</li><li>点进详情后变为已读。</li></ol>`,
+msgd:`<ol><li>公告 / 站内信详情：标题、时间、内容（沿用后台富文本）。</li><li>打开即标为已读。</li></ol>`,
+stub:`<ol><li>沿用现有页面，换新皮肤。</li></ol>`,
+setting:`<ol><li>设置：个人资料、安全中心、收款方式、退出登录。</li></ol>`,
+search:`<ol><li>首页 🔍 进入<b>全站游戏搜索</b>，跨所有分类按名称模糊匹配。</li><li>未输入时显示热门搜索词（后台配置）。</li></ol>`,
+bets:`<ol><li>新增来源筛选：<b>全部 / 网站 / 飞投</b>。</li><li>在 Telegram 小程序里下的注单来源为「飞投」。</li></ol>`,
+records:`<ol><li>交易记录：全部 / 充值 / 提现，金额均为 USDT。</li><li>申请中的充值订单可点进去继续付款。</li></ol>`,
+mine:`<ol><li>保留游戏相关功能，去掉视频会员卡、观看历史、收藏记录、主播中心、商务洽谈。</li><li>余额以 USDT 显示；飞投卡片显示 Telegram 绑定状态。</li><li>演示：点「设置」可退出登录。</li></ol>`,
+more:`<ol><li>首页右上 ☰ 进入，按分组展示我的页里的功能。</li></ol>`};
+const IDX=[['主流程',[['home','首页'],['games','游戏列表',{cat:'电子'}],['login','登录 / 注册']]],
+ ['飞投（Telegram）',[['feitou','网站 · 飞投绑定页'],['tgbot','Telegram · 飞投机器人'],['tgapp','Telegram · 小程序'],['bets','网站 · 投注记录']]],
+ ['USDT 资金',[['recharge','充值'],['records','交易记录'],['withdraw','提现'],['addrs','收款方式'],['addAddr','添加 USDT 地址']]],
+ ['消息 / 客服',[['service','消息中心 · 客服'],['msg','消息中心 · 公告'],['search','全站搜索']]],
+ ['其他',[['promo','优惠'],['mine','我的'],['setting','设置'],['more','更多']]]];
+function renderIndex(){const p=cur().p;$('#pindex').innerHTML=IDX.map(([g,it])=>`<div class="g">${g}</div>`+it.map(([k,n,a])=>`<a class="${p===k?'on':''}" onclick='jumpTo("${k}",${JSON.stringify(a||{})})'>${n}</a>`).join('')).join('')+
+ `<div class="st"><label><input type="checkbox" ${S.login?'checked':''} onchange="S.login=this.checked;stack=[{p:'home'}];render()">已登录</label><label><input type="checkbox" ${S.tg?'checked':''} onchange="S.tg=this.checked;TG.msgs=[];TG.await=null;render()">已绑定 Telegram</label></div>`;}
+window.jumpTo=(k,a)=>{MINI=false;if(k==='tgapp'){S.login=true;if(!S.tg){S.tg=true;}if(!TG.msgs.length){me('/start');bot('✅ 绑定成功');acct(false);}stack=[{p:'feitou'},{p:'tgbot'}];openApp('home');return;}if(TABS.includes(k))return tab(k);if(needLogin(k)||k.startsWith('tg'))S.login=true;stack=[{p:k.startsWith('tg')?'feitou':'home'},{p:k,...a}];tmp={};render();};
+let bt;
+function render(){const c=cur();const ch=document.getElementById('chat');const atBottom=!ch||ch.scrollHeight-ch.scrollTop-ch.clientHeight<80;
+ const page=P[c.p](c);$('#screen').innerHTML=MINI?`<div class="mini-hd"><b>${BOT.name}</b><span>⋮</span><span style="cursor:pointer" onclick="closeMini()">✕</span></div><div class="mini-in">${page}</div><div class="mini-ft">${BOT.h}</div>`:page;$('#notes').innerHTML=(MINI?N.tgapp:'')+(N[c.p]||'');renderIndex();
+ const nc=document.getElementById('chat');if(nc&&atBottom)nc.scrollTop=nc.scrollHeight;
+ const ti=document.getElementById('tgin')||document.getElementById('gin');if(ti&&document.activeElement===document.body)ti.focus();
+ clearInterval(bt);if(c.p==='home'){let i=0;bt=setInterval(()=>{const s=document.querySelectorAll('#bn .sl'),d=document.querySelectorAll('#bn .dots i');if(!s.length)return;s[i].classList.remove('on');d[i].classList.remove('on');i=(i+1)%s.length;s[i].classList.add('on');d[i].classList.add('on');},3000);}}
+window.render=render;
+document.querySelectorAll('.ttab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.ttab').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));});
+Object.defineProperty(window,'tmp',{get:()=>tmp,set:v=>{tmp=v;}});
+render();
+}
+</script>
+</body>
+</html>
