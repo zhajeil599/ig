@@ -280,6 +280,8 @@
     .q-tip:hover { background: #909399; }
     .q-tip .q-text { visibility: hidden; opacity: 0; position: absolute; bottom: 140%; left: 50%; transform: translateX(-50%); width: 260px; background: #303133; color: #fff; text-align: left; border-radius: 4px; padding: 8px 10px; font-size: 12px; line-height: 1.6; z-index: 50; transition: opacity .2s; white-space: normal; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
     .q-tip:hover .q-text { visibility: visible; opacity: 1; }
+    /* 弹窗顶部的提示向下展开，避免被弹窗顶部遮挡 */
+    .log-member-bar .q-tip .q-text, .log-filter .q-tip .q-text, .log-table th .q-tip .q-text { bottom: auto; top: 150%; }
 
     .prd-note h5 { margin: 12px 0 6px; color: #303133; font-size: 13px; }
     .prd-note li { margin-bottom: 4px; }
@@ -610,7 +612,7 @@
                 <h4>研发需求说明文档，研发阅读实际前端页面不展示</h4>
                 <ul>
                     <li><strong>新增入口【更新日志】：</strong>会员列表每行"操作"下拉菜单内新增【更新日志】按钮；会员【详情】弹窗底部同步新增【更新日志】按钮，两处打开的是同一个弹窗，只展示当前这位会员的记录。</li>
-                    <li><strong>功能目的：</strong>让商户可以追溯该会员在后台被改过什么、什么时候改的、谁改的，包括商户后台的操作、平台对该会员的封号 / 禁言，以及系统按规则自动做的变更。</li>
+                    <li><strong>功能目的：</strong>让商户可以追溯该会员在后台被改过什么、什么时候改的、谁改的，包括商户后台的操作，以及平台、前台直播群对该会员的封号 / 禁言。</li>
                     <li><strong>按钮权限：</strong>新增权限项"会员列表-更新日志"，在后台角色权限中配置；未勾选该权限的后台账号不展示此按钮。</li>
                     <li><strong>原有操作补记录：</strong>会员列表中的编辑备注、改手机、改密码、更新用户、解锁IM、返佣后台、批量禁用、批量解锁IM账号，提交成功后都需生成更新日志；记录规则详见更新日志弹窗底部的需求说明。</li>
                 </ul>
@@ -956,17 +958,11 @@
                 <div class="form-group" style="margin-bottom: 15px;"><label class="form-label">真实姓名：</label><input type="text" class="modal-input" value="喜欢123"></div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label class="form-label">账号状态：</label>
-                    <select class="modal-input" style="background:#fff" onchange="handleStatusChange(this)">
+                    <select class="modal-input" style="background:#fff">
                         <option>启用</option>
-                        <option>停用</option>
-                        <option>冻结</option>
-                        <option value="冻结余额">冻结余额</option>
+                        <option>禁用</option>
+                        <option>锁定</option>
                     </select>
-                </div>
-                <!-- 下面是新增的备注联动演示区域，选择“冻结余额”时会自动显示 -->
-                <div class="form-group" style="margin-bottom: 15px; display: none;" id="autoRemarkGroup">
-                    <label class="form-label">系统备注：</label>
-                    <input type="text" class="modal-input" id="autoRemarkInput" value="" disabled style="color: #f5222d;">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 15px;">
@@ -1126,17 +1122,6 @@
 
             // 把排好序的数据重新塞回表格
             rows.forEach(row => tbody.appendChild(row));
-        }
-        function handleStatusChange(selectElem) {
-            const remarkGroup = document.getElementById('autoRemarkGroup');
-            const remarkInput = document.getElementById('autoRemarkInput');
-            if (selectElem.value === '冻结余额') {
-                remarkGroup.style.display = 'flex';
-                remarkInput.value = '余额锁定中，限制游戏、下单、打赏、发言。';
-            } else {
-                remarkGroup.style.display = 'none';
-                remarkInput.value = '';
-            }
         }
     
     // --- 新增：操作下拉菜单点击逻辑 ---
@@ -2567,9 +2552,8 @@
                 <div class="log-member-bar">
                     <span>用户ID：<b id="lgUid"></b></span>
                     <span>用户昵称：<b id="lgNick"></b></span>
-                    <span>账号状态：<span id="lgStatus"></span></span>
-                    <span>封号状态<i class="q-tip">?<span class="q-text">平台对该会员的封号状态。封号中会员无法登录；显示到期时间，永久封号显示"永久"。</span></i>：<span id="lgBan"></span></span>
-                    <span>禁言状态<i class="q-tip">?<span class="q-text">平台对该会员的禁言状态。禁言中会员无法在禁言范围内发言；显示禁言范围和到期时间。</span></i>：<span id="lgMute"></span></span>
+                    <span>账号状态<i class="q-tip">?<span class="q-text">会员当前的账号状态。被平台封号时显示"封号中"，平台解除封号后恢复显示原状态。</span></i>：<span id="lgStatus"></span></span>
+                    <span>禁言状态<i class="q-tip">?<span class="q-text">会员当前是否被禁言。禁言没有期限，平台解除后才恢复正常。</span></i>：<span id="lgMute"></span></span>
                 </div>
 
                 <div class="log-filter">
@@ -2578,12 +2562,12 @@
                         <select class="form-input" id="lgType" style="width: 110px;"></select>
                     </div>
                     <div class="search-item">
-                        <label>操作来源<i class="q-tip">?<span class="q-text">商户后台：本商户后台账号的操作；平台：平台对该会员做的处理，如封号、禁言；系统：系统按规则自动执行的变更，如禁言到期自动解除。</span></i></label>
+                        <label>操作来源<i class="q-tip">?<span class="q-text">商户后台：本商户后台账号的操作；平台：平台后台对该会员做的封号、禁言及解除；前台：直播群内对该会员的禁言。</span></i></label>
                         <select class="form-input" id="lgSource" style="width: 100px;">
                             <option value="">全部</option>
                             <option>商户后台</option>
                             <option>平台</option>
-                            <option>系统</option>
+                            <option>前台</option>
                         </select>
                     </div>
                     <div class="search-item">
@@ -2638,9 +2622,10 @@
                     <h5>一、入口与展示形式</h5>
                     <ul>
                         <li>入口：会员列表-操作-【更新日志】、会员【详情】弹窗底部【更新日志】。以弹窗打开，只展示当前会员的记录，不单独作为菜单页面。</li>
-                        <li>弹窗顶部展示会员信息：用户ID、用户昵称、账号状态、封号状态、禁言状态。
-                            <br>- 封号状态：正常 / 封号中（显示到期时间，永久封号显示"永久"）。
-                            <br>- 禁言状态：正常 / 禁言中（显示禁言范围和到期时间，永久禁言显示"永久"）。
+                        <li>弹窗顶部展示会员信息：用户ID、用户昵称、账号状态、禁言状态。
+                            <br>- 账号状态：显示会员当前账号状态；被平台封号时显示"封号中"，平台解除封号后恢复显示原状态。封号不再单独展示一个状态，避免与账号状态重复。
+                            <br>- 禁言状态：正常 / 禁言中。
+                            <br>- 封号、禁言没有期限，不展示到期时间；平台解除后状态才恢复。
                             <br>- 状态取打开弹窗时的实时状态，便于商户先看到会员当前是否被平台处理。</li>
                         <li>记录只能查看，不能编辑、不能删除。</li>
                     </ul>
@@ -2651,19 +2636,19 @@
                         <tr><td rowspan="9">商户后台</td><td>基本信息</td><td>更新用户中修改用户昵称、点击昵称【重置】、修改真实姓名；记录修改前后的值。</td></tr>
                         <tr><td>手机号</td><td>改手机；记录修改前后的区号+手机号，手机号中间4位隐藏。</td></tr>
                         <tr><td>密码</td><td>改密码；只记录"已修改登录密码 / 已修改支付密码"，不展示任何密码内容。</td></tr>
-                        <tr><td>账号状态</td><td>更新用户中修改账号状态（启用 / 停用 / 冻结 / 冻结余额）、列表【批量禁用】；批量操作在"原因 / 说明"中标注"批量禁用"，每位会员各生成一条记录。选择冻结余额时，系统自动生成的限制说明一并记在"原因 / 说明"中。</td></tr>
+                        <tr><td>账号状态</td><td>更新用户中修改账号状态（启用 / 禁用 / 锁定）、列表【批量禁用】；批量操作在"原因 / 说明"中标注"批量禁用"，每位会员各生成一条记录。</td></tr>
                         <tr><td>用户层级</td><td>更新用户中修改用户层级；记录修改前后的层级名称。</td></tr>
                         <tr><td>充值等级</td><td>更新用户中修改充值等级。</td></tr>
                         <tr><td>红包限额</td><td>更新用户中修改红包限额。</td></tr>
                         <tr><td>备注</td><td>编辑备注；记录修改前后的备注内容，原来为空时显示"空"。</td></tr>
                         <tr><td>IM账号 / 返佣后台</td><td>解锁IM（含列表【批量解锁IM账号】，标注"批量解锁"）；返佣后台开通账号（记录绑定的返佣后台账号）、重置返佣后台密码（只记录"已重置密码"）。</td></tr>
-                        <tr><td rowspan="2">平台</td><td>封号</td><td>平台封号、提前解封。记录封号时长（到期时间或永久）、封号原因及最后发言内容；解封记录解封原因。</td></tr>
-                        <tr><td>禁言</td><td>平台禁言、提前解除禁言。记录禁言范围（聊天室 / 直播间 / 全部）、禁言时长（到期时间或永久）、禁言原因及最后发言内容；解除记录解除原因。</td></tr>
-                        <tr><td rowspan="2">系统</td><td>封号 / 禁言</td><td>封号、禁言到期后系统自动解除，生成一条"到期自动解除"记录。</td></tr>
-                        <tr><td>用户层级</td><td>会员达到层级条件后系统自动调整层级，"原因 / 说明"记为"满足层级条件自动调整"。</td></tr>
+                        <tr><td rowspan="2">平台</td><td>封号</td><td>平台后台对会员封号（如群聊天监控中对发言会员封号）、在禁言 / 封号列表中解除封号。封号记录封号原因（打广告 / 辱骂 / 玷污平台 / 自定义原因）、消息来源（聊天室 / 短视频评论区）及最后发言内容；解除记录"解除封号"。</td></tr>
+                        <tr><td>禁言</td><td>平台后台对会员禁言、在禁言 / 封号列表中解除禁言。禁言记录禁言原因、消息来源及最后发言内容；解除记录"解除禁言"。</td></tr>
+                        <tr><td>前台</td><td>禁言</td><td>直播群内对会员禁言（原因为"直播群禁言"），记录消息来源及最后发言内容。解除仍由平台后台操作，按平台解除记录。</td></tr>
                     </table>
                     <ul>
-                        <li>只记录后台（商户后台、平台、系统）发起的变更；会员在前台自己修改的资料不在本功能记录。</li>
+                        <li>封号、禁言没有时长，不会到期自动解除，只能由平台在禁言 / 封号列表中手动解除；商户后台不能封号、禁言，也不能解除。</li>
+                        <li>只记录商户后台、平台和前台直播群禁言发起的变更；会员在前台自己修改的资料不在本功能记录。</li>
                         <li>余额、充值、提现、划转、场馆转出等资金变动不在本功能记录，统一在资金明细中查看。</li>
                         <li>只有提交成功的操作才生成记录；谷歌验证未通过、提交失败的不记录。值没有变化的项不记录（如更新用户时只改了真实姓名，只生成真实姓名一条）。</li>
                         <li>一次保存修改了多项时，每项各生成一条记录，操作时间相同，方便按变更类型筛选。</li>
@@ -2676,20 +2661,20 @@
                         <li>操作人：
                             <br>- 商户后台：显示后台账号，下方灰色显示操作IP。
                             <br>- 平台：统一显示"平台"，不展示平台人员账号。
-                            <br>- 系统：显示"系统"。</li>
+                            <br>- 前台：显示"前台"。</li>
                         <li>封号 / 禁言类记录整行浅红色底，变更类型用红色 / 橙色标签，方便在全部记录中快速识别。</li>
                         <li>最后发言内容：列表新增"最后发言内容"列，参照现有禁言 / 封号列表的"最后发言内容"展示。
                             <br>- 封号、禁言记录展示该会员被处理时最近的发言，最多 5 条，每条一行，最新的在最上面；内容支持文字、表情、图片，图片显示缩略图，点击查看大图。
                             <br>- 发言内容取封号 / 禁言当时的记录，之后会员发言被删除或撤回，此处仍保留。
-                            <br>- 解封、解除禁言、到期自动解除的记录，以及其他类型的记录，该列显示"—"；处理前没有发言的也显示"—"。</li>
-                        <li>原因 / 说明：封号、禁言、解除时展示原因及时长；批量操作展示批量操作名称；其余操作无说明时显示"—"。</li>
+                            <br>- 解除封号、解除禁言的记录，以及其他类型的记录，该列显示"—"；处理前没有发言的也显示"—"。</li>
+                        <li>原因 / 说明：封号、禁言时展示原因及消息来源；解除时展示"解除封号 / 解除禁言"；批量操作展示批量操作名称；其余操作无说明时显示"—"。</li>
                     </ul>
 
                     <h5>四、筛选与查询</h5>
                     <ul>
                         <li>所有记录（含封号、禁言）在同一个列表中展示，不分页签；需要只看封号或禁言时，通过变更类型筛选。</li>
                         <li>变更类型：全部、基本信息、手机号、密码、账号状态、用户层级、充值等级、红包限额、备注、IM账号、返佣后台、封号、禁言。</li>
-                        <li>操作来源：全部、商户后台、平台、系统。</li>
+                        <li>操作来源：全部、商户后台、平台、前台。</li>
                         <li>操作人：输入后台账号模糊查询，只匹配商户后台的记录。</li>
                         <li>操作时间：默认近 30 天，单次查询时间跨度最长 90 天，超出时提示"查询时间跨度不能超过 90 天"。</li>
                         <li>【重置】恢复默认条件并重新查询。</li>
@@ -2697,7 +2682,7 @@
 
                     <h5>五、记录保留与历史数据</h5>
                     <ul>
-                        <li>记录长期保留，不随会员状态变化（如停用、待删除）而清除。</li>
+                        <li>记录长期保留，不随会员状态变化（如禁用、锁定）而清除。</li>
                         <li>本功能上线前的历史操作不补录，上线后新产生的操作开始记录。</li>
                     </ul>
                 </div>
@@ -2720,10 +2705,10 @@
             '100039991': {
                 nick: '无家可归aegp', status: '启用',
                 ban: { on: false },
-                mute: { on: true, scope: '全部聊天室、直播间', until: '2026-11-23 21:45:08' },
+                mute: { on: true },
                 logs: [
                     { t: '2026-11-21 10:32:15', type: '备注', changes: [['备注', 'VIP客户', '这是一个大客户，请多关注。']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
-                    { t: '2026-11-20 21:45:08', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：全部聊天室、直播间<br>时长：3天（至 2026-11-23 21:45:08）<br>原因：聊天室发布引流广告', src: '平台',
+                    { t: '2026-11-20 21:45:08', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '禁言原因：打广告<br>消息来源：聊天室', src: '平台',
                       msgs: [
                         { t: '2026-11-20 21:44:52', at: '一分快三聊天室', c: () => img() + '😍😍😍😍😍😍' },
                         { t: '2026-11-20 21:44:30', at: '一分快三聊天室', c: () => '加群领彩金，名额有限先到先得' },
@@ -2731,24 +2716,23 @@
                         { t: '2026-11-20 21:38:05', at: '主播小鹿直播间', c: () => '私聊我有内部计划，稳赚不赔' },
                         { t: '2026-11-20 21:20:47', at: '一分快三聊天室', c: () => '这期跟大' }
                       ] },
-                    { t: '2026-11-18 16:02:44', type: '用户层级', changes: [['用户层级', '默认层级 0-500可见', '总充值500-2000可见']], reason: '满足层级条件自动调整', src: '系统' },
                     { t: '2026-11-18 15:20:11', type: '基本信息', changes: [['真实姓名', '', '喜欢123']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-18 15:20:11', type: '红包限额', changes: [['红包限额', '500', '1000']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-15 09:12:30', type: '手机号', changes: [['手机号', '+86 187****1234', '+86 187****4013']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
                     { t: '2026-11-12 14:00:03', type: '密码', changes: [['已修改登录密码']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
-                    { t: '2026-11-11 10:05:20', type: '封号', changes: [['封号', '封号中', '正常']], reason: '提前解封<br>原因：会员申诉核实通过', src: '平台' },
-                    { t: '2026-11-10 20:30:41', type: '封号', changes: [['封号', '正常', '封号中']], reason: '时长：永久<br>原因：疑似多账号套利', src: '平台',
+                    { t: '2026-11-11 10:05:20', type: '封号', changes: [['封号', '封号中', '正常']], reason: '解除封号', src: '平台' },
+                    { t: '2026-11-10 20:30:41', type: '封号', changes: [['封号', '正常', '封号中']], reason: '封号原因：疑似多账号套利（自定义）<br>消息来源：聊天室', src: '平台',
                       msgs: [
                         { t: '2026-11-10 20:28:16', at: '极速百家乐聊天室', c: () => '小号都准备好了，今晚一起冲' },
                         { t: '2026-11-10 20:25:03', at: '极速百家乐聊天室', c: () => '庄闲对着下，流水刷满就提' },
                         { t: '2026-11-10 19:58:41', at: '一分赛车聊天室', c: () => '🙏🙏' }
                       ] },
-                    { t: '2026-11-09 11:40:02', type: '账号状态', changes: [['账号状态', '停用', '启用']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
-                    { t: '2026-11-08 11:11:11', type: '账号状态', changes: [['账号状态', '启用', '停用']], reason: '批量禁用', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-09 11:40:02', type: '账号状态', changes: [['账号状态', '禁用', '启用']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-08 11:11:11', type: '账号状态', changes: [['账号状态', '启用', '禁用']], reason: '批量禁用', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-05 18:22:37', type: 'IM账号', changes: [['解锁IM账号']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
-                    { t: '2026-11-03 21:00:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '到期自动解除', src: '系统' },
+                    { t: '2026-11-03 10:20:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '解除禁言', src: '平台' },
                     { t: '2026-11-03 15:16:09', type: '返佣后台', changes: [['开通返佣后台账号：admin_100039991']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
-                    { t: '2026-11-02 21:00:00', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：聊天室<br>时长：1天（至 2026-11-03 21:00:00）<br>原因：聊天室辱骂他人', src: '平台',
+                    { t: '2026-11-02 21:00:00', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '禁言原因：直播群禁言<br>消息来源：聊天室', src: '前台',
                       msgs: [
                         { t: '2026-11-02 20:59:31', at: '一分时时彩聊天室', c: () => '***（已过滤）你懂个屁' },
                         { t: '2026-11-02 20:58:10', at: '一分时时彩聊天室', c: () => '跟你的单连黑十把' }
@@ -2763,8 +2747,8 @@
                 ban: { on: false }, mute: { on: false },
                 logs: [
                     { t: '2026-11-19 20:15:33', type: '返佣后台', changes: [['重置返佣后台密码']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
-                    { t: '2026-11-16 09:30:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '提前解除禁言<br>原因：误判', src: '平台' },
-                    { t: '2026-11-15 22:41:10', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '范围：直播间<br>时长：7天（至 2026-11-22 22:41:10）<br>原因：直播间刷屏', src: '平台',
+                    { t: '2026-11-16 09:30:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '解除禁言', src: '平台' },
+                    { t: '2026-11-15 22:41:10', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '禁言原因：辱骂<br>消息来源：短视频评论区', src: '平台',
                       msgs: [
                         { t: '2026-11-15 22:41:02', at: '主播阿紫直播间', c: () => '666666666666' },
                         { t: '2026-11-15 22:40:58', at: '主播阿紫直播间', c: () => '666666666666' },
@@ -2772,8 +2756,8 @@
                         { t: '2026-11-15 22:40:51', at: '主播阿紫直播间', c: () => '😂😂😂' },
                         { t: '2026-11-15 22:40:47', at: '主播阿紫直播间', c: () => '666666666666' }
                       ] },
-                    { t: '2026-11-10 14:22:05', type: '账号状态', changes: [['账号状态', '启用', '冻结余额']], reason: '余额锁定中，限制游戏、下单、打赏、发言。', src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
-                    { t: '2026-11-11 10:00:00', type: '账号状态', changes: [['账号状态', '冻结余额', '启用']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-10 14:22:05', type: '账号状态', changes: [['账号状态', '启用', '锁定']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-11 10:00:00', type: '账号状态', changes: [['账号状态', '锁定', '启用']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-01 08:59:41', type: '用户层级', changes: [['用户层级', '总充值500-2000可见', '总充值2000-9999可见']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
                     { t: '2026-10-25 16:44:12', type: '密码', changes: [['已修改支付密码']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
                 ]
@@ -2789,12 +2773,11 @@
             lgState.uid = uid;
             document.getElementById('lgUid').textContent = uid;
             document.getElementById('lgNick').textContent = m.nick;
-            document.getElementById('lgStatus').innerHTML = `<span class="log-badge ${m.status === '启用' ? 'lb-ok' : 'lb-gray'}">${m.status}</span>`;
-            document.getElementById('lgBan').innerHTML = m.ban.on
-                ? `<span class="log-badge lb-danger">封号中</span> <span class="text-gray">至 ${m.ban.until}</span>`
-                : '<span class="log-badge lb-ok">正常</span>';
+            document.getElementById('lgStatus').innerHTML = m.ban.on
+                ? '<span class="log-badge lb-danger">封号中</span>'
+                : `<span class="log-badge ${m.status === '启用' ? 'lb-ok' : 'lb-gray'}">${m.status}</span>`;
             document.getElementById('lgMute').innerHTML = m.mute.on
-                ? `<span class="log-badge lb-warn">禁言中</span> <span class="text-gray">${m.mute.scope} · 至 ${m.mute.until}</span>`
+                ? '<span class="log-badge lb-warn">禁言中</span>'
                 : '<span class="log-badge lb-ok">正常</span>';
             resetLog(true);
             fillTypeOptions();
@@ -2864,7 +2847,7 @@
                 const op = l.src === '商户后台'
                     ? `${l.op}<br><span class="text-gray">${l.ip}</span>`
                     : l.src;
-                const srcBadge = l.src === '商户后台' ? 'lb-blue' : (l.src === '平台' ? 'lb-danger' : 'lb-gray');
+                const srcBadge = l.src === '商户后台' ? 'lb-blue' : (l.src === '平台' ? 'lb-danger' : 'lb-warn');
                 if (BAN_TYPES.includes(l.type) && l.changes[0][2] !== '正常') {
                     const ms = l.msgs || [];
                     chgExtra = ms.length ? ms.map(m => `<div class="msg-line">${m.c()}</div>`).join('') : '<span class="text-gray">—</span>';
