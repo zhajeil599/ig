@@ -3330,15 +3330,17 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
 
       <h2>六、前台 · 升级模式页面</h2>
       <h3>6.1 周俸禄 / 月俸禄按钮</h3>
+      <ul><li>按钮第一行固定显示「周俸禄 ￥金额」/「月俸禄 ￥金额」（金额为会员当前等级对应的工资），第二行显示状态。可领取时周俸禄为金黄色、月俸禄为橙色，其余状态均为银灰色。</li></ul>
       <table>
-        <tr><th style="width:150px">状态</th><th>展示</th></tr>
-        <tr><td>可领取</td><td>金色按钮「立即领取」，点击提示「领取成功」后变为已领取。</td></tr>
-        <tr><td>未到领取时间</td><td>灰色，显示「每周一领取」/「每月1号领取」。</td></tr>
-        <tr><td>未达标</td><td>灰色，显示差的条件，例：「需上周充值 1000 / 需上周有效投注 10000」。</td></tr>
-        <tr><td>本期已领取</td><td>灰色，显示「下周再来」/「下月再来」。</td></tr>
-        <tr><td>当前等级无此奖励</td><td>灰色，显示「暂无」。</td></tr>
+        <tr><th style="width:170px">状态</th><th style="width:200px">触发条件</th><th>第二行显示</th></tr>
+        <tr><td>立即领取</td><td>在领取时间内、本期未领取、条件已达标</td><td>「立即领取」，点击提示「领取成功」后按已领取规则变化。</td></tr>
+        <tr><td>未达标</td><td>在领取时间内、本期未领取、条件未满足</td><td>「未达标」，不显示具体条件（统计周期已结束，无法再补）。</td></tr>
+        <tr><td>本期已领取（领取日当天）</td><td>已领取，且当天仍是领取日</td><td>「下周再来」/「下月再来」。</td></tr>
+        <tr><td>未到领取时间</td><td>领取时间为指定日期，且今天不是领取日（含领取日之后已领取的情况）</td><td>按配置显示，如「每周一领取」/「每月1号领取」。</td></tr>
+        <tr><td>当前等级无此奖励</td><td>当前等级的周/月工资配置为 0</td><td>金额显示 ￥0，第二行显示「下周再来」/「下月再来」。</td></tr>
       </table>
-      <ul><li>按钮下方展示领取提示，文案由后台配置自动生成，例：「周俸禄每周一领取，月俸禄每月1号领取，过期不可领取」。</li></ul>
+      <ul><li>领取时间为「随时可领取」时，没有「未到领取时间」状态：本期已领取显示「下周再来」/「下月再来」，其余按上表判断。</li>
+      <li>按钮下方展示领取提示，文案由后台配置自动生成，例：「周俸禄每周一领取，月俸禄每月1号领取，过期不可领取」。</li></ul>
       <h3>6.2 等级可领列表</h3>
       <ul>
         <li>展示所有开启的等级，每个等级显示领取条件和晋级奖金额。</li>
@@ -3531,19 +3533,23 @@ function needTxt(k,req){const p=P[cfg[k].period],s=sim[cfg[k].period],o=[];
 
 function salaryBtn(k){
   const name=k==='wk'?'周俸禄':'月俸禄',cl=curLv(),l=levels.find(x=>x.lv===cl&&x.on);
-  const amt=l?l[k].a:0;
-  const grey=(inner)=>`<div class="flex-1 bg-silver-gradient rounded-xl py-2 px-1 text-center border-b-4 border-gray-500 flex flex-col justify-center items-center min-h-[72px]">
-     <div class="flex items-center gap-1 mb-1"><div class="text-[#333] font-bold text-[15px]">${name}</div><div class="text-[#333] font-bold text-[12px]">${amt?'￥'+fmt(amt):''}</div></div>${inner}</div>`;
-  if(!l||!amt)return grey(`<div class="text-[#666] text-[11px] font-bold">暂无</div>`);
+  const amt=l?l[k].a:0, again=k==='wk'?'下周再来':'下月再来';
+  const SK={
+    wk:{bg:'linear-gradient(180deg,#FFE27A 0%,#FFC23A 45%,#F29A12 100%)',bd:'#C47508',tx:'#6B3500'},
+    mon:{bg:'linear-gradient(180deg,#FFC27A 0%,#FF9A3A 45%,#E8650F 100%)',bd:'#B14A06',tx:'#6B2400'},
+    grey:{bg:'linear-gradient(180deg,#F4F4F4 0%,#CFCFCF 50%,#A3A3A3 100%)',bd:'#7A7A7A',tx:'#4A4A4A'}};
+  const btn=(state,skin,click)=>{const c=SK[skin];
+    return `<div ${click?`onclick="claimSalary('${k}')"`:''} style="flex:1;background:${c.bg};border-bottom:4px solid ${c.bd};border-radius:10px;box-shadow:inset 0 2px 2px rgba(255,255,255,.7),0 4px 10px rgba(0,0,0,.45);padding:8px 4px 7px;text-align:center;${click?'cursor:pointer;':''}">
+      <div style="color:${c.tx};font-size:12px;font-weight:600;opacity:.9">${name} ￥${fmt(amt)}</div>
+      <div style="color:${c.tx};font-size:${state.length>4?13:17}px;font-weight:900;letter-spacing:2px;margin-top:2px;text-shadow:0 1px 0 rgba(255,255,255,.45)">${state}</div></div>`;};
+  if(!amt)return btn(again,'grey');
   const key=k==='wk'?weekKey(sim.date):sim.date.slice(0,7);
-  if(claimed[k][key])return grey(`<div class="text-[#666] text-[11px] font-bold">${k==='wk'?'下周再来':'下月再来'}</div>`);
   const d=D(sim.date),c=cfg[k];
-  if(c.claim==='fixed'&&(k==='wk'?wday(d)!==c.day:d.getDate()!==c.day))
-    return grey(`<div class="text-[#555] text-[11px] font-bold">${claimWhen(k)}</div>`);
-  if(!met(k,l[k]))return grey(`<div class="text-[#8b2323] text-[9px] bg-black/10 rounded py-1 px-2 leading-tight font-bold w-11/12">${needTxt(k,l[k])}</div>`);
-  return `<div onclick="claimSalary('${k}')" class="flex-1 bg-gold-gradient rounded-xl py-2 px-1 text-center border-b-4 border-[#9c6f1a] cursor-pointer active:translate-y-1 flex flex-col justify-center items-center min-h-[72px]">
-     <div class="flex items-center gap-1 mb-1.5"><div class="text-[#3e2708] font-bold text-[15px]">${name}</div><div class="text-[#8b2323] font-bold text-[13px]">￥${fmt(amt)}</div></div>
-     <div class="bg-[#8b2323] text-[#FDE19F] text-[11px] px-4 py-1 rounded-full font-bold w-10/12">立即领取</div></div>`;
+  const notDay=c.claim==='fixed'&&(k==='wk'?wday(d)!==c.day:d.getDate()!==c.day);
+  if(claimed[k][key])return btn(notDay?claimWhen(k):again,'grey');
+  if(notDay)return btn(claimWhen(k),'grey');
+  if(!met(k,l[k]))return btn('未达标','grey');
+  return btn('立即领取',k,true);
 }
 function upCondTxt(l,need){
   const o=l.up,p=P[cfg.up.period];
@@ -3577,7 +3583,7 @@ function renderFront(){
   const td=o=>`<td class="py-2">${fmt(o.a)}</td>`;
   $('app').innerHTML=`
   <header class="sticky top-0 w-full bg-[#151515] h-12 flex items-center px-4 z-40 border-b border-[#333]">
-    <button class="text-gray-300 w-8 h-8 flex items-center"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="text-gray-300 w-8 h-8 flex items-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <h1 class="flex-1 text-center text-[16px] font-medium text-gray-200 pr-8">升级模式</h1>
   </header>
   <section class="hero-bg w-full pt-6 pb-6 px-4 relative">
@@ -3588,11 +3594,11 @@ function renderFront(){
     <div class="gauge-container mt-6"><div class="gauge-arc"></div>${gauge}
       <div class="absolute bottom-4 left-1/2 -translate-x-1/2 border border-[#D8A246] rounded-full px-4 py-1 bg-[#1A0B02] text-[#D8A246] text-[12px]">总充值</div></div>
     <div class="bg-gold-gradient rounded-full py-3 mt-1 mb-4 flex justify-center border-2 border-[#FFE8A1]"><span class="text-[#4A2D00] text-2xl font-black">￥ ${money(sim.total)}</span></div>
-    <div class="flex gap-2 px-1 mt-2">${salaryBtn('wk')}${salaryBtn('mon')}</div>
-    <div class="text-[10px] text-[#D8A246]/80 text-center mt-2 px-2"><i class="fa-regular fa-clock mr-1"></i>${salaryHint}</div>
+    <div class="flex gap-2 px-1 mt-2" style="display:flex;gap:8px">${salaryBtn('wk')}${salaryBtn('mon')}</div>
+    <div class="text-[10px] text-[#D8A246]/80 text-center mt-2 px-2"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="display:inline;vertical-align:-1px;margin-right:3px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${salaryHint}</div>
     <div class="mt-5 bg-gradient-to-b from-[#5c3311] to-[#2b1706] rounded-xl p-4 border border-[#8b5a2b]">
       <div class="flex justify-between items-center mb-3"><div class="text-gold text-2xl font-bold italic">VIP ${cl}</div>
-        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#D8A246] to-[#FFF6D3] flex items-center justify-center"><i class="fa-solid fa-star text-[#4A2D00] text-sm"></i></div></div>
+        <div style="width:34px;height:34px;flex-shrink:0;border-radius:50%;background:linear-gradient(45deg,#D8A246,#FFF6D3);display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px #D8A246"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4A2D00" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg></div></div>
       <div class="w-full bg-[#1A0B02] h-2 rounded-full overflow-hidden border border-[#3A1F0B]"><div class="bg-gold-gradient h-full rounded-full" style="width:${pct}%"></div></div>
       <div class="text-gray-400 text-[10px] mt-2">${next?`下一级距离 <span class="text-[#D8A246]">￥ ${money(next.dep-sim.total)}</span> 充值`:'已达最高等级'}</div>
     </div>
