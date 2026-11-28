@@ -236,10 +236,18 @@ const MEMBERS={
  '900010001':{n:'皇冠阿宝',lv:'充值0-500',ch:'官方渠道',mch:'9001'},
  '900010002':{n:'皇冠小七',lv:'充值500-1000',ch:'谷歌',mch:'9001'}
 };
-let FRIENDS=[['A',['100020001','100020002']],['B',['100020003']],['C',['100020004']],['T',['100012345']]];
-const PY={'100041118':'F','100040958':'T','100041105':'X'};
-const isFriend=id=>FRIENDS.some(f=>f[1].includes(id));
-function addFriend(id){const L=PY[id]||'#';let g=FRIENDS.find(f=>f[0]===L);if(!g){g=[L,[]];FRIENDS.push(g);FRIENDS.sort((a,b)=>a[0].localeCompare(b[0]))}if(!g[1].includes(id))g[1].push(id)}
+let FRIEND_IDS=['100020001','100020002','100020003','100020004','100012345'];
+/* 当前会员给好友设置的备注（仅本人可见） */
+const REMARK={'100020001':'龙哥-同事','100020003':'表弟','100012345':'老同学'};
+const NICK_PY={'100020001':'A','100020002':'A','100020003':'B','100020004':'C','100012345':'T','100041118':'F','100040958':'T','100041105':'X'};
+const REMARK_PY={'100020001':'L','100020003':'B','100012345':'L'};
+const remarkOf=id=>FRIEND_IDS.includes(id)&&REMARK[id]?REMARK[id]:'';
+const dispName=id=>remarkOf(id)||MEMBERS[id].n;      // 有备注显示备注，否则显示昵称
+const subLine=id=>remarkOf(id)?`昵称：${MEMBERS[id].n}　ID：${id}`:`ID：${id}`;
+function friendGroups(){const g={};FRIEND_IDS.forEach(id=>{const L=(remarkOf(id)?REMARK_PY[id]:NICK_PY[id])||'#';(g[L]=g[L]||[]).push(id)});
+ return Object.keys(g).sort().map(L=>[L,g[L].sort((a,b)=>dispName(a).localeCompare(dispName(b),'zh'))])}
+const isFriend=id=>FRIEND_IDS.includes(id);
+function addFriend(id){if(!FRIEND_IDS.includes(id))FRIEND_IDS.push(id)}
 function sendApply(id){addFriend(id);go('c-transfer');toast('添加好友成功')}
 let CONFIG=[
  {id:'100039991',on:true,min:100,max:5000,mul:2},
@@ -317,7 +325,7 @@ V.log=()=>{
   ['代理后台','会员列表','金流统计划转金额；会员详情增加划转次数/金额及明细入口。'],
   ['代理后台','提现列表','金流统计划转金额。'],
   ['客户端','我的','余额区在充值与提现之间增加「划转」按钮。'],
-  ['客户端','划转','支持输入用户ID或选择通讯录好友划转，需输入支付密码确认；右上角为划转记录入口。'],
+  ['客户端','划转','支持输入用户ID或选择通讯录好友划转，好友有备注时优先展示备注并附昵称、ID；需输入支付密码确认；右上角为划转记录入口。'],
   ['客户端','划转记录 / 划转详情','展示会员的划转历史订单（全部/转出/转入）及单笔详情。'],
   ['客户端','交易记录','增加划转页签，展示划转收入、划转支出。']
  ];
@@ -465,7 +473,7 @@ V['c-transfer']=()=>{
  <div class="m-lb">收款人</div>
  <div class="m-ipt ${e.id?'err':''}"><input id="tid" placeholder="请输入用户ID" value="${t.id}" inputmode="numeric" onblur="lookup(this.value)" oninput="S.tf.id=this.value"><span class="ic" title="通讯录好友" onclick="S.friendSel=S.tf.payee;go('c-friend')">👤</span></div>
  ${e.id?`<div class="m-err">${e.id}</div>`:''}
- ${t.payee?`<div class="payee"><div class="av">头像</div><div><div class="nm">${MEMBERS[t.payee].n}</div><div class="id">ID：${t.payee}</div></div>${isFriend(t.payee)?'':`<button class="sbtn" onclick="go('c-addfriend',{addTarget:S.tf.payee})">添加好友</button>`}</div>`:''}
+ ${t.payee?`<div class="payee"><div class="av">头像</div><div><div class="nm">${dispName(t.payee)}</div><div class="id">${subLine(t.payee)}</div></div>${isFriend(t.payee)?'':`<button class="sbtn" onclick="go('c-addfriend',{addTarget:S.tf.payee})">添加好友</button>`}</div>`:''}
  <div class="m-lb">划转金额</div>
  <div class="m-ipt ${e.amt?'err':''}"><input id="tamt" placeholder="限额${c.min}-${c.max}" value="${t.amt}" inputmode="decimal" oninput="S.tf.amt=this.value.replace(/[^\\d.]/g,'');this.value=S.tf.amt;btnState()"></div>
  ${e.amt?`<div class="m-err">${e.amt}</div>`:''}
@@ -493,23 +501,23 @@ function submitTf(){
  const to=t.payee;S.tf={id:'',payee:null,amt:'',pwd:'',showPwd:false,err:{}};
  render();
  document.querySelector('.phone').insertAdjacentHTML('beforeend',`<div class="sheet"><div class="box"><div style="font-size:36px;color:#67c23a">✓</div><h3>划转成功</h3><div class="amt">${fmt(a)}</div>
- <div style="color:#606266;font-size:13px">已转给 ${MEMBERS[to].n}（ID：${to}）</div><div class="row"><button onclick="go('c-detail',{detail:'${no}'})">查看详情</button><button class="p" onclick="render()">完成</button></div></div></div>`);
+ <div style="color:#606266;font-size:13px">已转给 ${dispName(to)}（ID：${to}）</div><div class="row"><button onclick="go('c-detail',{detail:'${no}'})">查看详情</button><button class="p" onclick="render()">完成</button></div></div></div>`);
 }
 
-V['c-friend']=()=>phone('选择好友',FRIENDS.map(([L,ids])=>`<div class="letter">${L}</div>`+ids.map(id=>`<div class="fitem ${S.friendSel===id?'on':''}" onclick="S.friendSel='${id}';render()"><div class="av">头像</div><div><div>${MEMBERS[id].n}</div><div style="font-size:12px;color:#909399">ID：${id}</div></div><span class="rd"></span></div>`).join('')).join(''),
+V['c-friend']=()=>phone('选择好友',friendGroups().map(([L,ids])=>`<div class="letter">${L}</div>`+ids.map(id=>`<div class="fitem ${S.friendSel===id?'on':''}" onclick="S.friendSel='${id}';render()"><div class="av">头像</div><div><div>${dispName(id)}</div><div style="font-size:12px;color:#909399">${subLine(id)}</div></div><span class="rd"></span></div>`).join('')).join(''),
  {back:'c-transfer',foot:`<div class="ph-foot"><button class="m-btn" style="margin:0;width:100%" ${S.friendSel?'':'disabled'} onclick="S.tf.id=S.friendSel;S.tf.payee=S.friendSel;S.tf.err.id='';go('c-transfer')">确认选择</button></div>`});
 
 function myRecs(){return RECORDS.filter(r=>r.from===ME||r.to===ME)}
 V['c-history']=()=>{
  let l=myRecs();if(S.histTab==='out')l=l.filter(r=>r.from===ME);if(S.histTab==='in')l=l.filter(r=>r.to===ME);
- return phone('划转记录',`${l.length?l.map(r=>{const out=r.from===ME,o=out?r.to:r.from;return `<div class="rec" onclick="go('c-detail',{detail:'${r.no}'})"><div class="l"><b>${out?'转给 ':'收到 '}${MEMBERS[o].n}</b><p>对方ID：${o}<br>订单号：${r.no}<br>时间：${r.t}</p></div><div class="r"><div class="st">成功</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div></div></div>`}).join(''):'<div class="empty">暂无划转记录</div>'}`,
+ return phone('划转记录',`${l.length?l.map(r=>{const out=r.from===ME,o=out?r.to:r.from;return `<div class="rec" onclick="go('c-detail',{detail:'${r.no}'})"><div class="l"><b>${out?'转给 ':'收到 '}${dispName(o)}</b><p>对方ID：${o}<br>订单号：${r.no}<br>时间：${r.t}</p></div><div class="r"><div class="st">成功</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div></div></div>`}).join(''):'<div class="empty">暂无划转记录</div>'}`,
  {back:'c-transfer',right:'',foot:''}).replace('<div class="ph-bd" id="phbd">',`<div class="tabs">${[['all','全部'],['out','转出'],['in','转入']].map(([k,n])=>`<div class="${S.histTab===k?'on':''}" onclick="S.histTab='${k}';render()">${n}</div>`).join('')}</div><div class="timef">${['今天','昨天','近7天','近30天'].map(x=>`<span class="${S.histTime===x?'on':''}" onclick="S.histTime='${x}';render()">${x}</span>`).join('')}</div><div class="ph-bd" id="phbd">`);
 };
 V['c-detail']=()=>{
  const r=RECORDS.find(x=>x.no===S.detail)||myRecs()[0];const out=r.from===ME,o=out?r.to:r.from;
  const cfg=CONFIG.find(c=>c.id===r.from);
  return phone('划转详情',`<div class="det"><div style="color:#606266">${out?'划转支出':'划转收入'}</div><div class="a ${out?'minus':'plus'}">${out?'-':'+'}${fmt(r.amt)}</div><div style="color:#67c23a">成功</div></div>
- <div class="dl"><span>${out?'收款人':'转出人'}</span><span>${MEMBERS[o].n}</span></div><div class="dl"><span>对方ID</span><span>${o}</span></div>
+ <div class="dl"><span>${out?'收款人':'转出人'}</span><span>${dispName(o)}</span></div>${remarkOf(o)?`<div class="dl"><span>对方昵称</span><span>${MEMBERS[o].n}</span></div>`:''}<div class="dl"><span>对方ID</span><span>${o}</span></div>
  <div class="dl"><span>订单号</span><span>${r.no} <a onclick="toast('已复制')">复制</a></span></div><div class="dl"><span>划转时间</span><span>${r.t}</span></div>
  ${!out&&cfg?`<div class="dl"><span>需完成打码量</span><span>${fmt(r.amt*cfg.mul)}</span></div>`:''}`,{back:'c-history'});
 };
@@ -544,21 +552,22 @@ log:`<h3>需求背景</h3>会员之间可互相划转余额。仅后台配置过
 <h4>原型说明</h4>左侧点击切换页面。原型内数据联动：在客户端发起划转后，后台划转记录、资金明细、会员详情统计同步更新。`,
 'a-member':`<h3>会员列表</h3><ol><li>金流-充值：展示为「充值金额 + 划转金额(划转)」，划转金额为该会员收到的划转（转入）累计金额；小计行同样统计。</li><li>会员详情-概况：增加「划转」行，展示所选时间范围内收到划转的次数/金额。</li><li>点击划转行的「明细」跳转至划转记录，自动带入转入用户ID筛选该会员。</li></ol>`,
 'a-withdraw':`<h3>提现列表</h3><ol><li>金流列与会员列表一致：充值金额后追加「+划转金额(划转)」，统计该会员收到的划转累计金额，便于审核提现时识别资金来源。</li></ol>`,
-'a-record':`<h3>划转记录</h3><ol><li>菜单位置：财务管理-划转记录。</li><li>每笔划转生成一条记录，按转账时间倒序。</li><li>展示渠道商、订单号、转出用户ID、转出用户昵称、转出会员层级、转账金额、转入用户ID、转入会员昵称、转入会员层级、转账时间、备注。</li><li>渠道商：展示转出会员所属渠道。</li><li>昵称、层级展示会员当前信息。</li><li>查询条件：转账时间、订单号、转出用户ID、转入用户ID；支持导出。</li><li>备注：预留，无内容时展示「-」。</li></ol>`,
+'a-record':`<h3>划转记录</h3><ol><li>菜单位置：财务管理-划转记录。</li><li>每笔划转生成一条记录，按转账时间倒序。</li><li>展示渠道商、订单号、转出用户ID、转出用户昵称、转出会员层级、转账金额、转入用户ID、转入会员昵称、转入会员层级、转账时间、备注。</li><li>渠道商：展示转出会员所属渠道。</li><li>昵称、层级展示会员当前信息；会员之间设置的好友备注不在后台展示。</li><li>查询条件：转账时间、订单号、转出用户ID、转入用户ID；支持导出。</li><li>备注：预留，无内容时展示「-」。</li></ol>`,
 'a-config':`<h3>划转配置</h3><ol><li>菜单位置：财务管理-划转配置，独立菜单。</li><li>商户选择：当前登录商户为主商户时，查询区展示「商户」下拉，选项为本商户及其全部子商户，默认选中本商户；切换后列表展示所选商户的会员配置，新增、编辑、删除均作用于所选商户。子商户或普通商户登录时不展示该下拉，只能配置本商户。</li><li>主商户为子商户保存的配置即为该子商户的配置，子商户登录后可看到并修改，以最后一次保存为准。</li><li>新增弹窗顶部展示「所属商户」（即当前所选商户，不可修改）；输入的会员ID须属于该商户，否则提示「会员ID不存在」。</li><li>划转功能按会员单独配置，未添加配置或开关关闭的会员不可发起划转，客户端不展示划转按钮；接收划转不受此限制。</li><li>新增：输入会员ID后搜索，会员不存在提示「会员ID不存在」，已配置过的会员提示直接编辑，同一会员只能有一条配置。</li><li>单次转账限额区间：下限≥0，上限>0，下限不能大于上限；客户端划转金额须在此区间内。</li><li>转账收款稽核倍数：只能是正整数（1、2、3…），不支持小数，不能为0；收款方到账后增加「到账金额×倍数」的打码量，打码完成后才可提现。</li><li>编辑：会员ID不可修改，其余可改，保存后即时生效。</li><li>删除：二次确认，删除后该会员不可再发起划转。</li><li>列表支持按会员ID查询。</li></ol>`,
 'a-fund':`<h3>资金明细</h3><ol><li>账变类型增加「划转收入」「划转支出」，可按类型筛选。</li><li>一笔划转产生两条账变：转出方「划转支出」（减少），收款方「划转收入」（增加），两条订单号与划转记录一致。</li><li>备注展示对方用户ID。</li></ol>`,
 'c-mine':`<h3>我的</h3><ol><li>余额区在「充值」和「提现」之间增加「划转」按钮，点击进入划转页。</li><li>仅后台已配置且开启划转功能的会员展示划转按钮；不展示时，余额区保持充值、提现两个按钮。</li><li>页面其余内容为现有内容，不做改动。</li></ol>`,
-'c-transfer':`<h3>划转</h3><ol><li>右上角「划转记录」：点击进入划转记录页查看历史订单。</li><li>收款人：输入用户ID，输入框失去焦点后查询并展示对方头像、昵称、ID；只能划转给同一商户的会员，用户不存在或不属于本商户均提示「用户ID不存在」，输入自己的ID提示「不能划转给自己」。</li><li>点击输入框右侧图标进入通讯录选择好友，确认后自动带入收款人。</li><li>添加好友：查询到的收款人还不是好友时，在收款人信息右侧展示「添加好友」按钮，已是好友则不展示。点击直接跳转添加好友页面并带入对方信息，完成添加后返回划转页，已填写的收款人、金额保留，「添加好友」按钮不再展示，对方同步出现在通讯录好友中。</li><li>划转金额：输入框提示展示该会员的单次限额区间；下方展示可用余额。超出区间提示「划转金额超限」，超过余额提示「可用余额不足」。</li><li>打码量：发起划转不受打码量限制；收款方到账后按转出方配置的稽核倍数增加打码量。</li><li>支付密码：输入错误提示「支付密码不正确」；「忘记密码？」进入现有重置支付密码页面。</li><li>收款人、金额、密码均填写后「确认划转」才可点击。</li><li>划转成功即时扣款到账，弹出成功提示，可查看详情或完成（清空表单停留本页）。</li></ol>`,
-'c-friend':`<h3>选择好友</h3><ol><li>展示当前会员的通讯录好友，按昵称首字母分组。</li><li>单选，选中后「确认选择」可点击，返回划转页并带入收款人。</li></ol>`,
-'c-history':`<h3>划转记录</h3><ol><li>入口：划转页右上角。</li><li>页签：全部 / 转出 / 转入；时间筛选：今天、昨天、近7天、近30天。</li><li>每条展示：转给/收到 + 对方昵称、对方ID、订单号、时间、状态、金额（转出为 -，转入为 +）。</li><li>划转即时完成，状态均为「成功」。</li><li>按时间倒序，点击进入划转详情。</li></ol>`,
-'c-detail':`<h3>划转详情</h3><ol><li>展示类型（划转支出/划转收入）、金额、状态、对方昵称、对方ID、订单号（可复制）、划转时间。</li><li>转入记录额外展示本笔需完成的打码量（到账金额 × 转出方配置的稽核倍数）。</li></ol>`,
+'c-transfer':`<h3>划转</h3><ol><li>右上角「划转记录」：点击进入划转记录页查看历史订单。</li><li>收款人：输入用户ID，输入框失去焦点后查询并展示对方头像、昵称、ID；只能划转给同一商户的会员，用户不存在或不属于本商户均提示「用户ID不存在」，输入自己的ID提示「不能划转给自己」。</li><li>点击输入框右侧图标进入通讯录选择好友，确认后自动带入收款人。</li><li>添加好友：查询到的收款人还不是好友时，在收款人信息右侧展示「添加好友」按钮，已是好友则不展示。点击直接跳转添加好友页面并带入对方信息，完成添加后返回划转页，已填写的收款人、金额保留，「添加好友」按钮不再展示，对方同步出现在通讯录好友中。</li><li>划转金额：输入框提示展示该会员的单次限额区间；下方展示可用余额。超出区间提示「划转金额超限」，超过余额提示「可用余额不足」。</li><li>打码量：发起划转不受打码量限制；收款方到账后按转出方配置的稽核倍数增加打码量。</li><li>支付密码：输入错误提示「支付密码不正确」；「忘记密码？」进入现有重置支付密码页面。</li><li>收款人、金额、密码均填写后「确认划转」才可点击。</li><li>收款人名称：收款人是好友且设置了备注时，大字展示备注，下方小字展示「昵称　ID」；无备注或非好友时展示昵称和ID。备注仅本人可见。</li><li>划转成功即时扣款到账，弹出成功提示「已转给 备注/昵称（ID）」，可查看详情或完成（清空表单停留本页）。</li></ol>`,
+'c-friend':`<h3>选择好友</h3><ol><li>展示当前会员的通讯录好友，分组排序与现有通讯录一致：有备注按备注首字母，无备注按昵称首字母。</li><li>好友名称：有备注时第一行展示备注，第二行灰字展示「昵称　ID」；无备注时第一行展示昵称，第二行展示ID。</li><li>单选，选中后「确认选择」可点击，返回划转页并带入收款人。</li></ol>`,
+'c-history':`<h3>划转记录</h3><ol><li>入口：划转页右上角。</li><li>页签：全部 / 转出 / 转入；时间筛选：今天、昨天、近7天、近30天。</li><li>每条展示：转给/收到 + 对方名称（有备注展示备注，否则展示昵称）、对方ID、订单号、时间、状态、金额（转出为 -，转入为 +）。</li><li>划转即时完成，状态均为「成功」。</li><li>按时间倒序，点击进入划转详情。</li></ol>`,
+'c-detail':`<h3>划转详情</h3><ol><li>展示类型（划转支出/划转收入）、金额、状态、收款人/转出人、对方ID、订单号（可复制）、划转时间。</li><li>收款人/转出人：有备注展示备注，并多展示一行「对方昵称」；无备注展示昵称，不再重复展示昵称行。</li><li>备注取当前设置，修改备注后历史记录同步展示新备注；双方各自看到自己设置的备注。</li><li>需完成打码量：仅「划转收入」（转入）详情展示，位于划转时间下方，金额 = 到账金额 × 转出方配置的稽核倍数；「划转支出」（转出）详情不展示，因为转出方不增加打码量。</li></ol>`,
 'c-trade':`<h3>交易记录</h3><ol><li>增加「划转」页签，展示划转收入与划转支出，点击进入划转详情。</li><li>划转订单只在「划转」页签展示，与划转记录页数据一致。</li></ol>`,
 'c-addfriend':`<h3>添加好友</h3><ol><li>现有页面，页面内容不做改动。</li><li>从划转页收款人信息的「添加好友」进入时，自动带入对方头像、昵称、ID，验证信息默认带入「我是+本人昵称」，可修改。</li><li>点击「发送申请」完成添加后，提示「添加好友成功」并返回划转页；点击左上角返回也回到划转页。</li></ol>`,
 'c-forgot':`<h3>重置支付密码</h3>现有页面，不做改动。从划转页「忘记密码？」进入。`
 };
 function demoCtl(){
- if(cur==='c-transfer')return `<div class="demo">演示控制：<br>支付密码为 123456；收款人：已是好友 100012345 / 100020003；非好友 100041118 / 100040958 / 100041105</div>`;
+ if(cur==='c-transfer')return `<div class="demo">演示控制：<br>支付密码为 123456；收款人：已是好友且有备注 100012345（老同学）/ 100020003（表弟）；已是好友无备注 100020002；非好友 100041118 / 100040958 / 100041105</div>`;
  if(cur==='a-config')return `<div class="demo">演示控制：切换登录商户<br>${['8001','8002','9001'].map(id=>{const m=mchOf(id);return `<label style="display:block"><input type="radio" name="lg" ${LOGIN===id?'checked':''} onchange="LOGIN='${id}';CFG_MCH=LOGIN;cfgQuery='';render()"> ${m.n}（${id}）${m.parent?'子商户':isMain(id)?'主商户':'普通商户'}</label>`}).join('')}<br>可新增配置的会员示例：金沙娱乐 100012345；金沙二站 200010002；金沙三站 300010002；皇冠体育 900010002</div>`;
+ if(cur==='c-detail'){const r=RECORDS.find(x=>x.no===S.detail)||myRecs()[0];const inR=myRecs().find(x=>x.to===ME),outR=myRecs().find(x=>x.from===ME);return `<div class="demo">演示控制：<br>当前为${r.to===ME?'划转收入（展示需完成打码量）':'划转支出（不展示打码量）'}<br>${inR?`<a style="cursor:pointer;color:#409EFF" onclick="go('c-detail',{detail:'${inR.no}'})">查看划转收入示例</a>`:''}　${outR?`<a style="cursor:pointer;color:#409EFF" onclick="go('c-detail',{detail:'${outR.no}'})">查看划转支出示例</a>`:''}</div>`}
  if(cur==='c-mine')return `<div class="demo">演示控制：<br><label><input type="checkbox" ${myCfg()&&myCfg().on?'checked':''} onchange="const c=myCfg();if(c)c.on=this.checked;else CONFIG.push({id:ME,on:true,min:100,max:5000,mul:2});render()"> 当前会员已开启划转</label></div>`;
  return '';
 }
