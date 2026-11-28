@@ -264,16 +264,14 @@
     .log-table .chg-line { white-space: nowrap; display: flex; align-items: center; gap: 10px; }
     .chg-view { height: 22px !important; padding: 0 8px !important; }
     #chgModal { z-index: 10001; }
-    #chgModal .modal-content { width: 560px; }
-    #chgModal .modal-body { padding: 18px 24px 22px; }
-    .chg-meta { display: flex; gap: 24px; font-size: 13px; color: #86909c; margin-bottom: 12px; flex-wrap: wrap; }
-    .chg-meta b { color: #1f2329; font-weight: 500; }
-    .chg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .chg-table th, .chg-table td { border: 1px solid #e5e6eb; padding: 10px 14px; text-align: left; vertical-align: top; word-break: break-all; }
-    .chg-table th { background: #f7f8fa; color: #4e5969; font-weight: 500; }
-    .chg-table td.k { width: 110px; color: #4e5969; background: #fafbfc; }
-    .chg-table td.before { color: #86909c; }
-    .chg-table td.after { color: #1677ff; font-weight: 500; background: #f2f8ff; }
+    #chgModal .modal-content { width: 780px; }
+    #chgModal .modal-header { font-weight: normal; font-size: 18px; color: #333; }
+    #chgModal .modal-body { padding: 16px 16px 20px; }
+    .chg-type { font-size: 13px; color: #333; margin-bottom: 16px; }
+    .chg-sec { font-size: 13px; color: #333; margin: 0 0 10px; }
+    .chg-box { background: #f5f6f8; border: 1px solid #e4e7ed; border-radius: 4px; padding: 12px 16px; font-size: 13px; line-height: 1.85; color: #333; margin-bottom: 16px; word-break: break-all; }
+    .chg-box:last-child { margin-bottom: 0; }
+    .chg-after { color: #f56c6c; font-weight: 600; }
     .log-table .empty-val { color: #bfbfbf; }
     .log-table tr.row-ban td { background: #fffafa; }
     #logModal .date-range-picker input { width: 136px; }
@@ -2615,7 +2613,7 @@
                         <tr>
                             <th>操作时间</th>
                             <th>变更类型</th>
-                            <th>变更内容<i class="q-tip">?<span class="q-text">展示本次修改的变更项名称；点击操作列【查看】查看变更前、变更后的值。密码类操作不展示密码内容，没有【查看】。</span></i></th>
+                            <th>变更内容<i class="q-tip">?<span class="q-text">展示本次修改的变更项名称；点击操作列【查看】查看变更前、变更后的值。密码类操作的值显示为******。</span></i></th>
                             <th>原因 / 说明</th>
                             <th>最后发言内容<i class="q-tip">?<span class="q-text">封号、禁言时会员最近的发言内容，最多 5 条，最新的在最上面。</span></i></th>
                             <th>操作来源</th>
@@ -2657,7 +2655,7 @@
                         <tr><th style="width:110px;">操作来源</th><th style="width:110px;">变更类型</th><th>触发场景与记录内容</th></tr>
                         <tr><td rowspan="9">商户后台</td><td>基本信息</td><td>更新用户中修改用户昵称、点击昵称【重置】、修改真实姓名；记录修改前后的值。</td></tr>
                         <tr><td>手机号</td><td>改手机；记录修改前后的区号+手机号，手机号中间4位隐藏。</td></tr>
-                        <tr><td>密码</td><td>改密码；变更内容记为"登录密码 / 支付密码"，"原因 / 说明"记为"已修改登录密码 / 已修改支付密码"，不展示任何密码内容。</td></tr>
+                        <tr><td>密码</td><td>改密码；变更内容记为"登录密码 / 支付密码"，"原因 / 说明"记为"已修改登录密码 / 已修改支付密码"；查看时前后值都显示"******"，不展示密码内容。</td></tr>
                         <tr><td>账号状态</td><td>更新用户中修改账号状态（启用 / 禁用 / 锁定）、列表【批量禁用】；批量操作在"原因 / 说明"中标注"批量禁用"，每位会员各生成一条记录。</td></tr>
                         <tr><td>用户层级</td><td>更新用户中修改用户层级；记录修改前后的层级名称。</td></tr>
                         <tr><td>充值等级</td><td>更新用户中修改充值等级。</td></tr>
@@ -2679,10 +2677,10 @@
                     <h5>三、列表展示规则</h5>
                     <ul>
                         <li>列表内容：操作时间、变更类型、变更内容、原因 / 说明、最后发言内容、操作来源、操作人、操作。按操作时间倒序，默认 20 条/页，可切换 50 / 100 条/页。</li>
-                        <li>变更内容：只展示本次修改的变更项名称，如"账号状态""用户层级"；一次修改多项时用顿号分隔。列表最后新增"操作"列，放【查看】按钮，点击弹出变更详情，与操作日志的查看方式一致：
-                            <br>- 变更详情展示操作时间、操作人，以及表格"变更项 / 变更前 / 变更后"；变更后的值用蓝色突出显示，原来没有值时显示"空"。
-                            <br>- 手机号在变更详情中中间4位隐藏。
-                            <br>- 登录密码、支付密码、返佣后台密码、解锁IM账号这类没有前后值或不能展示内容的操作，操作列显示"—"，操作内容写在"原因 / 说明"中（如"已修改登录密码"）。</li>
+                        <li>变更内容：只展示本次修改的变更项名称，如"账号状态""用户层级"；一次修改多项时用顿号分隔。列表最后新增"操作"列，放【查看】按钮，点击弹出"数据变更详情"，样式与操作日志的查看一致：
+                            <br>- 顶部显示变更类型；下面分"变更前数据""变更后数据"两块，每行按"变更项:值"展示，变更后数据用红色加粗突出；原来没有值时显示"-"。
+                            <br>- 手机号中间4位隐藏；登录密码、支付密码、返佣后台密码的前后值都显示"******"，不展示密码内容。
+                            <br>- 解锁IM账号没有前后值，操作列显示"—"，操作内容写在"原因 / 说明"中。</li>
                         <li>操作人：
                             <br>- 商户后台：显示后台账号，下方灰色显示操作IP。
                             <br>- 平台：统一显示"平台"，不展示平台人员账号。
@@ -2744,7 +2742,7 @@
                     { t: '2026-11-18 15:20:11', type: '基本信息', changes: [['真实姓名', '', '喜欢123']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-18 15:20:11', type: '红包限额', changes: [['红包限额', '500', '1000']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-15 09:12:30', type: '手机号', changes: [['手机号', '+86 187****1234', '+86 187****4013']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
-                    { t: '2026-11-12 14:00:03', type: '密码', changes: [['登录密码']], reason: '已修改登录密码', src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-12 14:00:03', type: '密码', changes: [['登录密码', '******', '******']], reason: '已修改登录密码', src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-11 10:05:20', type: '封号', changes: [['封号', '封号中', '正常']], reason: '解除封号', src: '平台' },
                     { t: '2026-11-10 20:30:41', type: '封号', changes: [['封号', '正常', '封号中']], reason: '封号原因：疑似多账号套利（自定义）<br>消息来源：聊天室', src: '平台',
                       msgs: [
@@ -2771,7 +2769,7 @@
                 nick: '风行者', status: '启用',
                 ban: { on: false }, mute: { on: false },
                 logs: [
-                    { t: '2026-11-19 20:15:33', type: '返佣后台', changes: [['返佣后台密码']], reason: '重置返佣后台密码', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-19 20:15:33', type: '返佣后台', changes: [['返佣后台密码', '******', '******']], reason: '重置返佣后台密码', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-16 09:30:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '解除禁言', src: '平台' },
                     { t: '2026-11-15 22:41:10', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '禁言原因：辱骂<br>消息来源：短视频评论区', src: '平台',
                       msgs: [
@@ -2784,7 +2782,7 @@
                     { t: '2026-11-10 14:22:05', type: '账号状态', changes: [['账号状态', '启用', '锁定']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-11 10:00:00', type: '账号状态', changes: [['账号状态', '锁定', '启用']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-01 08:59:41', type: '用户层级', changes: [['用户层级', '总充值500-2000可见', '总充值2000-9999可见']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
-                    { t: '2026-10-25 16:44:12', type: '密码', changes: [['支付密码']], reason: '已修改支付密码', src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
+                    { t: '2026-10-25 16:44:12', type: '密码', changes: [['支付密码', '******', '******']], reason: '已修改支付密码', src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
                 ]
             }
         };
@@ -2919,25 +2917,24 @@
     <div class="modal-overlay" id="imgPreview" onclick="closeTargetModal('imgPreview')"><img id="imgPreviewSrc" alt="图片预览"></div>
     <div class="modal-overlay" id="chgModal">
         <div class="modal-content">
-            <div class="modal-header"><span>变更详情</span><span class="modal-x" onclick="closeTargetModal('chgModal')">✕</span></div>
+            <div class="modal-header"><span>数据变更详情</span><span class="modal-x" onclick="closeTargetModal('chgModal')">✕</span></div>
             <div class="modal-body">
-                <div class="chg-meta" id="chgMeta"></div>
-                <table class="chg-table">
-                    <thead><tr><th>变更项</th><th>变更前</th><th>变更后</th></tr></thead>
-                    <tbody id="chgBody"></tbody>
-                </table>
+                <div class="chg-type" id="chgType"></div>
+                <div class="chg-sec">变更前数据</div>
+                <div class="chg-box" id="chgBefore"></div>
+                <div class="chg-sec">变更后数据</div>
+                <div class="chg-box chg-after" id="chgAfter"></div>
             </div>
-            <div class="modal-footer"><div></div><button class="ui-btn ui-btn-gray" onclick="closeTargetModal('chgModal')">关闭</button></div>
         </div>
     </div>
     <script>
         function viewChange(idx) {
             const l = LOG_MEMBERS[lgState.uid].logs[idx];
-            const v = x => x === '' ? '<span style="color:#c9cdd4">空</span>' : x;
-            document.getElementById('chgMeta').innerHTML =
-                `<span>操作时间：<b>${l.t}</b></span><span>变更类型：<b>${l.type}</b></span><span>操作人：<b>${l.src === '商户后台' ? l.op : l.src}</b></span>`;
-            document.getElementById('chgBody').innerHTML = l.changes.filter(c => c.length === 3)
-                .map(c => `<tr><td class="k">${c[0]}</td><td class="before">${v(c[1])}</td><td class="after">${v(c[2])}</td></tr>`).join('');
+            const items = l.changes.filter(c => c.length === 3);
+            const line = (k, v) => `<div>${k}:${v === '' ? '-' : v}</div>`;
+            document.getElementById('chgType').textContent = '变更类型：' + l.type;
+            document.getElementById('chgBefore').innerHTML = items.map(c => line(c[0], c[1])).join('');
+            document.getElementById('chgAfter').innerHTML = items.map(c => line(c[0], c[2])).join('');
             openTargetModal('chgModal');
         }
     </script>
