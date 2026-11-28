@@ -411,6 +411,7 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
           <ul><li>未晋级（等待升级）及其他非未达标状态：保持原样，灰色显示「需当日充值 150 / 需当日有效投注 1000」。</li>
           <li>已晋级但未达标：逐项显示与门槛的差额，如「当日充值还差 50 / 当日打码还差 400」，差额标红；已满足的一项显示「已达标」。差额 = 门槛 − 会员在统计周期内的实际充值/打码，实时更新。</li>
           <li>门槛为 0 的项不展示；充值、打码门槛均为 0 时显示「无领取条件」。</li></ul></li>
+        <li>等级的晋级奖励配置为 0（即该等级不发晋级奖励）时：只显示「晋级奖 0」，不显示领取按钮，也不显示领取门槛或差额提示；该等级不计入晋级礼金条件弹窗。</li>
       </ul>
       <h3>5.3 其他</h3>
       <ul>
@@ -429,7 +430,7 @@ body{display:flex;flex-direction:column;background:#f0f2f5;color:#333;overflow:h
 const P={day:'当日',lastweek:'上周',lastmonth:'上月'};
 const WD=['','周一','周二','周三','周四','周五','周六','周日'];
 let levels=[
- {lv:1,dep:100,  up:{r:40,b:200,a:10},    mon:{r:100,b:1000,a:100},   wk:{r:100,b:1000,a:30},   on:true,ct:'2026-07-07 15:01:18'},
+ {lv:1,dep:100,  up:{r:0,b:0,a:0},    mon:{r:100,b:1000,a:100},   wk:{r:100,b:1000,a:30},   on:true,ct:'2026-07-07 15:01:18'},
  {lv:2,dep:500,  up:{r:80,b:500,a:50},    mon:{r:500,b:5000,a:300},   wk:{r:300,b:3000,a:100},  on:true,ct:'2026-07-08 10:20:00'},
  {lv:3,dep:1000, up:{r:150,b:1000,a:120}, mon:{r:1000,b:10000,a:800}, wk:{r:600,b:6000,a:250},  on:true,ct:'2026-07-09 14:15:30'},
  {lv:4,dep:3000, up:{r:300,b:2000,a:200}, mon:{r:2000,b:20000,a:1500},wk:{r:1000,b:10000,a:400},on:true,ct:'2026-07-10 09:30:12'},
@@ -445,7 +446,7 @@ let sim={date:'2026-11-02',total:3500,day:{r:500,b:5000},lastweek:{r:1200,b:1200
 let claimed,records;
 function resetClaims(){
   claimed={up:new Set([1,2]),wk:{},mon:{}};
-  records=[{d:'2026-10-20',a:50,t:'晋级礼金',x:'v2-晋级礼金'},{d:'2026-10-18',a:10,t:'晋级礼金',x:'v1-晋级礼金'}];
+  records=[{d:'2026-10-20',a:50,t:'晋级礼金',x:'v2-晋级礼金'}];
   renderFront();
 }
 
@@ -611,6 +612,7 @@ function salaryBtn(k){
 }
 function upCondTxt(l,need){
   const o=l.up,p=P[cfg.up.period];
+  if(!o.a)return '';
   if(!o.r&&!o.b)return '<span style="color:#9ca3af">无领取条件</span>';
   if(need){const s=sim[cfg.up.period],out=[];
     if(o.r)out.push(s.r>=o.r?`${p}充值 <span style="color:#4ade80">已达标</span>`:`${p}充值还差 <span style="color:#f87171;font-weight:bold">${fmt(o.r-s.r)}</span>`);
@@ -620,10 +622,10 @@ function upCondTxt(l,need){
   return `<span style="color:#9ca3af">${t.join('<br>')}</span>`;
 }
 function upBtn(l,cl){
+  if(!l.up.a)return '';
   const g=t=>`<button class="bg-[#6b7280] text-gray-300 text-xs px-4 py-1.5 rounded-md">${t}</button>`;
   if(l.lv>cl)return g('等待升级');
   if(claimed.up.has(l.lv))return `<button class="bg-[#6b7280] text-white text-xs px-4 py-1.5 rounded-md">已领取</button>`;
-  if(!l.up.a)return g('暂无');
   if(cfg.up.cross==='highest'&&l.lv<cl)return g('不可领取');
   if(!met('up',l.up))return g('未达标');
   return `<button onclick="claimUp(${l.lv})" class="bg-gradient-to-r from-[#e6c17a] to-[#d4a054] text-[#3e2708] font-bold text-xs px-4 py-1.5 rounded-md shadow">立即领取</button>`;
@@ -665,7 +667,7 @@ function renderFront(){
     <div class="flex justify-center mb-4"><div class="bg-[#2a2015] border border-[#d4a054] px-6 py-1 rounded-md text-[#d4a054] font-bold">♠ 等级可领 ♠</div></div>
     <div class="bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl p-4 h-[350px] overflow-y-auto space-y-3">
       ${ls.map((l,i)=>{const c=COLORS[(l.lv-1)%COLORS.length];const reach=l.lv<=cl;
-        const need=reach&&!claimed.up.has(l.lv)&&!met('up',l.up)&&!(cfg.up.cross==='highest'&&l.lv<cl);
+        const need=reach&&l.up.a>0&&!claimed.up.has(l.lv)&&!met('up',l.up)&&!(cfg.up.cross==='highest'&&l.lv<cl);
         return `<div class="bg-[#2c2620] rounded-xl p-3 flex justify-between items-center border border-[#3e3427]">
         <div class="flex items-center"><div class="w-10 h-10 rounded-full bg-${c}-500/20 flex items-center justify-center mr-3 border border-${c}-500/50"><span class="text-${c}-400 font-bold">v${l.lv}</span></div>
           <div><div class="text-white font-bold text-lg">v${l.lv}</div>
