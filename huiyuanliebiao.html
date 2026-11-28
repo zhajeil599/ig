@@ -255,15 +255,25 @@
 
 
     .log-filter { display: flex; flex-wrap: wrap; gap: 12px 14px; align-items: center; margin-bottom: 12px; }
-    .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .log-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+    .log-table td { word-break: break-all; }
+    .log-table .t-op { text-align: center; }
     .log-table th, .log-table td { padding: 10px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: top; line-height: 1.7; }
     .log-table th { background: #fafafa; white-space: nowrap; }
     .log-table td.t-time { white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .log-table .chg-line { white-space: nowrap; }
-    .log-table .chg-line .lbl { color: #888; }
-    .log-table .old { color: #999; text-decoration: line-through; }
-    .log-table .arr { color: #bfbfbf; margin: 0 6px; }
-    .log-table .new { color: #333; font-weight: 500; }
+    .log-table .chg-line { white-space: nowrap; display: flex; align-items: center; gap: 10px; }
+    .chg-view { height: 22px !important; padding: 0 8px !important; }
+    #chgModal { z-index: 10001; }
+    #chgModal .modal-content { width: 560px; }
+    #chgModal .modal-body { padding: 18px 24px 22px; }
+    .chg-meta { display: flex; gap: 24px; font-size: 13px; color: #86909c; margin-bottom: 12px; flex-wrap: wrap; }
+    .chg-meta b { color: #1f2329; font-weight: 500; }
+    .chg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .chg-table th, .chg-table td { border: 1px solid #e5e6eb; padding: 10px 14px; text-align: left; vertical-align: top; word-break: break-all; }
+    .chg-table th { background: #f7f8fa; color: #4e5969; font-weight: 500; }
+    .chg-table td.k { width: 110px; color: #4e5969; background: #fafbfc; }
+    .chg-table td.before { color: #86909c; }
+    .chg-table td.after { color: #1677ff; font-weight: 500; background: #f2f8ff; }
     .log-table .empty-val { color: #bfbfbf; }
     .log-table tr.row-ban td { background: #fffafa; }
     #logModal .date-range-picker input { width: 136px; }
@@ -296,11 +306,11 @@
     <div class="sidebar">
         <div class="sidebar-logo">代理后台</div>
 
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-house main-icon"></i>首页</span></div>
+        <div class="menu-item"><span class="item-left">首页</span></div>
 
         <div class="menu-group">
             <div class="menu-item active" onclick="toggleGroup(this)">
-                <span class="item-left"><i class="fa-solid fa-users main-icon"></i>会员管理</span>
+                <span class="item-left">会员管理</span>
                 <i class="arrow up"></i>
             </div>
             <div class="sub-menu">
@@ -317,13 +327,13 @@
             </div>
         </div>
 
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-wallet main-icon"></i>财务管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gamepad main-icon"></i>游戏管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-sitemap main-icon"></i>代理系统</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">财务管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">游戏管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">代理系统</span><i class="arrow"></i></div>
 
         <div class="menu-group">
             <div class="menu-item" onclick="toggleGroup(this)">
-                <span class="item-left"><i class="fa-solid fa-chart-line main-icon"></i>报表查询</span>
+                <span class="item-left">报表查询</span>
                 <i class="arrow"></i>
             </div>
             <div class="sub-menu" style="display: none;">
@@ -341,91 +351,54 @@
             </div>
         </div>
 
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-comments main-icon"></i>聊天群组</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-video main-icon"></i>主播管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-database main-icon"></i>数据统计</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-file-export main-icon"></i>导出管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gift main-icon"></i>活动管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-clock-rotate-left main-icon"></i>日志查询</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-key main-icon"></i>验证码查询</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-envelope main-icon"></i>短信模板管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-tower-broadcast main-icon"></i>渠道管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-rectangle-ad main-icon"></i>广告位管理</span><i class="arrow"></i></div>
-        <div class="menu-item"><span class="item-left"><i class="fa-solid fa-gear main-icon"></i>系统管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">聊天群组</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">主播管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">数据统计</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">导出管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">活动管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">日志查询</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">验证码查询</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">短信模板管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">渠道管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">广告位管理</span><i class="arrow"></i></div>
+        <div class="menu-item"><span class="item-left">系统管理</span><i class="arrow"></i></div>
     </div>
 
     <div class="main-content">
         <div class="header" id="breadcrumb">首页 / 会员管理 / 会员列表</div>
         
         <div class="page-body" id="page-member">
-            <div class="search-container">
-                <div class="filter-row">
-                    <div class="search-item">
-                        <label>渠道商</label>
-                        <input type="text" class="form-input" placeholder="请选择" style="width: 120px;">
-                    </div>
-                    <div class="search-item">
-                        <label>用户ID</label>
-                        <input type="text" class="form-input" placeholder="输入用户ID">
-                    </div>
-                    <div class="search-item">
-                        <label>真实姓名</label>
-                        <input type="text" class="form-input" placeholder="输入真实姓名">
-                    </div>
-                    <div class="search-item">
-                        <label>是否充值</label>
-                        <select class="form-input" style="width: 120px;"><option>是否充值</option></select>
-                    </div>
-                    <div class="search-item">
-                        <label>绑定手机</label>
-                        <select class="form-input" style="width: 120px;"><option>绑定手机</option></select>
-                    </div>
-                    <div class="search-item">
-                        <label>手机号码</label>
-                        <input type="text" class="form-input" placeholder="手机号码">
-                    </div>
-                    <div class="search-item">
-                        <label>直属上级ID</label>
-                        <input type="text" class="form-input" placeholder="直属上级ID">
-                    </div>
-                </div>
+            <div class="search-container ml-search">
+                <div class="ml-filter-grid">
+                    <div class="ml-field"><label>渠道商</label><select class="form-input"><option>全部</option><option>官方渠道</option><option>抖音推广</option></select></div>
+                    <div class="ml-field"><label>用户ID</label><input type="text" class="form-input" placeholder="请输入用户ID"></div>
+                    <div class="ml-field"><label>真实姓名</label><input type="text" class="form-input" placeholder="请输入真实姓名"></div>
+                    <div class="ml-field"><label>手机号码</label><input type="text" class="form-input" placeholder="请输入手机号码"></div>
 
-                <div class="filter-row">
-                    <div class="search-item">
-                        <label>层级</label>
-                        <select class="form-input" style="width: 120px;"><option>层级</option></select>
-                    </div>
-                    
-                    <div class="search-item input-group" style="margin-left: 10px;">
-                        <select class="form-input"><option>登录IP</option></select>
-                        <input type="text" class="form-input" style="width: 180px;">
-                    </div>
-                    
-                    <div class="search-item">
-                        <label>设备来源</label>
-                        <select class="form-input" style="width: 120px;"><option>设备来源</option></select>
-                    </div>
-                    <div class="search-item">
-                        <label>注册设备码</label>
-                        <input type="text" class="form-input" placeholder="注册设备码" style="width: 160px;">
-                    </div>
-                    
-                    <div class="search-item input-group">
-                        <select class="form-input"><option>注册日期</option></select>
-                        <div class="date-range-picker">
-                            <i class="fa-regular fa-clock"></i>
-                            <input type="text" value="2026-04-01 00:00:00">
-                            <span>-</span>
-                            <input type="text" value="2026-04-30 23:59:59">
+                    <div class="ml-field"><label>直属上级ID</label><input type="text" class="form-input" placeholder="请输入直属上级ID"></div>
+                    <div class="ml-field"><label>是否充值</label><select class="form-input"><option>全部</option><option>已充值</option><option>未充值</option></select></div>
+                    <div class="ml-field"><label>绑定手机</label><select class="form-input"><option>全部</option><option>已绑定</option><option>未绑定</option></select></div>
+                    <div class="ml-field"><label>层级</label><select class="form-input"><option>全部</option><option>默认层级 0-500可见</option><option>总充值500-2000可见</option></select></div>
+
+                    <div class="ml-field"><label>设备来源</label><select class="form-input"><option>全部</option><option>iOS</option><option>Android</option><option>H5</option></select></div>
+                    <div class="ml-field"><label>注册设备码</label><input type="text" class="form-input" placeholder="请输入注册设备码"></div>
+                    <div class="ml-field ml-span2">
+                        <div class="ml-combo">
+                            <select class="form-input ml-combo-sel"><option>登录IP</option><option>注册IP</option></select>
+                            <input type="text" class="form-input" placeholder="请输入IP">
                         </div>
                     </div>
-                </div>
 
-                <!-- 合并后的排序单选框 -->
-                    
-                    <div class="search-item input-group" style="margin-left: 10px;">
-                        <span class="form-input" style="display: flex; align-items: center; background-color: #fafafa; border-right: none; border-radius: 4px 0 0 4px; width: auto; color: #666; font-size: 13px;">排序</span>
-                        <select class="form-input" id="sortSelect" style="border-radius: 0 4px 4px 0; width: 125px; flex: none;">
+                    <div class="ml-field ml-span2">
+                        <div class="ml-combo">
+                            <select class="form-input ml-combo-sel"><option>注册日期</option><option>登录日期</option></select>
+                            <div class="ml-range">
+                                <input type="text" value="2026-04-01 00:00:00"><span>至</span><input type="text" value="2026-04-30 23:59:59">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ml-field"><label>排序</label>
+                        <select class="form-input" id="sortSelect">
                             <option value="reg_desc" selected>注册时间倒序</option>
                             <option value="reg_asc">注册时间正序</option>
                             <option value="login_desc">登录时间倒序</option>
@@ -434,179 +407,207 @@
                             <option value="active_asc">活跃日期正序</option>
                         </select>
                     </div>
-
-
-                <div class="button-row">
-                    <div class="btn-group-left">
-                        <button class="btn-primary" onclick="executeSort()">查询</button>
-                        <button class="btn-primary">批量禁用</button>
-                        <button class="btn-primary">批量解锁IM账号</button>
-                        <button class="btn-primary">导出会员列表</button>
-                        <button class="btn-primary" style="display: none;">封号/禁言查询</button>
-                    </div>
-                    <div class="btn-group-right">
-                        <button class="btn-primary">重置</button>
-                        <button class="btn-primary icon-btn"><i class="fa-solid fa-arrows-rotate"></i></button>
+                    <div class="ml-field ml-actions">
+                        <button class="ui-btn ui-btn-primary" onclick="executeSort()">查询</button>
+                        <button class="ui-btn ui-btn-gray">重置</button>
                     </div>
                 </div>
             </div>
 
-            <div class="table-container">
-                <div class="table-container" style="overflow-x: auto; min-height: 350px; padding-bottom: 120px;">
-                <table style="min-width: 1600px;">
+            <div class="table-container ml-table-card">
+                <div class="ml-toolbar">
+                    <div class="ml-toolbar-left">
+                        <span class="ml-title">会员列表</span>
+                        <span class="ml-sub">已选 <b id="mlChecked">0</b> 项</span>
+                    </div>
+                    <div class="ml-toolbar-right">
+                        <button class="ui-btn ui-btn-danger">批量禁用</button>
+                        <button class="ui-btn ui-btn-purple">批量解锁IM账号</button>
+                        <button class="ui-btn ui-btn-success">导出会员列表</button>
+                        <button class="ui-btn ui-btn-primary ui-btn-icon" title="刷新"><span class="ic-refresh"></span></button>
+                    </div>
+                </div>
+
+                <div class="ml-scroll">
+                <table class="ml-table">
                     <thead>
                         <tr>
-                            <th><input type="checkbox"></th>
+                            <th class="c-check"><input type="checkbox" onclick="mlCheckAll(this)"></th>
                             <th>渠道商</th>
-                            <th>头像</th>
-                            <th>昵称/ID/层级</th>
-                            <th>姓名/号码/绑定时间</th>
+                            <th>会员信息</th>
+                            <th>姓名 / 手机号</th>
                             <th>团队</th>
-                            <th>资产/VIP等级</th>
+                            <th class="t-right">资产</th>
                             <th>金流</th>
-                            <th style="min-width: 120px; max-width: 180px;">备注</th>
+                            <th>备注</th>
                             <th>状态</th>
-                            <th>
-                                登录IP<br>
-                                <span style="margin-top:4px; display:inline-block;">登录时间</span><br>
-                                <span style="margin-top:4px; display:inline-block;">活跃日期</span>
-                            </th>
-                            <th>
-                                注册IP<br>
-                                <span style="margin-top:4px; display:inline-block;">注册时间</span><br>
-                                <span style="font-size: 11px; color: #888; margin-top:4px; display:inline-block;">注册设备码</span>
-                            </th>
-                            <th>详情</th>
-                            <th style="min-width: 180px;">操作</th>
+                            <th>登录信息</th>
+                            <th>注册信息</th>
+                            <th class="c-op">操作</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr data-reg="2026-04-30 14:18:49" data-login="2026-04-30 14:18:49" data-active="2026-04-30" data-bind="2026-04-30 14:20:00" data-remark="这是一个大客户，请多关注。">
-                            <td><input type="checkbox"></td>
-                            <td>官方渠道</td>
-                            <td><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="头像"></td>
-                            <td>无家可归aegp<br><span class="text-gray">100039991</span><br><span class="text-gray">总充值500-2000可见</span></td>
-                            <td>喜欢123<br><span class="text-gray">18707594013</span><br><span class="text-gray">绑: 2026-04-30 14:20</span></td>
-                            <td>上级ID:0<br>团队:8<br>邀请码:4dq3o</td>
-                            <td>余额:1890<br><span class="text-gray">充值等级:0</span></td>
-                            <!-- 替换开始：第一行金流 -->
-                            <td>充值:1858+200(划转) | 提现:0<br>客损:1858<br>总打赏:500 | 总消费:1000</td>
-                            <!-- 替换结束 -->
-                            <td class="remark-display">这是一个大客户，请多关注。</td>
-                            <td>启用</td>
+                        <tr data-uid="100039991" data-reg="2026-04-30 14:18:49" data-login="2026-04-30 14:18:49" data-active="2026-04-30" data-bind="2026-04-30 14:20:00" data-remark="这是一个大客户，请多关注。">
+                            <td class="c-check"><input type="checkbox" class="ml-row-check" onclick="mlCount()"></td>
+                            <td class="nowrap">官方渠道</td>
                             <td>
-                                47.86.106.73(美国)<br>
-                                2026-04-30 14:18:49<br>
-                                <span class="text-gray">2026-04-30</span>
+                                <div class="ml-user">
+                                    <span class="ml-avatar" style="background:#4096ff;">无</span>
+                                    <div>
+                                        <div class="ml-name">无家可归aegp</div>
+                                        <div class="ml-muted mono">ID 100039991</div>
+                                        <span class="ml-tag">总充值500-2000可见</span>
+                                    </div>
+                                </div>
                             </td>
-                            <td>
-                                47.86.106.73(美国)<br>
-                                2026-04-30 14:18:49<br>
-                                <div style="word-break: break-all; font-size: 11px; width: 140px; margin-top:2px;" class="text-gray">ad5c7a14-2e54-4f71-af20-372e89c6da18</div>
+                            <td class="nowrap">
+                                <div>喜欢123</div>
+                                <div class="ml-muted mono">18707594013</div>
+                                <div class="ml-muted">绑定于 2026-04-30 14:20</div>
                             </td>
-                            <td><button class="btn-small" onclick="openTargetModal('detailModal')">详情</button></td>
-                            <td>
-                                <div class="action-dropdown-container">
-                                    <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">
-                                        操作 <span class="dd-arrow"></span>
-                                    </button>
-                                    <div class="action-dropdown-menu">
-                                        <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
-                                        <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
-                                        <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
-                                        <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
-                                        <button class="btn-small">解锁IM</button>
-                                        <!-- 新增返佣后台按钮 (此处演示第一个用户传状态 0 为未开通，第二个用户传 1 为已开通) -->
-                                        <button class="btn-small btn-green" onclick="openRebateModal(100039991, '无家可归aegp', 0)">返佣后台</button>
-                                        <button class="btn-small btn-blue" onclick="openHedge({ memberId: '100039991' })">对冲查询</button>
-                                        <button class="btn-small" style="background-color: #f5222d; color: white;" onclick="openTargetModal('riskModal')">风控查询</button>
-                                        <button class="btn-small" style="background-color: #13c2c2;" onclick="openLogModal('100039991')">更新日志</button>
+                            <td class="nowrap ml-kv">
+                                <div><span>上级ID</span>0</div>
+                                <div><span>团队</span>8 人</div>
+                                <div><span>邀请码</span><em class="mono">4dq3o</em></div>
+                            </td>
+                            <td class="t-right nowrap">
+                                <div class="ml-amount">1,890.00</div>
+                                <div class="ml-muted">充值等级 0</div>
+                            </td>
+                            <td class="nowrap ml-kv">
+                                <div><span>充值</span>1,858 <i class="ml-extra">+200 划转</i></div>
+                                <div><span>提现</span>0</div>
+                                <div><span>客损</span>1,858</div>
+                                <div><span>打赏 / 消费</span>500 / 1,000</div>
+                            </td>
+                            <td class="remark-display ml-remark">这是一个大客户，请多关注。</td>
+                            <td><span class="ml-status ok">启用</span></td>
+                            <td class="nowrap">
+                                <div class="mono">47.86.106.73 <span class="ml-muted">美国</span></div>
+                                <div class="ml-muted">登录 2026-04-30 14:18:49</div>
+                                <div class="ml-muted">活跃 2026-04-30</div>
+                            </td>
+                            <td class="nowrap">
+                                <div class="mono">47.86.106.73 <span class="ml-muted">美国</span></div>
+                                <div class="ml-muted">注册 2026-04-30 14:18:49</div>
+                                <div class="ml-muted mono ml-device" title="ad5c7a14-2e54-4f71-af20-372e89c6da18">ad5c7a14-2e54-4f71-af20-372e89c6da18</div>
+                            </td>
+                            <td class="c-op">
+                                <div class="ml-ops">
+                                    <button class="ui-btn ui-btn-primary ui-btn-sm" onclick="openTargetModal('detailModal')">详情</button>
+                                    <div class="action-dropdown-container">
+                                        <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">更多 <span class="dd-arrow"></span></button>
+                                        <div class="action-dropdown-menu">
+                                            <button class="c-blue" onclick="openRemarkModal(this)">编辑备注</button>
+                                            <button class="c-blue" onclick="openTargetModal('phoneModal')">改手机</button>
+                                            <button class="c-blue" onclick="openTargetModal('pwdModal')">改密码</button>
+                                            <button class="c-blue" onclick="openTargetModal('userModal')">更新用户</button>
+                                                                                        <button class="c-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
+                                            <button class="c-green">解锁IM</button>
+                                            <button class="c-green" onclick="openRebateModal(100039991, '无家可归aegp', 0)">返佣后台</button>
+                                                                                        <button class="c-orange" onclick="openHedge({ memberId: '100039991' })">对冲查询</button>
+                                            <button class="c-red" onclick="openTargetModal('riskModal')">风控查询</button>
+                                            <button class="c-cyan" onclick="openLogModal('100039991')">更新日志</button>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
                         </tr>
 
-                        <tr data-reg="2026-02-15 09:30:11" data-login="2026-05-01 10:20:00" data-active="2026-05-01" data-bind="2026-02-15 09:35:00" data-remark="此用户最近比较活跃。">
-                            <td><input type="checkbox"></td>
-                            <td>抖音推广</td>
-                            <td><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=2" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="头像"></td>
-                            <td>风行者<br><span class="text-gray">100039992</span><br><span class="text-gray">总充值2000-9999可见</span></td>
-                            <td>未填<br><span class="text-gray">13800138000</span><br><span class="text-gray">绑: 2026-02-15 09:35</span></td>
-                            <td>上级ID:102<br>团队:12<br>邀请码:8abc9</td>
-                            <td>余额:5200<br><span class="text-gray">充值等级:3</span></td>
-                            <!-- 替换开始：第二行金流 -->
-                            <td>充值:5000+500(划转) | 提现:200<br>客损:4800<br>总打赏:100 | 总消费:200</td>
-                            <!-- 替换结束 -->
-                            <td class="remark-display">此用户最近比较活跃。</td>
-                            <td>启用</td>
+                        <tr data-uid="100039992" data-reg="2026-02-15 09:30:11" data-login="2026-05-01 10:20:00" data-active="2026-05-01" data-bind="2026-02-15 09:35:00" data-remark="此用户最近比较活跃。">
+                            <td class="c-check"><input type="checkbox" class="ml-row-check" onclick="mlCount()"></td>
+                            <td class="nowrap">抖音推广</td>
                             <td>
-                                114.114.114.114(中国)<br>
-                                2026-05-01 10:20:00<br>
-                                <span class="text-gray">2026-05-01</span>
-                            </td>
-                            <td>
-                                114.114.114.114(中国)<br>
-                                2026-02-15 09:30:11<br>
-                                <div style="word-break: break-all; font-size: 11px; width: 140px; margin-top:2px;" class="text-gray">b2c3d4e5-1111-2222-3333-444455556666</div>
-                            </td>
-                            <td><button class="btn-small" onclick="openTargetModal('detailModal')">详情</button></td>
-                            <td>
-                                <div class="action-dropdown-container">
-                                    <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">
-                                        操作 <span class="dd-arrow"></span>
-                                    </button>
-                                    <!-- 替换开始：第二行用户的操作下拉菜单 -->
-                                    <div class="action-dropdown-menu">
-                                        <button class="btn-small btn-blue" onclick="openRemarkModal(this)">编辑备注</button>
-                                        <button class="btn-small" onclick="openTargetModal('phoneModal')">改手机</button>
-                                        <button class="btn-small" onclick="openTargetModal('pwdModal')">改密码</button>
-                                        <button class="btn-small" onclick="openTargetModal('userModal')">更新用户</button>
-                                        <button class="btn-small btn-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
-                                        <button class="btn-small">解锁IM</button>
-                                        <!-- 修改点：传入用户ID、昵称，并将最后的状态参数改为 1 (代表已开通) -->
-                                        <button class="btn-small btn-green" onclick="openRebateModal(100039992, '风行者', 1)">返佣后台</button>
-                                        <button class="btn-small btn-blue" onclick="openHedge({ memberId: '100039992' })">对冲查询</button>
-                                        <button class="btn-small" style="background-color: #f5222d; color: white;" onclick="openTargetModal('riskModal')">风控查询</button>
-                                        <button class="btn-small" style="background-color: #13c2c2;" onclick="openLogModal('100039992')">更新日志</button>
+                                <div class="ml-user">
+                                    <span class="ml-avatar" style="background:#13c2c2;">风</span>
+                                    <div>
+                                        <div class="ml-name">风行者</div>
+                                        <div class="ml-muted mono">ID 100039992</div>
+                                        <span class="ml-tag">总充值2000-9999可见</span>
                                     </div>
-                                    <!-- 替换结束 -->
+                                </div>
+                            </td>
+                            <td class="nowrap">
+                                <div class="ml-muted">未填写</div>
+                                <div class="ml-muted mono">13800138000</div>
+                                <div class="ml-muted">绑定于 2026-02-15 09:35</div>
+                            </td>
+                            <td class="nowrap ml-kv">
+                                <div><span>上级ID</span>102</div>
+                                <div><span>团队</span>12 人</div>
+                                <div><span>邀请码</span><em class="mono">8abc9</em></div>
+                            </td>
+                            <td class="t-right nowrap">
+                                <div class="ml-amount">5,200.00</div>
+                                <div class="ml-muted">充值等级 3</div>
+                            </td>
+                            <td class="nowrap ml-kv">
+                                <div><span>充值</span>5,000 <i class="ml-extra">+500 划转</i></div>
+                                <div><span>提现</span>200</div>
+                                <div><span>客损</span>4,800</div>
+                                <div><span>打赏 / 消费</span>100 / 200</div>
+                            </td>
+                            <td class="remark-display ml-remark">此用户最近比较活跃。</td>
+                            <td><span class="ml-status ok">启用</span></td>
+                            <td class="nowrap">
+                                <div class="mono">114.114.114.114 <span class="ml-muted">中国</span></div>
+                                <div class="ml-muted">登录 2026-05-01 10:20:00</div>
+                                <div class="ml-muted">活跃 2026-05-01</div>
+                            </td>
+                            <td class="nowrap">
+                                <div class="mono">114.114.114.114 <span class="ml-muted">中国</span></div>
+                                <div class="ml-muted">注册 2026-02-15 09:30:11</div>
+                                <div class="ml-muted mono ml-device" title="b2c3d4e5-1111-2222-3333-444455556666">b2c3d4e5-1111-2222-3333-444455556666</div>
+                            </td>
+                            <td class="c-op">
+                                <div class="ml-ops">
+                                    <button class="ui-btn ui-btn-primary ui-btn-sm" onclick="openTargetModal('detailModal')">详情</button>
+                                    <div class="action-dropdown-container">
+                                        <button class="btn-dropdown-trigger" onclick="toggleActionDropdown(event, this)">更多 <span class="dd-arrow"></span></button>
+                                        <div class="action-dropdown-menu">
+                                            <button class="c-blue" onclick="openRemarkModal(this)">编辑备注</button>
+                                            <button class="c-blue" onclick="openTargetModal('phoneModal')">改手机</button>
+                                            <button class="c-blue" onclick="openTargetModal('pwdModal')">改密码</button>
+                                            <button class="c-blue" onclick="openTargetModal('userModal')">更新用户</button>
+                                                                                        <button class="c-green" onclick="openTargetModal('venueModal')">游戏场馆</button>
+                                            <button class="c-green">解锁IM</button>
+                                            <button class="c-green" onclick="openRebateModal(100039992, '风行者', 1)">返佣后台</button>
+                                                                                        <button class="c-orange" onclick="openHedge({ memberId: '100039992' })">对冲查询</button>
+                                            <button class="c-red" onclick="openTargetModal('riskModal')">风控查询</button>
+                                            <button class="c-cyan" onclick="openLogModal('100039992')">更新日志</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
-                    
-                    <!-- 新增的小计行 开始 -->
-                        <tr style="background-color: #fffbe6; font-weight: bold;">
-                            <td style="text-align: center;">小计</td>
-                            <td colspan="5"></td>
-                            <td style="color: #d4380d;">余额: 7090</td>
-                            <!-- 替换开始：小计行金流 -->
-                            <td style="color: #d4380d; line-height: 1.6;">
-                                充值: 6858+700(划转) | 提现: 200<br>
-                                客损: 6658<br>
-                                总打赏: 600 | 总消费: 1200
+
+                        <tr class="ml-subtotal">
+                            <td colspan="5" class="t-right">小计</td>
+                            <td class="t-right nowrap"><div class="ml-amount">7,090.00</div></td>
+                            <td class="nowrap ml-kv">
+                                <div><span>充值</span>6,858 <i class="ml-extra">+700 划转</i></div>
+                                <div><span>提现</span>200</div>
+                                <div><span>客损</span>6,658</div>
+                                <div><span>打赏 / 消费</span>600 / 1,200</div>
                             </td>
-                            <!-- 替换结束 -->
-                            <td colspan="6"></td>
+                            <td colspan="5"></td>
                         </tr>
-                        <!-- 新增的小计行 结束 -->
-                    
                     </tbody>
                 </table>
+                </div>
+
+                <div class="pagination-container ml-pager">
+                    <span class="ml-muted">共 2 条</span>
+                    <select class="page-select">
+                        <option>50 条/页</option>
+                        <option>100 条/页</option>
+                        <option>200 条/页</option>
+                    </select>
+                    <button class="ml-page" disabled>‹</button>
+                    <button class="ml-page active">1</button>
+                    <button class="ml-page" disabled>›</button>
+                </div>
             </div>
-            
-            <!-- 新增：底部翻页组件 (放在滚动容器外部，永远可见) -->
-            <div class="pagination-container">
-                <span>共 0 条</span>
-                <select class="page-select">
-                    <option>50条/页</option>
-                    <option>100条/页</option>
-                    <option>200条/页</option>
-                </select>
-                <button class="page-btn">上一页</button>
-                <button class="page-btn">下一页</button>
-            </div>
-        </div>
 
             <div class="prd-note">
                 <h4>研发需求说明文档，研发阅读实际前端页面不展示</h4>
@@ -687,7 +688,7 @@
                     </div>
                     <div class="btn-group-right">
                         <button class="btn-primary">重置</button>
-                        <button class="btn-primary icon-btn"><i class="fa-solid fa-arrows-rotate"></i></button>
+                        <button class="ui-btn ui-btn-primary ui-btn-icon" title="刷新"><span class="ic-refresh"></span></button>
                     </div>
                 </div>
             </div>
@@ -787,42 +788,29 @@
 
         <div class="modal-content" style="width: 1000px;">
             <div class="modal-header">
-                <span style="font-size: 15px; font-weight: bold;">概况</span>
-                <span style="cursor:pointer; color: #999;" onclick="closeTargetModal('detailModal')">✕</span>
+                <span>会员详情</span>
+                <span class="modal-x" onclick="closeTargetModal('detailModal')">✕</span>
             </div>
             <div class="modal-body" style="padding: 20px 30px;">
-                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 15px 20px; padding-right: 40px;">
-                    <div class="form-group"><label class="form-label" style="width:100px;">用户ID：</label><input type="text" class="modal-input" id="detailUid" value="100039991" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">用户昵称：</label><input type="text" class="modal-input" value="无家可归aegp" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">真实姓名：</label><input type="text" class="modal-input" value="喜欢123" disabled></div>
-                    
-                    <div class="form-group"><label class="form-label" style="width:100px;">直属上级：</label><input type="text" class="modal-input" value="上级ID:0" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">区号：</label><input type="text" class="modal-input" value="+86" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">手机号：</label><input type="text" class="modal-input" value="18707594013" disabled></div>
-                    
-                    <div class="form-group"><label class="form-label" style="width:100px;">用户层级：</label><input type="text" class="modal-input" value="默认层级 0-500可见" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">余额：</label><input type="text" class="modal-input" value="0.1" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">账号状态：</label><input type="text" class="modal-input" value="启用" disabled></div>
-
-                    <div class="form-group"><label class="form-label" style="width:100px;">历史游戏盈亏：</label><input type="text" class="modal-input" value="17480" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">累计有效投注：</label><input type="text" class="modal-input" value="85080" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">总充值：</label><input type="text" class="modal-input" value="10000" disabled></div>
-                    
-                    <div class="form-group"><label class="form-label" style="width:100px;">总提现：</label><input type="text" class="modal-input" value="0" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">累计彩金：</label><input type="text" class="modal-input" value="0" disabled></div>
-                    <div class="form-group"><label class="form-label" style="width:100px;">群发红包限额：</label><input type="text" class="modal-input" value="1000" disabled></div>
-                    
-                    <div class="form-group"><label class="form-label" style="width:100px;">充值等级：</label><input type="text" class="modal-input" value="充值等级:0" disabled></div>
-
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label class="form-label" style="width:100px;">备注：</label>
-                        <input type="text" class="modal-input" value="这是一个大客户，请多关注。" disabled style="padding: 10px 12px; height: 38px;">
-                    </div>
-
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label class="form-label" style="width:100px;">注册设备码：</label>
-                        <input type="text" class="modal-input" value="950264cf-3aea-42f8-9a37-2737c0eebb32（共1个账户）" disabled>
-                    </div>
+                <input type="hidden" id="detailUid" value="100039991">
+                <div class="dt-grid">
+                    <div class="dt-item"><span class="dt-k">用户ID</span><span class="dt-v">100039991</span></div>
+                    <div class="dt-item"><span class="dt-k">用户昵称</span><span class="dt-v">无家可归aegp</span></div>
+                    <div class="dt-item"><span class="dt-k">真实姓名</span><span class="dt-v">喜欢123</span></div>
+                    <div class="dt-item"><span class="dt-k">直属上级</span><span class="dt-v">上级ID 0</span></div>
+                    <div class="dt-item"><span class="dt-k">手机号</span><span class="dt-v">+86 18707594013</span></div>
+                    <div class="dt-item"><span class="dt-k">用户层级</span><span class="dt-v">默认层级 0-500可见</span></div>
+                    <div class="dt-item"><span class="dt-k">余额</span><span class="dt-v">0.10</span></div>
+                    <div class="dt-item"><span class="dt-k">账号状态</span><span class="dt-v"><span class="ml-status ok">启用</span></span></div>
+                    <div class="dt-item"><span class="dt-k">充值等级</span><span class="dt-v">0</span></div>
+                    <div class="dt-item"><span class="dt-k">总充值</span><span class="dt-v">10,000.00</span></div>
+                    <div class="dt-item"><span class="dt-k">总提现</span><span class="dt-v">0.00</span></div>
+                    <div class="dt-item"><span class="dt-k">历史游戏盈亏</span><span class="dt-v">17,480.00</span></div>
+                    <div class="dt-item"><span class="dt-k">累计有效投注</span><span class="dt-v">85,080.00</span></div>
+                    <div class="dt-item"><span class="dt-k">累计彩金</span><span class="dt-v">0.00</span></div>
+                    <div class="dt-item"><span class="dt-k">群发红包限额</span><span class="dt-v">1,000.00</span></div>
+                    <div class="dt-item dt-full"><span class="dt-k">备注</span><span class="dt-v">这是一个大客户，请多关注。</span></div>
+                    <div class="dt-item dt-full"><span class="dt-k">注册设备码</span><span class="dt-v mono">950264cf-3aea-42f8-9a37-2737c0eebb32 <span class="ml-muted">（共 1 个账户）</span></span></div>
                 </div>
 
                 <div class="stats-section">
@@ -900,13 +888,13 @@
             
             <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <button class="btn-submit" onclick="openHedge({ memberId: document.getElementById('detailUid').value })" style="background-color: #fa8c16;">对冲查询</button>
-                    <button class="btn-submit" onclick="openTargetModal('riskModal')" style="background-color: #f5222d; margin-left: 10px;">风控查询</button>
-                    <button class="btn-submit" onclick="openLogModal(document.getElementById('detailUid').value)" style="background-color: #13c2c2; margin-left: 10px;">更新日志</button>
+                    <button class="ui-btn ui-btn-warning" onclick="openHedge({ memberId: document.getElementById('detailUid').value })">对冲查询</button>
+                    <button class="ui-btn ui-btn-danger" onclick="openTargetModal('riskModal')">风控查询</button>
+                    <button class="ui-btn ui-btn-cyan" onclick="openLogModal(document.getElementById('detailUid').value)">更新日志</button>
                 </div>
                 <div>
-                    <button class="btn-submit" onclick="closeTargetModal('detailModal')" style="margin-right: 10px; background-color: #f0f0f0; color: #333;">刷新</button>
-                    <button class="btn-reset" onclick="closeTargetModal('detailModal')">关闭</button>
+                    <button class="ui-btn ui-btn-success" onclick="closeTargetModal('detailModal')">刷新</button>
+                    <button class="ui-btn ui-btn-gray" onclick="closeTargetModal('detailModal')">关闭</button>
                 </div>
             </div>
         </div>
@@ -952,7 +940,7 @@
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label class="form-label">用户昵称：</label>
                     <input type="text" class="modal-input" value="无家可归aegp">
-                    <button class="btn-inline" style="background-color: #fa8c16;" onclick="alert('用户昵称已重置')">重置</button>
+                    <button class="ui-btn ui-btn-warning" style="margin-left:8px;" onclick="alert('用户昵称已重置')">重置</button>
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 15px;"><label class="form-label">真实姓名：</label><input type="text" class="modal-input" value="喜欢123"></div>
@@ -1100,8 +1088,9 @@
             if (!sortSelect) return;
             
             const [sortField, sortOrder] = sortSelect.split('_'); // 拆分为字段和排序方式
-            const tbody = document.querySelector('tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const tbody = document.querySelector('#page-member .ml-table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr[data-reg]'));
+            const subtotal = tbody.querySelector('.ml-subtotal');
 
             // 第一次点击时，给每行记录一个初始的默认顺序索引
             if (!tbody.hasAttribute('data-init')) {
@@ -1122,6 +1111,16 @@
 
             // 把排好序的数据重新塞回表格
             rows.forEach(row => tbody.appendChild(row));
+            if (subtotal) tbody.appendChild(subtotal);
+        }
+
+        // 勾选计数
+        function mlCount() {
+            document.getElementById('mlChecked').textContent = document.querySelectorAll('.ml-row-check:checked').length;
+        }
+        function mlCheckAll(el) {
+            document.querySelectorAll('.ml-row-check').forEach(c => c.checked = el.checked);
+            mlCount();
         }
     
     // --- 新增：操作下拉菜单点击逻辑 ---
@@ -1141,11 +1140,27 @@
 
             // 切换当前菜单的显示/隐藏状态
             currentMenu.classList.toggle('show');
+            if (currentMenu.classList.contains('show')) {
+                const r = btnElement.getBoundingClientRect();
+                currentMenu.style.position = 'fixed';
+                currentMenu.style.right = (window.innerWidth - r.right) + 'px';
+                const h = currentMenu.offsetHeight;
+                currentMenu.style.top = (r.bottom + 6 + h > window.innerHeight ? r.top - h - 6 : r.bottom + 6) + 'px';
+            }
             document.querySelectorAll('.action-dropdown-container').forEach(c =>
                 c.classList.toggle('open', c.querySelector('.action-dropdown-menu').classList.contains('show')));
+            document.querySelectorAll('td.c-op').forEach(td => td.classList.toggle('dd-open', !!td.querySelector('.action-dropdown-menu.show')));
         }
 
         // 点击页面其他空白处时，自动关闭已打开的下拉菜单
+        function closeAllDropdowns() {
+            document.querySelectorAll('.action-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+            document.querySelectorAll('.action-dropdown-container.open').forEach(c => c.classList.remove('open'));
+            document.querySelectorAll('td.dd-open').forEach(td => td.classList.remove('dd-open'));
+        }
+        document.addEventListener('scroll', closeAllDropdowns, true);
+        // 菜单内点击任一操作后收起菜单
+        document.addEventListener('click', e => { if (e.target.closest('.action-dropdown-menu button')) closeAllDropdowns(); });
         window.addEventListener('click', function(event) {
             if (!event.target.closest('.action-dropdown-container')) {
                 document.querySelectorAll('.action-dropdown-menu.show').forEach(menu => {
@@ -1410,6 +1425,8 @@
             cursor: pointer; color: #606266; font-size: 13px;
         }
         .btn-plain:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+        .btn-plain { background: #409eff; border-color: #409eff; color: #fff; }
+        .btn-plain:hover { background: #66b1ff; border-color: #66b1ff; color: #fff; }
         .task-table td { font-size: 12px; }
         .task-table td.cond { text-align: left; line-height: 1.7; }
         .sub { color: #909399; font-size: 12px; }
@@ -2585,20 +2602,25 @@
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="btn-primary" onclick="queryLog()">查询</button>
-                        <button class="btn-primary" style="background:#fff; color:#333; border:1px solid #d9d9d9;" onclick="resetLog()">重置</button>
+                        <button class="ui-btn ui-btn-gray" onclick="resetLog()">重置</button>
                     </div>
                 </div>
 
                 <table class="log-table">
+                    <colgroup>
+                        <col style="width: 160px;"><col style="width: 96px;"><col style="width: 140px;">
+                        <col><col style="width: 220px;"><col style="width: 96px;"><col style="width: 140px;"><col style="width: 76px;">
+                    </colgroup>
                     <thead>
                         <tr>
-                            <th style="width: 150px;">操作时间</th>
-                            <th style="width: 100px;">变更类型</th>
-                            <th>变更内容<i class="q-tip">?<span class="q-text">展示"变更前 → 变更后"。手机号中间4位隐藏；密码类操作只记录"已修改"，不展示密码内容。</span></i></th>
-                            <th style="width: 200px;">原因 / 说明</th>
-                            <th style="width: 180px;">最后发言内容<i class="q-tip">?<span class="q-text">封号、禁言时会员最近的发言内容，最多 5 条，最新的在最上面。</span></i></th>
-                            <th style="width: 90px;">操作来源</th>
-                            <th style="width: 130px;">操作人</th>
+                            <th>操作时间</th>
+                            <th>变更类型</th>
+                            <th>变更内容<i class="q-tip">?<span class="q-text">展示本次修改的变更项名称；点击操作列【查看】查看变更前、变更后的值。密码类操作不展示密码内容，没有【查看】。</span></i></th>
+                            <th>原因 / 说明</th>
+                            <th>最后发言内容<i class="q-tip">?<span class="q-text">封号、禁言时会员最近的发言内容，最多 5 条，最新的在最上面。</span></i></th>
+                            <th>操作来源</th>
+                            <th>操作人</th>
+                            <th class="t-op">操作</th>
                         </tr>
                     </thead>
                     <tbody id="logBody"></tbody>
@@ -2635,7 +2657,7 @@
                         <tr><th style="width:110px;">操作来源</th><th style="width:110px;">变更类型</th><th>触发场景与记录内容</th></tr>
                         <tr><td rowspan="9">商户后台</td><td>基本信息</td><td>更新用户中修改用户昵称、点击昵称【重置】、修改真实姓名；记录修改前后的值。</td></tr>
                         <tr><td>手机号</td><td>改手机；记录修改前后的区号+手机号，手机号中间4位隐藏。</td></tr>
-                        <tr><td>密码</td><td>改密码；只记录"已修改登录密码 / 已修改支付密码"，不展示任何密码内容。</td></tr>
+                        <tr><td>密码</td><td>改密码；变更内容记为"登录密码 / 支付密码"，"原因 / 说明"记为"已修改登录密码 / 已修改支付密码"，不展示任何密码内容。</td></tr>
                         <tr><td>账号状态</td><td>更新用户中修改账号状态（启用 / 禁用 / 锁定）、列表【批量禁用】；批量操作在"原因 / 说明"中标注"批量禁用"，每位会员各生成一条记录。</td></tr>
                         <tr><td>用户层级</td><td>更新用户中修改用户层级；记录修改前后的层级名称。</td></tr>
                         <tr><td>充值等级</td><td>更新用户中修改充值等级。</td></tr>
@@ -2656,8 +2678,11 @@
 
                     <h5>三、列表展示规则</h5>
                     <ul>
-                        <li>列表内容：操作时间、变更类型、变更内容、原因 / 说明、最后发言内容、操作来源、操作人。按操作时间倒序，默认 20 条/页，可切换 50 / 100 条/页。</li>
-                        <li>变更内容：按"变更项：变更前 → 变更后"展示，变更前用灰色删除线，变更后加粗；原来没有值时显示"空"。</li>
+                        <li>列表内容：操作时间、变更类型、变更内容、原因 / 说明、最后发言内容、操作来源、操作人、操作。按操作时间倒序，默认 20 条/页，可切换 50 / 100 条/页。</li>
+                        <li>变更内容：只展示本次修改的变更项名称，如"账号状态""用户层级"；一次修改多项时用顿号分隔。列表最后新增"操作"列，放【查看】按钮，点击弹出变更详情，与操作日志的查看方式一致：
+                            <br>- 变更详情展示操作时间、操作人，以及表格"变更项 / 变更前 / 变更后"；变更后的值用蓝色突出显示，原来没有值时显示"空"。
+                            <br>- 手机号在变更详情中中间4位隐藏。
+                            <br>- 登录密码、支付密码、返佣后台密码、解锁IM账号这类没有前后值或不能展示内容的操作，操作列显示"—"，操作内容写在"原因 / 说明"中（如"已修改登录密码"）。</li>
                         <li>操作人：
                             <br>- 商户后台：显示后台账号，下方灰色显示操作IP。
                             <br>- 平台：统一显示"平台"，不展示平台人员账号。
@@ -2667,7 +2692,7 @@
                             <br>- 封号、禁言记录展示该会员被处理时最近的发言，最多 5 条，每条一行，最新的在最上面；内容支持文字、表情、图片，图片显示缩略图，点击查看大图。
                             <br>- 发言内容取封号 / 禁言当时的记录，之后会员发言被删除或撤回，此处仍保留。
                             <br>- 解除封号、解除禁言的记录，以及其他类型的记录，该列显示"—"；处理前没有发言的也显示"—"。</li>
-                        <li>原因 / 说明：封号、禁言时展示原因及消息来源；解除时展示"解除封号 / 解除禁言"；批量操作展示批量操作名称；其余操作无说明时显示"—"。</li>
+                        <li>原因 / 说明：封号、禁言时展示原因及消息来源；密码修改、解锁IM、开通 / 重置返佣后台时展示具体操作；解除时展示"解除封号 / 解除禁言"；批量操作展示批量操作名称；其余操作无说明时显示"—"。</li>
                     </ul>
 
                     <h5>四、筛选与查询</h5>
@@ -2719,7 +2744,7 @@
                     { t: '2026-11-18 15:20:11', type: '基本信息', changes: [['真实姓名', '', '喜欢123']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-18 15:20:11', type: '红包限额', changes: [['红包限额', '500', '1000']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-15 09:12:30', type: '手机号', changes: [['手机号', '+86 187****1234', '+86 187****4013']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
-                    { t: '2026-11-12 14:00:03', type: '密码', changes: [['已修改登录密码']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
+                    { t: '2026-11-12 14:00:03', type: '密码', changes: [['登录密码']], reason: '已修改登录密码', src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-11 10:05:20', type: '封号', changes: [['封号', '封号中', '正常']], reason: '解除封号', src: '平台' },
                     { t: '2026-11-10 20:30:41', type: '封号', changes: [['封号', '正常', '封号中']], reason: '封号原因：疑似多账号套利（自定义）<br>消息来源：聊天室', src: '平台',
                       msgs: [
@@ -2729,9 +2754,9 @@
                       ] },
                     { t: '2026-11-09 11:40:02', type: '账号状态', changes: [['账号状态', '禁用', '启用']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-08 11:11:11', type: '账号状态', changes: [['账号状态', '启用', '禁用']], reason: '批量禁用', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
-                    { t: '2026-11-05 18:22:37', type: 'IM账号', changes: [['解锁IM账号']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
+                    { t: '2026-11-05 18:22:37', type: 'IM账号', changes: [['IM账号']], reason: '解锁IM账号', src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
                     { t: '2026-11-03 10:20:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '解除禁言', src: '平台' },
-                    { t: '2026-11-03 15:16:09', type: '返佣后台', changes: [['开通返佣后台账号：admin_100039991']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-03 15:16:09', type: '返佣后台', changes: [['返佣后台账号', '', 'admin_100039991']], reason: '开通返佣后台账号', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-02 21:00:00', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '禁言原因：直播群禁言<br>消息来源：聊天室', src: '前台',
                       msgs: [
                         { t: '2026-11-02 20:59:31', at: '一分时时彩聊天室', c: () => '***（已过滤）你懂个屁' },
@@ -2746,7 +2771,7 @@
                 nick: '风行者', status: '启用',
                 ban: { on: false }, mute: { on: false },
                 logs: [
-                    { t: '2026-11-19 20:15:33', type: '返佣后台', changes: [['重置返佣后台密码']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
+                    { t: '2026-11-19 20:15:33', type: '返佣后台', changes: [['返佣后台密码']], reason: '重置返佣后台密码', src: '商户后台', op: 'admin01', ip: '47.242.18.6' },
                     { t: '2026-11-16 09:30:00', type: '禁言', changes: [['禁言', '禁言中', '正常']], reason: '解除禁言', src: '平台' },
                     { t: '2026-11-15 22:41:10', type: '禁言', changes: [['禁言', '正常', '禁言中']], reason: '禁言原因：辱骂<br>消息来源：短视频评论区', src: '平台',
                       msgs: [
@@ -2759,7 +2784,7 @@
                     { t: '2026-11-10 14:22:05', type: '账号状态', changes: [['账号状态', '启用', '锁定']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-11 10:00:00', type: '账号状态', changes: [['账号状态', '锁定', '启用']], src: '商户后台', op: 'ops_lily', ip: '103.21.44.90' },
                     { t: '2026-11-01 08:59:41', type: '用户层级', changes: [['用户层级', '总充值500-2000可见', '总充值2000-9999可见']], src: '商户后台', op: 'admin02', ip: '47.242.18.6' },
-                    { t: '2026-10-25 16:44:12', type: '密码', changes: [['已修改支付密码']], src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
+                    { t: '2026-10-25 16:44:12', type: '密码', changes: [['支付密码']], reason: '已修改支付密码', src: '商户后台', op: 'admin01', ip: '47.242.18.6' }
                 ]
             }
         };
@@ -2841,9 +2866,10 @@
             const rows = lgState.list.slice((lgState.page - 1) * size, lgState.page * size);
 
             document.getElementById('logBody').innerHTML = rows.length ? rows.map(l => {
-                const chg = l.changes.map(c => c.length === 1
-                    ? `<div class="chg-line">${c[0]}</div>`
-                    : `<div class="chg-line"><span class="lbl">${c[0]}：</span><span class="old">${valHtml(c[1])}</span><span class="arr">→</span><span class="new">${valHtml(c[2])}</span></div>`).join('');
+                const idx = LOG_MEMBERS[lgState.uid].logs.indexOf(l);
+                const hasVal = l.changes.some(c => c.length === 3);
+                const chg = l.changes.map(c => c[0]).join('、');
+                const opBtn = hasVal ? `<button class="ui-btn ui-btn-primary ui-btn-sm chg-view" onclick="viewChange(${idx})">查看</button>` : '<span class="text-gray">—</span>';
                 const op = l.src === '商户后台'
                     ? `${l.op}<br><span class="text-gray">${l.ip}</span>`
                     : l.src;
@@ -2860,8 +2886,9 @@
                     <td class="msg-cell">${chgExtra}</td>
                     <td><span class="log-badge ${srcBadge}">${l.src}</span></td>
                     <td>${op}</td>
+                    <td class="t-op">${opBtn}</td>
                 </tr>`;
-            }).join('') : '<tr><td colspan="7" class="log-empty">当前条件下暂无更新记录</td></tr>';
+            }).join('') : '<tr><td colspan="8" class="log-empty">当前条件下暂无更新记录</td></tr>';
 
             document.getElementById('lgTotal').textContent = `共 ${total} 条`;
             document.getElementById('lgPageNo').textContent = `${lgState.page} / ${pages}`;
@@ -2878,7 +2905,7 @@
         const _origSaveRemark = saveRemark;
         saveRemark = function () {
             if (!currentRemarkRow) return;
-            const uid = currentRemarkRow.querySelector('td:nth-child(4) .text-gray').textContent.trim();
+            const uid = currentRemarkRow.dataset.uid;
             const before = currentRemarkRow.getAttribute('data-remark') || '';
             const after = document.getElementById('modalRemarkInput').value;
             _origSaveRemark();
@@ -2890,7 +2917,205 @@
         };
     </script>
     <div class="modal-overlay" id="imgPreview" onclick="closeTargetModal('imgPreview')"><img id="imgPreviewSrc" alt="图片预览"></div>
+    <div class="modal-overlay" id="chgModal">
+        <div class="modal-content">
+            <div class="modal-header"><span>变更详情</span><span class="modal-x" onclick="closeTargetModal('chgModal')">✕</span></div>
+            <div class="modal-body">
+                <div class="chg-meta" id="chgMeta"></div>
+                <table class="chg-table">
+                    <thead><tr><th>变更项</th><th>变更前</th><th>变更后</th></tr></thead>
+                    <tbody id="chgBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer"><div></div><button class="ui-btn ui-btn-gray" onclick="closeTargetModal('chgModal')">关闭</button></div>
+        </div>
+    </div>
+    <script>
+        function viewChange(idx) {
+            const l = LOG_MEMBERS[lgState.uid].logs[idx];
+            const v = x => x === '' ? '<span style="color:#c9cdd4">空</span>' : x;
+            document.getElementById('chgMeta').innerHTML =
+                `<span>操作时间：<b>${l.t}</b></span><span>变更类型：<b>${l.type}</b></span><span>操作人：<b>${l.src === '商户后台' ? l.op : l.src}</b></span>`;
+            document.getElementById('chgBody').innerHTML = l.changes.filter(c => c.length === 3)
+                .map(c => `<tr><td class="k">${c[0]}</td><td class="before">${v(c[1])}</td><td class="after">${v(c[2])}</td></tr>`).join('');
+            openTargetModal('chgModal');
+        }
+    </script>
 <!-- 👆 更新日志弹窗结束 👆 -->
+
+<style id="ui-polish">
+/* ================= 视觉统一（原型美化） ================= */
+:root {
+    --c-primary: #1677ff; --c-primary-h: #4096ff; --c-primary-bg: #e6f4ff;
+    --c-text: #1f2329; --c-text-2: #4e5969; --c-text-3: #86909c; --c-border: #e5e6eb; --c-fill: #f7f8fa;
+    --c-danger: #f53f3f; --c-success: #00b42a; --c-warn: #ff7d00; --radius: 6px;
+}
+body { background: #f2f3f5; color: var(--c-text); font-size: 13px; }
+.mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+.nowrap { white-space: nowrap; }
+.t-right { text-align: right !important; }
+
+/* 侧边栏 */
+.sidebar { width: 208px; background: #1d2129; }
+.sidebar-logo { background: #1d2129; border-bottom: 1px solid #2b3038; font-size: 17px; padding: 18px 20px; letter-spacing: 1px; }
+.menu-item { padding: 0 18px 0 24px; height: 44px; font-size: 13.5px; color: #c9cdd4; border-left: 3px solid transparent; }
+.menu-item:hover { background: #272b33; }
+.menu-item.active { background: transparent; color: #fff; border-left-color: transparent; font-weight: 500; }
+.sub-menu { background: #16191f; }
+.sub-item { padding: 0 20px 0 40px; height: 38px; line-height: 38px; font-size: 13px; color: #a9aeb8; }
+.sub-item.active { color: #fff; background: var(--c-primary); }
+.sub-item.sub-folder { padding-right: 18px; }
+.header { height: 52px; font-size: 13px; color: var(--c-text-3); border-bottom: 1px solid var(--c-border); box-shadow: none; padding: 0 24px; }
+.page-body { padding: 16px 20px; }
+
+/* 通用按钮 */
+.ui-btn { height: 32px; padding: 0 15px; border: none; background: var(--c-primary); color: #fff; border-radius: var(--radius); font-size: 13px; cursor: pointer; transition: filter .15s, box-shadow .15s; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.ui-btn:hover { filter: brightness(1.08); box-shadow: 0 2px 6px rgba(0,0,0,.12); }
+.ui-btn-primary { background: var(--c-primary); color: #fff; }
+.ui-btn-success { background: #00b42a; color: #fff; }
+.ui-btn-danger { background: #f53f3f; color: #fff; }
+.ui-btn-warning { background: #ff7d00; color: #fff; }
+.ui-btn-purple { background: #722ed1; color: #fff; }
+.ui-btn-cyan { background: #14c9c9; color: #fff; }
+.ui-btn-gray { background: #e5e6eb; color: var(--c-text); }
+.ui-btn-gray:hover { filter: brightness(.96); }
+.ui-btn-sm { height: 26px; padding: 0 10px; font-size: 12px; border-radius: 4px; }
+.ui-btn-icon { width: 32px; padding: 0; }
+.ui-link { border: none; background: none; color: var(--c-primary); cursor: pointer; font-size: 13px; padding: 0; }
+.ui-link:hover { color: var(--c-primary-h); text-decoration: underline; }
+.ic-refresh { width: 13px; height: 13px; border: 1.6px solid currentColor; border-right-color: transparent; border-radius: 50%; position: relative; display: inline-block; }
+.ic-refresh::after { content: ""; position: absolute; top: -3px; right: -2px; border: 3.5px solid transparent; border-left-color: currentColor; transform: rotate(-30deg); }
+
+/* 旧按钮类统一风格（其他页面、弹窗沿用） */
+.btn-primary, .btn-submit { background: var(--c-primary); border: 1px solid var(--c-primary); color: #fff; height: 32px; padding: 0 15px; border-radius: var(--radius); font-size: 13px; }
+.btn-primary:hover, .btn-submit:hover { background: var(--c-primary-h); }
+.btn-reset { height: 32px; padding: 0 15px; border: none !important; background: #e5e6eb !important; color: var(--c-text); border-radius: var(--radius) !important; }
+.btn-reset:hover { background: #d9dbe0 !important; color: var(--c-text); }
+.btn-small { border-radius: 4px; }
+.page-btn { border-radius: var(--radius); }
+
+/* 输入框 */
+.form-input, .modal-input, .page-select { height: 32px; border: 1px solid var(--c-border); border-radius: var(--radius); font-size: 13px; color: var(--c-text); background: #fff; transition: border-color .15s, box-shadow .15s; }
+.form-input:hover, .modal-input:hover { border-color: var(--c-primary-h); }
+.form-input:focus, .modal-input:focus { border-color: var(--c-primary); box-shadow: 0 0 0 2px rgba(22,119,255,.12); outline: none; }
+.form-input::placeholder, .modal-input::placeholder { color: #c9cdd4; }
+.modal-input:disabled { background: var(--c-fill); color: var(--c-text-3); }
+
+/* ---------- 会员列表：查询区 ---------- */
+.ml-search { padding: 20px 20px 4px; border-radius: 8px; border: none; }
+.ml-filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 24px; }
+.ml-field { display: flex; align-items: center; min-width: 0; margin-bottom: 0; }
+.ml-field > label { width: 76px; flex-shrink: 0; text-align: right; padding-right: 10px; color: var(--c-text-2); font-size: 13px; white-space: nowrap; }
+.ml-field > .form-input { flex: 1; min-width: 0; width: auto; }
+.ml-span2 { grid-column: span 2; padding-left: 0; }
+.ml-combo { display: flex; flex: 1; min-width: 0; }
+.ml-combo .ml-combo-sel { width: 112px; flex: none; border-radius: var(--radius) 0 0 var(--radius); background: var(--c-fill); color: var(--c-text-2); margin-left: 0; }
+.ml-combo > .form-input:not(.ml-combo-sel) { flex: 1; min-width: 0; border-radius: 0 var(--radius) var(--radius) 0; margin-left: -1px; }
+.ml-range { flex: 1; display: flex; align-items: center; height: 32px; border: 1px solid var(--c-border); border-radius: 0 var(--radius) var(--radius) 0; margin-left: -1px; padding: 0 12px; gap: 8px; background: #fff; }
+.ml-range input { border: none; outline: none; flex: 1; min-width: 0; text-align: center; font-size: 13px; color: var(--c-text); font-variant-numeric: tabular-nums; }
+.ml-range span { color: var(--c-text-3); }
+.ml-actions { justify-content: flex-end; gap: 10px; }
+.ml-search { padding-bottom: 20px; }
+
+/* ---------- 会员列表：表格卡片 ---------- */
+.ml-table-card { padding: 0; border-radius: 8px; overflow: hidden; }
+.ml-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-border); }
+.ml-toolbar-left { display: flex; align-items: baseline; gap: 12px; }
+.ml-title { font-size: 15px; font-weight: 600; color: var(--c-text); }
+.ml-sub { font-size: 12px; color: var(--c-text-3); }
+.ml-sub b { color: var(--c-primary); font-weight: 600; }
+.ml-toolbar-right { display: flex; gap: 8px; }
+.ml-scroll { overflow-x: auto; }
+.ml-table { width: 100%; min-width: 1520px; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.ml-table th { background: var(--c-fill); color: var(--c-text-2); font-weight: 500; padding: 11px 14px; border-bottom: 1px solid var(--c-border); white-space: nowrap; text-align: left; }
+.ml-table td { padding: 14px; border-bottom: 1px solid #f2f3f5; vertical-align: top; color: var(--c-text); line-height: 1.75; font-size: 13px; }
+.ml-table tbody tr:not(.ml-subtotal):hover td { background: #f7faff; }
+.ml-table .c-check { width: 36px; padding-right: 0; text-align: center; }
+.ml-table input[type=checkbox] { width: 14px; height: 14px; accent-color: var(--c-primary); cursor: pointer; margin-top: 3px; }
+.ml-table .c-op { position: sticky; right: 0; background: #fff; box-shadow: -6px 0 8px -6px rgba(0,0,0,.08); white-space: nowrap; }
+.ml-table th.c-op { background: var(--c-fill); }
+.ml-table td.c-op { z-index: 1; }
+.ml-table td.c-op.dd-open { z-index: 30; }
+.ml-table tbody tr:not(.ml-subtotal):hover td.c-op { background: #f7faff; }
+.ml-muted { color: var(--c-text-3); font-size: 12px; }
+.ml-user { display: flex; gap: 10px; align-items: flex-start; }
+.ml-avatar { width: 36px; height: 36px; border-radius: 50%; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+.ml-name { font-weight: 500; white-space: nowrap; }
+.ml-tag { display: inline-block; margin-top: 3px; padding: 0 6px; line-height: 20px; font-size: 12px; color: var(--c-primary); background: var(--c-primary-bg); border-radius: 4px; white-space: nowrap; }
+.ml-kv > div span { display: inline-block; min-width: 50px; color: var(--c-text-3); font-size: 12px; margin-right: 6px; }
+.ml-kv em { font-style: normal; }
+.ml-extra { font-style: normal; font-size: 12px; color: var(--c-warn); margin-left: 2px; }
+.ml-amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ml-remark { max-width: 160px; min-width: 120px; color: var(--c-text-2); display: table-cell; }
+.ml-device { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
+.ml-status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; white-space: nowrap; }
+.ml-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-text-3); }
+.ml-status.ok::before { background: var(--c-success); }
+.ml-subtotal td { background: #fffaf0; font-weight: 500; border-bottom: none; }
+.ml-subtotal td:first-child { color: var(--c-text-2); }
+.ml-subtotal .c-op { background: #fffaf0; }
+.ml-ops { display: flex; align-items: center; gap: 8px; }
+
+/* 更多操作下拉 */
+.btn-dropdown-trigger { background: #4e5969 !important; color: #fff; border: none; padding: 0 10px; font-size: 12px; height: 26px; gap: 6px; border-radius: 4px; }
+.btn-dropdown-trigger:hover { background: #3a414b !important; }
+.btn-dropdown-trigger .dd-arrow { border-color: #fff; width: 5px; height: 5px; }
+.action-dropdown-menu { width: 196px; padding: 8px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.14), 0 0 0 1px rgba(0,0,0,.04); z-index: 1000; }
+.action-dropdown-menu.show { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.action-dropdown-menu button { all: unset; box-sizing: border-box; height: 30px; line-height: 30px; text-align: center; font-size: 12px; color: #fff; border-radius: 4px; cursor: pointer; background: var(--c-primary); transition: filter .15s; }
+.action-dropdown-menu button:hover { filter: brightness(1.1); }
+.action-dropdown-menu .c-blue { background: #1677ff; }
+.action-dropdown-menu .c-green { background: #00b42a; }
+.action-dropdown-menu .c-orange { background: #ff7d00; }
+.action-dropdown-menu .c-red { background: #f53f3f; }
+.action-dropdown-menu .c-cyan { background: #14c9c9; }
+
+/* 分页 */
+.ml-pager { padding: 14px 20px; margin: 0; gap: 8px; font-size: 13px; }
+.ml-pager .page-select { width: 100px; }
+.ml-page { min-width: 32px; height: 32px; padding: 0 8px; border: none; background: #e8f3ff; border-radius: var(--radius); color: var(--c-primary); cursor: pointer; font-size: 14px; }
+.ml-page:disabled { color: #c9cdd4; cursor: not-allowed; background: #f2f3f5; }
+.ml-page.active { background: var(--c-primary); color: #fff; font-weight: 600; }
+
+/* 需求说明卡片 */
+.prd-note { border-radius: 8px; border-left-width: 3px; background: #fafafa; border: 1px dashed #d9d9d9; border-left: 3px solid #909399; }
+
+/* ---------- 弹窗统一 ---------- */
+.modal-overlay { background: rgba(0,0,0,.45); }
+.modal-content { border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.18); }
+.modal-header { padding: 16px 24px; font-size: 15px; font-weight: 600; color: var(--c-text); border-bottom: 1px solid var(--c-border); }
+.modal-header span[onclick], .modal-x { color: var(--c-text-3) !important; cursor: pointer; font-size: 15px !important; font-weight: normal; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; }
+.modal-header span[onclick]:hover, .modal-x:hover { background: var(--c-fill); color: var(--c-text) !important; }
+.modal-footer { padding: 12px 24px; border-top: 1px solid var(--c-border); }
+.modal-footer > div { display: flex; gap: 8px; }
+.form-label { color: var(--c-text-2); }
+
+/* 会员详情 */
+#detailModal .modal-content { width: 960px !important; max-height: 92vh; }
+#detailModal .modal-body { padding: 20px 24px !important; overflow-y: auto; }
+.dt-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--c-border); border-radius: 8px; overflow: hidden; }
+.dt-item { display: flex; min-height: 40px; border-bottom: 1px solid var(--c-border); border-right: 1px solid var(--c-border); }
+.dt-item:nth-child(3n) { border-right: none; }
+.dt-k { width: 108px; flex-shrink: 0; background: var(--c-fill); color: var(--c-text-2); padding: 10px 14px; font-size: 13px; }
+.dt-v { flex: 1; padding: 10px 14px; color: var(--c-text); font-size: 13px; word-break: break-all; }
+.dt-full { grid-column: 1 / -1; border-right: none; }
+.dt-grid .dt-item:last-child { border-bottom: none; }
+.stats-section { border: 1px solid var(--c-border); border-radius: 8px; margin-top: 16px; }
+.stats-tabs { width: 96px; background: var(--c-fill); border-right: 1px solid var(--c-border); padding: 6px; gap: 4px; }
+.stats-tab { border: none; border-radius: 6px; padding: 9px 0; color: var(--c-text-2); }
+.stats-tab:hover { background: #eef0f3; }
+.stats-tab.active { background: var(--c-primary); color: #fff; }
+.stats-table td { padding: 10px 16px; border-bottom: 1px solid #f2f3f5; }
+.stats-label { width: 130px; background: #fff; color: var(--c-text-3); }
+.stats-value { font-variant-numeric: tabular-nums; }
+
+/* 其他小弹窗 */
+.modal-sm .modal-body { padding: 20px 24px; }
+.modal-sm .form-label { width: 96px; flex-shrink: 0; white-space: nowrap; }
+.google-auth-group { border-top: 1px dashed var(--c-border); }
+.venue-item { border-radius: 8px; border-color: var(--c-border); background: var(--c-fill); }
+.remark-textarea { border-color: var(--c-border); border-radius: 6px; }
+</style>
 
 </body>
 </html>
